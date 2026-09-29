@@ -1,0 +1,46 @@
+{
+  "identifier" : "PetiteHomeProducts",
+  "nonRenewingSubscriptions" : [],
+  "products" : [],
+  "settings" : { "_applicationInternalID" : "", "_developerTeamID" : "", "_lastSynced" : 0 },
+  "subscriptionGroups" : [
+    {
+      "id" : "PH_PREMIUM",
+      "localizations" : [],
+      "name" : "Premium",
+      "subscriptions" : [
+        {
+          "adHocOffers" : [],
+          "codeOffers" : [],
+          "displayPrice" : "4.99",
+          "familyShareable" : true,
+          "groupNumber" : 1,
+          "internalID" : "PH_PREMIUM_MONTHLY",
+          "introductoryOffer" : { "internalID" : "PH_TRIAL_M", "paymentMode" : "free", "subscriptionPeriod" : "P1W" },
+          "localizations" : [ { "description" : "Reminders, vault, tasks and sharing", "displayName" : "Premium monthly", "locale" : "en_US" } ],
+          "productID" : "co.petitehome.premium.monthly",
+          "recurringSubscriptionPeriod" : "P1M",
+          "referenceName" : "Premium monthly",
+          "subscriptionGroupID" : "PH_PREMIUM",
+          "type" : "RecurringSubscription"
+        },
+        {
+          "adHocOffers" : [],
+          "codeOffers" : [],
+          "displayPrice" : "39.00",
+          "familyShareable" : true,
+          "groupNumber" : 1,
+          "internalID" : "PH_PREMIUM_ANNUAL",
+          "introductoryOffer" : { "internalID" : "PH_TRIAL_A", "paymentMode" : "free", "subscriptionPeriod" : "P1W" },
+          "localizations" : [ { "description" : "Reminders, vault, tasks and sharing", "displayName" : "Premium annual", "locale" : "en_US" } ],
+          "productID" : "co.petitehome.premium.annual",
+          "recurringSubscriptionPeriod" : "P1Y",
+          "referenceName" : "Premium annual",
+          "subscriptionGroupID" : "PH_PREMIUM",
+          "type" : "RecurringSubscription"
+        }
+      ]
+    }
+  ],
+  "version" : { "major" : 3, "minor" : 0 }
+}
