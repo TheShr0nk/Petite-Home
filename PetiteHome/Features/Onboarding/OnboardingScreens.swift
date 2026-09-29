@@ -436,10 +436,9 @@ struct ContactEntry: View {
     var body: some View {
         VStack(alignment: .leading, spacing: Theme.Spacing.md) {
             Button {
-                Task {
-                    _ = await ContactPicker.requestAccess()
-                    showPicker = true
-                }
+                // CNContactPickerViewController runs out of process; the app only receives the one
+                // contact the user picks, so there is no permission to ask for.
+                showPicker = true
             } label: {
                 Label("Choose from Contacts", systemImage: "person.crop.circle.badge.plus")
             }

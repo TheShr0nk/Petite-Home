@@ -2,9 +2,9 @@ import SwiftUI
 import Contacts
 import ContactsUI
 
-/// Wraps CNContactPickerViewController. The picker runs out of process, so it
-/// works without Contacts access; we still ask, with the reason string from
-/// Info.plist, because the brief asks that the request happen here.
+/// Wraps CNContactPickerViewController. The picker runs out of process and hands
+/// back only the contact the user chose, so no Contacts permission is requested.
+/// `requestAccess` stays for a future "import everyone" feature.
 struct ContactPicker: UIViewControllerRepresentable {
     var onPick: (Contact) -> Void
 

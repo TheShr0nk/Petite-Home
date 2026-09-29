@@ -41,8 +41,10 @@ enum Typography {
         return UIFont(descriptor: descriptor, size: size)
     }
 
+    /// Serif that follows Dynamic Type. Sizes above 24pt scale like titles, smaller ones like body.
     static func serif(_ size: CGFloat, weight: CGFloat = 400) -> Font {
-        Font(serifUIFont(size: size, weight: weight))
+        let style: UIFont.TextStyle = size >= 24 ? .title1 : .body
+        return Font(UIFontMetrics(forTextStyle: style).scaledFont(for: serifUIFont(size: size, weight: weight)))
     }
 
     // MARK: Roles

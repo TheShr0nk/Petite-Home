@@ -60,8 +60,8 @@ struct PaywallSheet: View {
                 }
                 .buttonStyle(.primary(enabled: !entitlements.purchaseInProgress)).disabled(entitlements.purchaseInProgress)
                 if let lastLocalError { Text(lastLocalError).font(Typography.caption).foregroundStyle(Theme.Colors.danger) }
-                Text("Cancel anytime. Nothing is charged for 7 days.")
-                    .font(Typography.caption).foregroundStyle(Theme.Colors.sandDeep)
+                Text("Nothing is charged for 7 days. Then it renews automatically at the price shown until you cancel in Settings.")
+                    .font(Typography.caption).foregroundStyle(Theme.Colors.sandDeep).multilineTextAlignment(.center)
                 HStack(spacing: Theme.Spacing.lg) {
                     Button("Restore purchases") { Task { await entitlements.restore(); if entitlements.isPremium { dismiss() } } }
                     Link("Privacy", destination: URL(string: "https://petitehome.co/privacy")!)

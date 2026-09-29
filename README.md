@@ -128,6 +128,29 @@ chips and plan rows, a spring pop on task completion, numeric transitions on
 the ring, pulsing dots for anything that takes a moment, and one dark "saved"
 moment screen after onboarding. Everything honours Reduce Motion.
 
+## Before TestFlight: Apple platform checklist
+
+- App Store Connect: app record, bundle ID `co.petitehome.app` with iCloud
+  (CloudKit), Sign in with Apple and In-App Purchase capabilities; Paid Apps
+  agreement signed; the two subscriptions in one group with a 7-day intro offer.
+- CloudKit Dashboard: run the app in Development, then **Deploy Schema
+  Changes to Production**. Without that, release builds cannot sync. Both the
+  SwiftData store and the parallel Core Data stack in `CloudSharingService`
+  write to the same schema.
+- `CKSharingSupported` is set in Info.plist; without it iOS never delivers
+  share acceptances to the app.
+- `PrivacyInfo.xcprivacy` declares email, purchase history and anonymous
+  analytics. Update it if a new SDK or data type is added. RevenueCat and
+  PostHog ship their own manifests.
+- Account deletion (guideline 5.1.1): if Sign in with Apple stays, add a
+  "Delete my account" action that clears the CloudKit container and revokes
+  the Apple token. Token revocation needs a server call with your Sign in
+  with Apple private key; the website's Vercel API routes are the place for it.
+- App icon: `Assets.xcassets/AppIcon` is empty. A 1024×1024 image is required.
+- Export compliance: the vault uses CryptoKit AES-GCM, which is standard
+  encryption; `ITSAppUsesNonExemptEncryption` is false. Confirm the annual
+  self-classification with your counsel if selling outside the US.
+
 ## Copy rules
 
 Sentence case. No exclamation points. Never "in case of death". Empty states

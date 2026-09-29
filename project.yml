@@ -32,6 +32,7 @@ targets:
           - "Resources/Info.plist"
     resources:
       - path: PetiteHome/Resources/Fonts
+      - path: PetiteHome/Resources/PrivacyInfo.xcprivacy
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: co.petitehome.app
