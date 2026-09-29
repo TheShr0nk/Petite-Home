@@ -2,10 +2,11 @@ import SwiftUI
 import SwiftData
 
 enum OnboardingStep: Int, CaseIterable {
-    case hook, household, firstContact, pediatrician, insurance, guardian, reveal, partnerInvite, lifeSync, premium
+    case intro, hook, household, firstContact, pediatrician, insurance, guardian, reveal, partnerInvite, lifeSync, premium
 
     var analyticsName: String {
         switch self {
+        case .intro: return "intro"
         case .hook: return "hook"
         case .household: return "household"
         case .firstContact: return "first_contact"
@@ -52,6 +53,7 @@ struct OnboardingFlow: View {
         ZStack {
             Group {
                 switch step {
+                case .intro: IntroScreen { advance() }
                 case .hook: HookScreen { advance() }
                 case .household: HouseholdScreen(draft: draft) { advance() }
                 case .firstContact: FirstContactScreen(draft: draft) { advance() }
@@ -76,6 +78,9 @@ struct OnboardingFlow: View {
 
     private var header: some View {
         HStack(spacing: Theme.Spacing.md) {
+            if step == .intro {
+                Color.clear.frame(height: 40)
+            } else {
             Button {
                 back()
             } label: {
@@ -86,9 +91,11 @@ struct OnboardingFlow: View {
             }
             .opacity(step == .hook || step.rawValue > OnboardingStep.reveal.rawValue ? 0 : 1)
             .disabled(step == .hook || step.rawValue > OnboardingStep.reveal.rawValue)
-            ProgressBar(progress: Double(step.rawValue + 1) / Double(OnboardingStep.allCases.count),
-                        current: step.rawValue + 1, total: OnboardingStep.allCases.count)
+            // The intro doesn't count: the hook is 1 of 10.
+            ProgressBar(progress: Double(step.rawValue) / Double(OnboardingStep.allCases.count - 1),
+                        current: step.rawValue, total: OnboardingStep.allCases.count - 1)
             Color.clear.frame(width: 40, height: 40)
+            }
         }
         .padding(.horizontal, Theme.Spacing.md)
         .padding(.top, Theme.Spacing.sm)
@@ -99,7 +106,7 @@ struct OnboardingFlow: View {
     }
 
     private func back() {
-        if let prev = OnboardingStep(rawValue: step.rawValue - 1) { step = prev }
+        if let prev = OnboardingStep(rawValue: step.rawValue - 1), prev != .intro { step = prev }
     }
 
     /// The premium screen is the last step; a short dark "saved" moment plays before Home.

@@ -1,6 +1,91 @@
 import SwiftUI
 import SwiftData
 
+// MARK: Screen 0 — Intro: six seconds, four beats, then the hook
+
+struct IntroScreen: View {
+    let onContinue: () -> Void
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var beat = -1
+    @State private var finished = false
+
+    private struct Beat { let icon: String; let line: String }
+    private let beats: [Beat] = [
+        Beat(icon: "book.closed", line: "Everything a family needs to know, in one place."),
+        Beat(icon: "calendar", line: "Both calendars, the house, dinner, and date night on one week."),
+        Beat(icon: "lock.doc", line: "The documents, locked. Only you can open them."),
+        Beat(icon: "person.2", line: "Shared with the one person who needs it."),
+    ]
+    private let cadence: Double = 1.4
+
+    var body: some View {
+        ZStack {
+            Theme.Colors.cream.ignoresSafeArea()
+            VStack(spacing: Theme.Spacing.xxl) {
+                Spacer()
+                ZStack {
+                    Circle().fill(Theme.Colors.powderBlueMist).frame(width: 120, height: 120)
+                    if beat >= 0 {
+                        Image(systemName: beats[beat].icon)
+                            .font(.system(size: 44, weight: .light))
+                            .foregroundStyle(Theme.Colors.powderBlueDk)
+                            .id(beat)
+                            .transition(.scale(scale: 0.6).combined(with: .opacity))
+                    }
+                }
+                ZStack {
+                    if beat >= 0 {
+                        Text(beats[beat].line)
+                            .font(Typography.serif(26))
+                            .lineSpacing(6)
+                            .multilineTextAlignment(.center)
+                            .foregroundStyle(Theme.Colors.ink)
+                            .fixedSize(horizontal: false, vertical: true)
+                            .id(beat)
+                            .transition(.opacity.combined(with: .offset(y: 8)))
+                    }
+                }
+                .frame(minHeight: 110)
+                Spacer()
+                HStack(spacing: 6) {
+                    ForEach(0..<beats.count, id: \.self) { i in
+                        Capsule().fill(i <= beat ? Theme.Colors.powderBlueDk : Theme.Colors.creamDeep)
+                            .frame(width: i == beat ? 18 : 6, height: 6)
+                    }
+                }
+                .animation(Motion.select, value: beat)
+                Wordmark()
+                    .padding(.bottom, Theme.Spacing.xl)
+            }
+            .padding(.horizontal, Theme.Spacing.xxl)
+        }
+        .contentShape(Rectangle())
+        .onTapGesture { finish() }
+        .accessibilityAction(named: "Skip intro") { finish() }
+        .onAppear(perform: play)
+    }
+
+    private func play() {
+        if reduceMotion {
+            beat = beats.count - 1
+            DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) { finish() }
+            return
+        }
+        for i in 0..<beats.count {
+            DispatchQueue.main.asyncAfter(deadline: .now() + Double(i) * cadence) {
+                withAnimation(Motion.settle) { beat = i }
+            }
+        }
+        DispatchQueue.main.asyncAfter(deadline: .now() + Double(beats.count) * cadence + 0.3) { finish() }
+    }
+
+    private func finish() {
+        guard !finished else { return }
+        finished = true
+        onContinue()
+    }
+}
+
 // MARK: Screen 1 — Hook
 
 struct HookScreen: View {
