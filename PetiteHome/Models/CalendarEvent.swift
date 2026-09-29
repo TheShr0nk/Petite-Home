@@ -35,7 +35,7 @@ final class CalendarEvent {
 
 /// One line on the Life Sync agenda: an event or a task, on a day.
 struct AgendaItem: Identifiable, Hashable {
-    enum Kind: Hashable { case event, task, meal }
+    enum Kind: Hashable { case event, task, meal, plan }
     let id: UUID
     let kind: Kind
     let title: String
@@ -55,7 +55,7 @@ enum LifeSyncAgenda {
         var id: Date { date }
     }
 
-    static func build(events: [CalendarEvent], tasks: [HouseholdTask], meals: [PlannedMeal] = [], from start: Date, days: Int, calendar: Calendar = .current) -> [Day] {
+    static func build(events: [CalendarEvent], tasks: [HouseholdTask], meals: [PlannedMeal] = [], plans: [FamilyPlan] = [], from start: Date, days: Int, calendar: Calendar = .current) -> [Day] {
         let startOfFirst = calendar.startOfDay(for: start)
         return (0..<days).compactMap { offset -> Day? in
             guard let dayStart = calendar.date(byAdding: .day, value: offset, to: startOfFirst),
@@ -78,6 +78,11 @@ enum LifeSyncAgenda {
                 let at = calendar.date(byAdding: .hour, value: m.slot.hour, to: dayStart) ?? dayStart
                 items.append(AgendaItem(id: m.id, kind: .meal, title: m.displayTitle, start: at, end: nil, isAllDay: false,
                                         ownerAdultID: m.cookAdultID, detail: m.slot.label, isOverdue: false))
+            }
+            for p in plans where calendar.isDate(p.startDate, inSameDayAs: dayStart) {
+                let detail = p.sitterStatus == .notNeeded ? p.kind.label : "\(p.kind.label) · \(p.sitterStatus.label.lowercased())"
+                items.append(AgendaItem(id: p.id, kind: .plan, title: p.displayTitle, start: p.startDate, end: p.endDate, isAllDay: false,
+                                        ownerAdultID: nil, detail: detail, isOverdue: p.needsAttention))
             }
             items.sort { a, b in
                 if a.isAllDay != b.isAllDay { return a.isAllDay }

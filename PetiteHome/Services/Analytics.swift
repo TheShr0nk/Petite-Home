@@ -16,6 +16,8 @@ enum AnalyticsEvent: String {
     case recipeShared = "recipe_shared"
     case recipeImported = "recipe_imported"
     case mealPlanned = "meal_planned"
+    case planCreated = "plan_created"
+    case sitterSheetSent = "sitter_sheet_sent"
 }
 
 enum Analytics {

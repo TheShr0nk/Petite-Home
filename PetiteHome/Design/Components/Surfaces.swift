@@ -210,7 +210,7 @@ struct CompletenessRing: View {
             }
         }
         .onChange(of: percent) { _, new in withAnimation(Motion.settle) { shown = new } }
-        .accessibilityLabel("Family File \(percent) percent complete")
+        .accessibilityLabel("\(AppCopy.binder) \(percent) percent complete")
     }
 }
 

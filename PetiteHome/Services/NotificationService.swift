@@ -43,7 +43,7 @@ final class NotificationService {
         let fireAt = max(anchor.addingTimeInterval(interval), Date().addingTimeInterval(60))
 
         let content = UNMutableNotificationContent()
-        content.title = "Your Family File is \(percent)% done."
+        content.title = "Your \(AppCopy.binderLower) is \(percent)% done."
         content.body = "The next thing to add takes one minute."
         content.sound = .default
         content.categoryIdentifier = Category.nudge.rawValue

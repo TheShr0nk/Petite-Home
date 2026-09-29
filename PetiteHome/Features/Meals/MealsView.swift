@@ -88,7 +88,7 @@ struct MealsView: View {
     private var lockedWeekPlan: some View {
         VStack(alignment: .leading, spacing: Theme.Spacing.md) {
             SectionHeader(title: "This week")
-            Text("Plan the week once, together. Whoever's cooking sees it, the shopping list writes itself, and dinner shows up on the Life Sync agenda.")
+            Text("Plan the week once, together. Whoever's cooking sees it, the shopping list writes itself, and dinner shows up on the week.")
                 .font(Typography.body).foregroundStyle(Theme.Colors.sandDeep)
             LockedPreview(onTap: { appState.showPaywall(.mealPlan) }) {
                 Card(padding: 0) {

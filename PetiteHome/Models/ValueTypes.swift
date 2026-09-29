@@ -213,8 +213,8 @@ enum TrustedAccessLevel: String, Codable, CaseIterable {
     case viewFamilyFile, viewFamilyFileAndVault
     var label: String {
         switch self {
-        case .viewFamilyFile: return "Family File only"
-        case .viewFamilyFileAndVault: return "Family File and vault"
+        case .viewFamilyFile: return "\(AppCopy.binder) only"
+        case .viewFamilyFileAndVault: return "\(AppCopy.binder) and vault"
         }
     }
 }

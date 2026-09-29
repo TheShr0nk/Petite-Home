@@ -29,7 +29,7 @@ struct TasksView: View {
             .padding(.vertical, Theme.Spacing.lg)
         }
         .screenBackground()
-        .navigationTitle(embedded ? "Life Sync" : "Tasks")
+        .navigationTitle(embedded ? AppCopy.planner : "Tasks")
         .toolbar {
             if !embedded { SettingsToolbarItem() }
             if entitlements.isPremium {

@@ -2,7 +2,7 @@ import SwiftUI
 import SwiftData
 import EventKit
 
-/// Life Sync (premium): the week the two of you actually have. Both calendars,
+/// The Planner (premium): the week the two of you actually have. Both calendars,
 /// mirrored through the household, plus the tasks due each day. Free users
 /// see a sample week, locked, and the paywall on tap.
 struct LifeSyncView: View {
@@ -28,6 +28,8 @@ struct LifeSyncView: View {
             .padding(.bottom, Theme.Spacing.sm)
             if appState.lifeSyncSegment == .tasks {
                 TasksView(household: household, embedded: true)
+            } else if appState.lifeSyncSegment == .plans {
+                PlansView(household: household)
             } else if appState.lifeSyncSegment == .meals {
                 MealsView(household: household)
             } else if entitlements.isPremium {
@@ -37,7 +39,7 @@ struct LifeSyncView: View {
             }
         }
         .screenBackground()
-        .navigationTitle("Life Sync")
+        .navigationTitle(AppCopy.planner)
         .toolbar { SettingsToolbarItem() }
         .sheet(isPresented: $showSetup, onDismiss: resync) { LifeSyncSetupSheet(household: household) }
         .sheet(item: $editingTask) { task in TaskEditorSheet(task: task, household: household) }
@@ -79,7 +81,7 @@ struct LifeSyncView: View {
     // MARK: Premium
 
     private var week: some View {
-        let days = LifeSyncAgenda.build(events: household.calendarEvents ?? [], tasks: household.tasks ?? [], meals: household.meals ?? [], from: Date(), days: 14)
+        let days = LifeSyncAgenda.build(events: household.calendarEvents ?? [], tasks: household.tasks ?? [], meals: household.meals ?? [], plans: household.plans ?? [], from: Date(), days: 14)
         return ScrollView {
             VStack(alignment: .leading, spacing: Theme.Spacing.lg) {
                 statusCard
@@ -116,7 +118,7 @@ struct LifeSyncView: View {
                                     .font(Typography.body).foregroundStyle(Theme.Colors.ink)
                                 Text(partner.calendarSyncEnabled
                                      ? (partner.calendarSyncedAt.map { "Updated \($0.formatted(.relative(presentation: .named)))" } ?? "")
-                                     : "Ask them to open Life Sync on their phone and tap Sync my calendar.")
+                                     : "Ask them to open the \(AppCopy.planner) on their phone and tap Sync my calendar.")
                                     .font(Typography.caption).foregroundStyle(Theme.Colors.sandDeep)
                             }
                         }
@@ -163,7 +165,7 @@ struct LifeSyncView: View {
         var out: [Color] = []
         if day.items.contains(where: { $0.kind == .event && $0.ownerAdultID == me?.id }) { out.append(Theme.Colors.powderBlueDk) }
         if day.items.contains(where: { $0.kind == .event && $0.ownerAdultID != me?.id }) { out.append(Theme.Colors.sand) }
-        if day.items.contains(where: { $0.kind == .task || $0.kind == .meal }) { out.append(Theme.Colors.success) }
+        if day.items.contains(where: { $0.kind == .task || $0.kind == .meal || $0.kind == .plan }) { out.append(Theme.Colors.success) }
         return out
     }
 
@@ -183,6 +185,7 @@ struct LifeSyncView: View {
                             AgendaRow(item: item, me: me, partner: partner) {
                                 if item.kind == .task, let task = (household.tasks ?? []).first(where: { $0.id == item.id }) { editingTask = task }
                                 if item.kind == .meal { appState.openMeals() }
+                                if item.kind == .plan { appState.openPlans() }
                             }
                             if item.id != day.items.last?.id { SandDivider().padding(.leading, Theme.Spacing.lg + 44) }
                         }
@@ -218,6 +221,7 @@ enum SampleWeek {
             AgendaItem(id: UUID(), kind: .event, title: "Standup", start: cal.date(byAdding: .hour, value: 9, to: today)!, end: cal.date(byAdding: .hour, value: 10, to: today)!, isAllDay: false, ownerAdultID: me?.id, detail: "Work", isOverdue: false),
             AgendaItem(id: UUID(), kind: .event, title: "Daycare pickup", start: cal.date(byAdding: .hour, value: 16, to: today)!, end: cal.date(byAdding: .hour, value: 17, to: today)!, isAllDay: false, ownerAdultID: partner?.id, detail: "Family", isOverdue: false),
             AgendaItem(id: UUID(), kind: .meal, title: "Sheet-pan chicken", start: cal.date(byAdding: .hour, value: 18, to: today)!, end: nil, isAllDay: false, ownerAdultID: me?.id, detail: "Dinner", isOverdue: false),
+            AgendaItem(id: UUID(), kind: .plan, title: "Date night", start: cal.date(byAdding: .hour, value: 19, to: today)!, end: nil, isAllDay: false, ownerAdultID: nil, detail: "Date night · confirmed", isOverdue: false),
         ]
     }
 }
@@ -233,10 +237,10 @@ struct AgendaRow: View {
     var body: some View {
         Button(action: onTap) {
             HStack(spacing: Theme.Spacing.md) {
-                if item.kind == .task || item.kind == .meal {
+                if item.kind != .event {
                     ZStack {
-                        Circle().fill((item.kind == .meal ? Theme.Colors.warn : Theme.Colors.success).opacity(0.25))
-                        Image(systemName: item.kind == .meal ? "fork.knife" : "checklist").font(.system(size: 13, weight: .medium)).foregroundStyle(Theme.Colors.ink)
+                        Circle().fill((item.kind == .meal ? Theme.Colors.warn : item.kind == .plan ? Theme.Colors.powderBlue : Theme.Colors.success).opacity(item.kind == .plan ? 0.5 : 0.25))
+                        Image(systemName: item.kind == .meal ? "fork.knife" : item.kind == .plan ? "moon.stars" : "checklist").font(.system(size: 13, weight: .medium)).foregroundStyle(Theme.Colors.ink)
                     }
                     .frame(width: 32, height: 32)
                 } else {
@@ -252,6 +256,9 @@ struct AgendaRow: View {
                         } else if item.kind == .meal {
                             Text(item.detail)
                             if let owner { Text("· \(owner.displayName) cooks") }
+                        } else if item.kind == .plan {
+                            Text(item.start.formatted(date: .omitted, time: .shortened)).foregroundStyle(Theme.Colors.sandDeep)
+                            Text("· \(item.detail)").foregroundStyle(item.isOverdue ? Theme.Colors.warn : Theme.Colors.sandDeep)
                         } else {
                             Text(item.isOverdue ? "Overdue" : "Due today").foregroundStyle(item.isOverdue ? Theme.Colors.danger : Theme.Colors.sandDeep)
                             if let owner { Text("· \(owner.displayName)") }

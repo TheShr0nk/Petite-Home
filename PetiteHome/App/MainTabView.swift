@@ -14,17 +14,14 @@ struct MainTabView: View {
                 .tabItem { Label("Home", systemImage: "house") }
                 .tag(AppTab.home)
             FamilyFileView(household: household)
-                .tabItem { Label("Family File", systemImage: "folder") }
+                .tabItem { Label(AppCopy.binder, systemImage: "book.closed") }
                 .tag(AppTab.familyFile)
             NavigationStack { LifeSyncView(household: household) }
-                .tabItem { Label("Life Sync", systemImage: "calendar") }
+                .tabItem { Label(AppCopy.planner, systemImage: "calendar") }
                 .tag(AppTab.lifeSync)
             NavigationStack { VaultView(household: household) }
                 .tabItem { Label("Vault", systemImage: "lock.doc") }
                 .tag(AppTab.vault)
-            NavigationStack { PicksView() }
-                .tabItem { Label("Picks", systemImage: "sparkles") }
-                .tag(AppTab.picks)
         }
         .sheet(item: $appState.paywallGate) { gate in
             PaywallSheet(gate: gate)

@@ -59,7 +59,7 @@ struct TrustedSharingSheet: View {
 
     private var form: some View {
         VStack(alignment: .leading, spacing: Theme.Spacing.lg) {
-            Text("A grandparent, a sitter, the person you named as guardian. They get a read-only copy that expires.")
+            Text("A grandparent, a sitter, the person you named as guardian. They get a read-only copy of the \(AppCopy.binderLower) that expires.")
                 .font(Typography.body).foregroundStyle(Theme.Colors.sandDeep)
             ContactEntry(contact: $contact, showRelationship: true)
             VStack(alignment: .leading, spacing: Theme.Spacing.xs) {

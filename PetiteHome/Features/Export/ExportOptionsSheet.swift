@@ -18,7 +18,7 @@ struct ExportOptionsSheet: View {
                     .font(Typography.body).foregroundStyle(Theme.Colors.sandDeep)
                 Card {
                     VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
-                        Text("Family File").font(Typography.sectionTitle).foregroundStyle(Theme.Colors.ink)
+                        Text(AppCopy.printableTitle).font(Typography.sectionTitle).foregroundStyle(Theme.Colors.ink)
                         Text("Every section. Carries a small “Made with Petite Home” footer.").font(Typography.caption).foregroundStyle(Theme.Colors.sandDeep)
                         Button(rendering ? "Preparing" : "Export PDF") { render(.free) }.buttonStyle(.primary).disabled(rendering)
                     }

@@ -41,6 +41,21 @@ struct HomeView: View {
                 if let shareError {
                     Text(shareError).font(Typography.caption).foregroundStyle(Theme.Colors.danger)
                 }
+                BrandDivider()
+                NavigationLink { PicksView() } label: {
+                    Card(background: Theme.Colors.powderBlueMist) {
+                        HStack(spacing: Theme.Spacing.md) {
+                            BrandIcon(systemName: "sparkles", isActive: true)
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text("Petite Picks").font(Typography.body).foregroundStyle(Theme.Colors.ink)
+                                Text("What we use, what we skipped, and why.").font(Typography.caption).foregroundStyle(Theme.Colors.sandDeep)
+                            }
+                            Spacer()
+                            Image(systemName: "chevron.right").font(.system(size: 13, weight: .medium)).foregroundStyle(Theme.Colors.sandDeep)
+                        }
+                    }
+                }
+                .buttonStyle(.plain)
             }
             .padding(.horizontal, Theme.Spacing.gutter)
             .padding(.vertical, Theme.Spacing.lg)
@@ -84,7 +99,7 @@ struct HomeView: View {
                 HStack(alignment: .center, spacing: Theme.Spacing.lg) {
                     CompletenessRing(percent: report.percent, size: 72, lineWidth: 7)
                     VStack(alignment: .leading, spacing: 2) {
-                        Text("Finish your Family File").font(Typography.sectionTitle).foregroundStyle(Theme.Colors.ink)
+                        Text("Finish your \(AppCopy.binder)").font(Typography.sectionTitle).foregroundStyle(Theme.Colors.ink)
                         Text("Each of these takes about a minute.").font(Typography.caption).foregroundStyle(Theme.Colors.sandDeep)
                     }
                 }
@@ -114,7 +129,7 @@ struct HomeView: View {
         Card(background: Theme.Colors.powderBlueMist) {
             VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
                 Text("See the week you and \(partnerName) actually have").font(Typography.sectionTitle).foregroundStyle(Theme.Colors.ink)
-                Text("Life Sync puts both calendars and the house tasks on the same days.").font(Typography.body).foregroundStyle(Theme.Colors.sandDeep)
+                Text("The \(AppCopy.planner) puts both calendars, the house tasks, meals and date nights on the same days.").font(Typography.body).foregroundStyle(Theme.Colors.sandDeep)
                 if !entitlements.isPremium { PremiumPill() }
                 Button("Sync my calendar") { if entitlements.isPremium { appState.selectedTab = .lifeSync } else { appState.showPaywall(.lifeSync) } }.font(Typography.bodyEmphasis).foregroundStyle(Theme.Colors.powderBlueDk)
             }
@@ -127,6 +142,10 @@ struct HomeView: View {
         return (household.calendarEvents ?? []).filter { $0.startDate < end && $0.endDate > start }.sorted { $0.startDate < $1.startDate }
     }
 
+    private var nextPlan: FamilyPlan? {
+        (household.plans ?? []).filter { !$0.isPast }.sorted { $0.startDate < $1.startDate }.first
+    }
+
     private var tonight: PlannedMeal? {
         (household.meals ?? []).first { Calendar.current.isDateInToday($0.date) && $0.slot == .dinner }
     }
@@ -136,6 +155,15 @@ struct HomeView: View {
             SectionHeader(title: "Upcoming")
             Card(padding: 0) {
                 VStack(spacing: 0) {
+                    if entitlements.isPremium, let nextPlan, nextPlan.startDate < Calendar.current.date(byAdding: .day, value: 14, to: Date())! {
+                        Button { appState.openPlans() } label: {
+                            UpcomingRow(title: nextPlan.displayTitle, date: nextPlan.startDate, tone: nextPlan.needsAttention ? .warn : .normal, icon: nextPlan.kind.systemImage,
+                                        subtitle: nextPlan.needsAttention ? "\(nextPlan.startDate.formatted(.dateTime.weekday(.abbreviated).day())) · still need a sitter" : nil)
+                                .padding(.horizontal, Theme.Spacing.lg).contentShape(Rectangle())
+                        }
+                        .buttonStyle(.plain)
+                        SandDivider().padding(.leading, Theme.Spacing.lg)
+                    }
                     if entitlements.isPremium, let tonight {
                         Button { appState.openMeals() } label: {
                             UpcomingRow(title: "Tonight: \(tonight.displayTitle)", date: Date(), tone: .normal, icon: "fork.knife",
@@ -189,7 +217,7 @@ struct HomeView: View {
     private func invitePartner() {
         Task {
             do {
-                let (share, container) = try await CloudSharingService.shared.share(for: household.id, title: "Our Family File")
+                let (share, container) = try await CloudSharingService.shared.share(for: household.id, title: "Our \(AppCopy.binder)")
                 sharePayload = SharePayload(share: share, container: container)
             } catch {
                 shareError = error.localizedDescription

@@ -46,8 +46,8 @@ struct PicksView: View {
             .padding(.horizontal, Theme.Spacing.gutter).padding(.vertical, Theme.Spacing.lg)
         }
         .screenBackground()
-        .navigationTitle("Picks")
-        .toolbar { SettingsToolbarItem() }
+        .navigationTitle("Petite Picks")
+        .navigationBarTitleDisplayMode(.inline)
     }
 }
 

@@ -3,7 +3,7 @@ import SwiftUI
 import Observation
 
 enum AppTab: Hashable {
-    case home, familyFile, lifeSync, vault, picks
+    case home, familyFile, lifeSync, vault
     /// Kept so older deep links and the paywall gate for tasks still land somewhere sensible.
     static let tasks = AppTab.lifeSync
 }
@@ -89,14 +89,20 @@ final class AppState {
         selectedTab = .lifeSync
         lifeSyncSegment = .meals
     }
+
+    func openPlans() {
+        selectedTab = .lifeSync
+        lifeSyncSegment = .plans
+    }
 }
 
 enum LifeSyncSegment: String, CaseIterable, Identifiable {
-    case week, meals, tasks
+    case week, plans, meals, tasks
     var id: String { rawValue }
     var label: String {
         switch self {
         case .week: return "Week"
+        case .plans: return "Plans"
         case .meals: return "Meals"
         case .tasks: return "Tasks"
         }

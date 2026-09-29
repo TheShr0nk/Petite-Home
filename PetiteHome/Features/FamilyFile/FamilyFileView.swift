@@ -77,7 +77,7 @@ struct FamilyFileView: View {
                 .padding(.vertical, Theme.Spacing.lg)
             }
             .screenBackground()
-            .navigationTitle("Family File")
+            .navigationTitle(AppCopy.binder)
             .toolbar { SettingsToolbarItem() }
             .navigationDestination(for: FamilyFileSection.self) { section in
                 FamilyFileSectionView(household: household, file: file, section: section)

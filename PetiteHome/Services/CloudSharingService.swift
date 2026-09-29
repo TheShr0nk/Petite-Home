@@ -125,7 +125,7 @@ extension CloudSharingService: UICloudSharingControllerDelegate {
     nonisolated func cloudSharingController(_ csc: UICloudSharingController, failedToSaveShareWithError error: Error) {
         print("[sharing] failed to save share: \(error)")
     }
-    nonisolated func itemTitle(for csc: UICloudSharingController) -> String? { "Our Family File" }
+    nonisolated func itemTitle(for csc: UICloudSharingController) -> String? { "Our \(AppCopy.binder)" }
     nonisolated func cloudSharingControllerDidSaveShare(_ csc: UICloudSharingController) {
         Analytics.track(.partnerInvited)
     }

@@ -66,7 +66,7 @@ struct SettingsView: View {
                     Button("Manage sharing") { invitePartner() }
                 }
                 if let shareError { Text(shareError).font(Typography.caption).foregroundStyle(Theme.Colors.danger) }
-            } header: { Text("Partner sharing") } footer: { Text("Your partner sees the same Family File, and changes sync both ways. Free, always.") }
+            } header: { Text("Partner sharing") } footer: { Text("Your partner sees the same \(AppCopy.binder), and changes sync both ways. Free, always.") }
             .listRowBackground(Theme.Colors.creamDeep)
 
             Section {
@@ -96,6 +96,7 @@ struct SettingsView: View {
             .listRowBackground(Theme.Colors.creamDeep)
 
             Section {
+                NavigationLink { PicksView() } label: { Label("Petite Picks", systemImage: "sparkles") }
                 Link("Privacy", destination: URL(string: "https://petitehome.co/privacy")!)
                 Link("Terms", destination: URL(string: "https://petitehome.co/terms")!)
                 Link("Email us", destination: URL(string: "mailto:ryan@petitehome.co")!)
@@ -137,7 +138,7 @@ struct SettingsView: View {
     private func invitePartner() {
         Task {
             do {
-                let (share, container) = try await CloudSharingService.shared.share(for: household.id, title: "Our Family File")
+                let (share, container) = try await CloudSharingService.shared.share(for: household.id, title: "Our \(AppCopy.binder)")
                 sharePayload = SharePayload(share: share, container: container)
             } catch { shareError = error.localizedDescription }
         }

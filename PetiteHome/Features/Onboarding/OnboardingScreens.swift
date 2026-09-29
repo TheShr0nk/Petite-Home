@@ -211,7 +211,7 @@ struct RevealScreen: View {
 
     var body: some View {
         let report = draft.previewReport()
-        OnboardingScreen(eyebrow: "Your Family File", hook: "This is your Family File.",
+        OnboardingScreen(eyebrow: "Your \(AppCopy.binderLower)", hook: "This is your \(AppCopy.binder).",
                          subline: "It syncs privately to your iCloud. Nothing leaves your Apple account.") {
             VStack(alignment: .leading, spacing: Theme.Spacing.lg) {
                 HStack {
@@ -268,8 +268,8 @@ struct RevealScreen: View {
             .signInWithAppleButtonStyle(.black)
             .frame(height: Theme.Metrics.primaryButtonHeight)
             .clipShape(RoundedRectangle(cornerRadius: Theme.Radius.control, style: .continuous))
-            .accessibilityLabel("Save my Family File")
-            Text("Save my Family File with your Apple ID. No email or password to make up.")
+            .accessibilityLabel("Save my \(AppCopy.binder)")
+            Text("Save your \(AppCopy.binderLower) with your Apple ID. No email or password to make up.")
                 .font(Typography.caption)
                 .foregroundStyle(Theme.Colors.sandDeep)
                 .multilineTextAlignment(.center)
@@ -289,7 +289,7 @@ struct PartnerInviteScreen: View {
 
     var body: some View {
         OnboardingScreen(eyebrow: "Your partner", hook: "Your partner should be able to see this too.",
-                         subline: "They'll get the same Family File on their phone, and every change syncs both ways.") {
+                         subline: "They'll get the same \(AppCopy.binderLower) on their phone, and every change syncs both ways.") {
             if let errorText {
                 Text(errorText).font(Typography.caption).foregroundStyle(Theme.Colors.danger)
             }
@@ -298,7 +298,7 @@ struct PartnerInviteScreen: View {
                 guard let household else { onContinue(); return }
                 Task {
                     do {
-                        let (share, container) = try await CloudSharingService.shared.share(for: household.id, title: "Our Family File")
+                        let (share, container) = try await CloudSharingService.shared.share(for: household.id, title: "Our \(AppCopy.binder)")
                         sharePayload = SharePayload(share: share, container: container)
                     } catch {
                         errorText = error.localizedDescription
@@ -324,7 +324,7 @@ struct LifeSyncSetupScreen: View {
     private var partnerName: String { draft.includesPartner && !draft.partnerFirstName.isEmpty ? draft.partnerFirstName : "your partner" }
 
     var body: some View {
-        OnboardingScreen(eyebrow: "Life Sync", hook: "Put both calendars and the house on the same week.",
+        OnboardingScreen(eyebrow: AppCopy.planner, hook: "Put both calendars and the house on the same week.",
                          subline: "Pick which calendars \(partnerName) can see, and which chores the app should keep track of. Nothing is written to your calendar.") {
             VStack(alignment: .leading, spacing: Theme.Spacing.xl) {
                 CalendarPickerBlock(granted: $draft.calendarAccessGranted, selected: $draft.selectedCalendarIDs)
@@ -402,7 +402,7 @@ struct PremiumBullets: View {
         VStack(alignment: .leading, spacing: Theme.Spacing.md) {
             bullet("bell", "Reminds you when passports, car seats, and insurance expire")
             bullet("lock.doc", "Keeps birth certificates and SSN cards in an encrypted vault")
-            bullet("calendar", "Life Sync: both calendars, the house tasks and the week's meals, shared with your partner")
+            bullet("calendar", "The \(AppCopy.planner): both calendars, tasks, meals and date nights on one week, shared with your partner")
         }
     }
     private func bullet(_ icon: String, _ text: String) -> some View {

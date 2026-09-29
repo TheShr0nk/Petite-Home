@@ -1,8 +1,10 @@
 # Petite Home — iOS
 
-The household operating system for families with young kids. Free tier is the
-Family File. Premium is the app doing things on its own: recurring tasks,
-expiration reminders, an encrypted document vault, trusted-person sharing.
+The household operating system for families with young kids. Three areas plus
+Home: the **Binder** (free; the printable export is still titled "The Family
+File", as the website promises), the **Planner** (premium: both calendars,
+tasks, meals, and family plans with sitters), and the **Vault** (premium).
+Names live in `AppCopy` so a rename is one line.
 
 Brand: Petite Home Co. · "Less to question. More to trust."
 
@@ -92,6 +94,14 @@ Recipe JSON-LD (`RecipeImporter`, pure and tested), and share out through the
 system share sheet as a branded 1080×1350 card plus the recipe text
 (`RecipeShare`). Planned meals appear on the Life Sync agenda and as
 "Tonight" on Home; the shopping list is computed from the week's recipes.
+
+**Plans.** `FamilyPlan` covers date nights, outings, trips, appointments and
+visitors, with who's going and a sitter state (kids come along / need a
+sitter / asked / confirmed). `FreeEveningFinder` proposes evenings with
+nothing on either synced calendar, weekends first. `SitterSheet` builds the
+text sent to a sitter from the Binder: kids' allergies, meds, notes, who to
+call, the address. It never includes codes or account details. The sitter
+roster is a value list on the household, so both partners share it.
 
 **Founding 500 codes.** Format `PH-XXXX-XXXX`; the last group is a checksum of
 the first (see `FoundingCode`). Issue codes with `FoundingCode.make(body:)`.
