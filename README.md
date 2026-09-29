@@ -86,6 +86,13 @@ calendar. Calendar and task choices made during onboarding are held in
 `LifeSyncPending` until the trial starts, then applied once. The Tasks tab
 lives inside Life Sync as its second segment.
 
+**Meals.** The Meals segment of Life Sync holds a recipe box (free) and the
+week's plan (premium). Recipes import from any page carrying schema.org
+Recipe JSON-LD (`RecipeImporter`, pure and tested), and share out through the
+system share sheet as a branded 1080×1350 card plus the recipe text
+(`RecipeShare`). Planned meals appear on the Life Sync agenda and as
+"Tonight" on Home; the shopping list is computed from the week's recipes.
+
 **Founding 500 codes.** Format `PH-XXXX-XXXX`; the last group is a checksum of
 the first (see `FoundingCode`). Issue codes with `FoundingCode.make(body:)`.
 

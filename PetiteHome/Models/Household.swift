@@ -22,6 +22,10 @@ final class Household {
     @Relationship(deleteRule: .cascade, inverse: \VaultDocument.household) var documents: [VaultDocument]? = []
     @Relationship(deleteRule: .cascade, inverse: \TrustedContact.household) var trustedContacts: [TrustedContact]? = []
     @Relationship(deleteRule: .cascade, inverse: \CalendarEvent.household) var calendarEvents: [CalendarEvent]? = []
+    @Relationship(deleteRule: .cascade, inverse: \Recipe.household) var recipes: [Recipe]? = []
+    @Relationship(deleteRule: .cascade, inverse: \PlannedMeal.household) var meals: [PlannedMeal]? = []
+    /// Shopping list lines checked off, by normalized ingredient key. Shared with the partner.
+    var groceryChecked: [String] = []
 
     init(name: String = "") {
         self.name = name
@@ -282,5 +286,6 @@ enum PetiteSchema {
     static let models: [any PersistentModel.Type] = [
         Household.self, Adult.self, Child.self, FamilyFile.self,
         HouseholdTask.self, VaultDocument.self, TrustedContact.self, CalendarEvent.self,
+        Recipe.self, PlannedMeal.self,
     ]
 }

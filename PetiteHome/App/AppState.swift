@@ -84,10 +84,21 @@ final class AppState {
         selectedTab = .lifeSync
         lifeSyncSegment = .tasks
     }
+
+    func openMeals() {
+        selectedTab = .lifeSync
+        lifeSyncSegment = .meals
+    }
 }
 
 enum LifeSyncSegment: String, CaseIterable, Identifiable {
-    case week, tasks
+    case week, meals, tasks
     var id: String { rawValue }
-    var label: String { self == .week ? "Week" : "Tasks" }
+    var label: String {
+        switch self {
+        case .week: return "Week"
+        case .meals: return "Meals"
+        case .tasks: return "Tasks"
+        }
+    }
 }

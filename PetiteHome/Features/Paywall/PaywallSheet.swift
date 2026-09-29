@@ -97,7 +97,7 @@ struct PaywallSheet: View {
             VStack(alignment: .leading, spacing: Theme.Spacing.lg) {
                 bullet("bell", "Reminds you when passports, car seats, and insurance expire")
                 bullet("lock.doc", "Keeps birth certificates and SSN cards in an encrypted vault")
-                bullet("calendar", "Life Sync: both calendars and the house tasks on one week, shared with your partner")
+                bullet("calendar", "Life Sync: both calendars, the house tasks and the week's meals, shared with your partner")
             }
             .padding(Theme.Spacing.xl)
             Text("PH")

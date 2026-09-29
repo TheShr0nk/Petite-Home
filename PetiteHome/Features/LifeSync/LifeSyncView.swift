@@ -28,6 +28,8 @@ struct LifeSyncView: View {
             .padding(.bottom, Theme.Spacing.sm)
             if appState.lifeSyncSegment == .tasks {
                 TasksView(household: household, embedded: true)
+            } else if appState.lifeSyncSegment == .meals {
+                MealsView(household: household)
             } else if entitlements.isPremium {
                 week
             } else {
@@ -77,7 +79,7 @@ struct LifeSyncView: View {
     // MARK: Premium
 
     private var week: some View {
-        let days = LifeSyncAgenda.build(events: household.calendarEvents ?? [], tasks: household.tasks ?? [], from: Date(), days: 14)
+        let days = LifeSyncAgenda.build(events: household.calendarEvents ?? [], tasks: household.tasks ?? [], meals: household.meals ?? [], from: Date(), days: 14)
         return ScrollView {
             VStack(alignment: .leading, spacing: Theme.Spacing.lg) {
                 statusCard
@@ -161,7 +163,7 @@ struct LifeSyncView: View {
         var out: [Color] = []
         if day.items.contains(where: { $0.kind == .event && $0.ownerAdultID == me?.id }) { out.append(Theme.Colors.powderBlueDk) }
         if day.items.contains(where: { $0.kind == .event && $0.ownerAdultID != me?.id }) { out.append(Theme.Colors.sand) }
-        if day.items.contains(where: { $0.kind == .task }) { out.append(Theme.Colors.success) }
+        if day.items.contains(where: { $0.kind == .task || $0.kind == .meal }) { out.append(Theme.Colors.success) }
         return out
     }
 
@@ -180,6 +182,7 @@ struct LifeSyncView: View {
                         ForEach(day.items) { item in
                             AgendaRow(item: item, me: me, partner: partner) {
                                 if item.kind == .task, let task = (household.tasks ?? []).first(where: { $0.id == item.id }) { editingTask = task }
+                                if item.kind == .meal { appState.openMeals() }
                             }
                             if item.id != day.items.last?.id { SandDivider().padding(.leading, Theme.Spacing.lg + 44) }
                         }
@@ -214,6 +217,7 @@ enum SampleWeek {
             AgendaItem(id: UUID(), kind: .task, title: "Check car seat straps and fit", start: today, end: nil, isAllDay: true, ownerAdultID: nil, detail: "Every month", isOverdue: false),
             AgendaItem(id: UUID(), kind: .event, title: "Standup", start: cal.date(byAdding: .hour, value: 9, to: today)!, end: cal.date(byAdding: .hour, value: 10, to: today)!, isAllDay: false, ownerAdultID: me?.id, detail: "Work", isOverdue: false),
             AgendaItem(id: UUID(), kind: .event, title: "Daycare pickup", start: cal.date(byAdding: .hour, value: 16, to: today)!, end: cal.date(byAdding: .hour, value: 17, to: today)!, isAllDay: false, ownerAdultID: partner?.id, detail: "Family", isOverdue: false),
+            AgendaItem(id: UUID(), kind: .meal, title: "Sheet-pan chicken", start: cal.date(byAdding: .hour, value: 18, to: today)!, end: nil, isAllDay: false, ownerAdultID: me?.id, detail: "Dinner", isOverdue: false),
         ]
     }
 }
@@ -229,10 +233,10 @@ struct AgendaRow: View {
     var body: some View {
         Button(action: onTap) {
             HStack(spacing: Theme.Spacing.md) {
-                if item.kind == .task {
+                if item.kind == .task || item.kind == .meal {
                     ZStack {
-                        Circle().fill(Theme.Colors.success.opacity(0.25))
-                        Image(systemName: "checklist").font(.system(size: 13, weight: .medium)).foregroundStyle(Theme.Colors.ink)
+                        Circle().fill((item.kind == .meal ? Theme.Colors.warn : Theme.Colors.success).opacity(0.25))
+                        Image(systemName: item.kind == .meal ? "fork.knife" : "checklist").font(.system(size: 13, weight: .medium)).foregroundStyle(Theme.Colors.ink)
                     }
                     .frame(width: 32, height: 32)
                 } else {
@@ -245,6 +249,9 @@ struct AgendaRow: View {
                             Text(item.isAllDay ? "All day" : timeRange)
                             if !item.detail.isEmpty { Text("· \(item.detail)") }
                             if let owner, owner.id != me?.id { Text("· \(owner.displayName)") }
+                        } else if item.kind == .meal {
+                            Text(item.detail)
+                            if let owner { Text("· \(owner.displayName) cooks") }
                         } else {
                             Text(item.isOverdue ? "Overdue" : "Due today").foregroundStyle(item.isOverdue ? Theme.Colors.danger : Theme.Colors.sandDeep)
                             if let owner { Text("· \(owner.displayName)") }
@@ -253,7 +260,7 @@ struct AgendaRow: View {
                     .font(Typography.caption).foregroundStyle(Theme.Colors.sandDeep)
                 }
                 Spacer()
-                if item.kind == .task { Image(systemName: "chevron.right").font(.system(size: 13, weight: .medium)).foregroundStyle(Theme.Colors.sandDeep) }
+                if item.kind != .event { Image(systemName: "chevron.right").font(.system(size: 13, weight: .medium)).foregroundStyle(Theme.Colors.sandDeep) }
             }
             .padding(.horizontal, Theme.Spacing.lg)
             .padding(.vertical, Theme.Spacing.md)

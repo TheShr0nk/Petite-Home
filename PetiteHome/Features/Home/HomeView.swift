@@ -127,11 +127,24 @@ struct HomeView: View {
         return (household.calendarEvents ?? []).filter { $0.startDate < end && $0.endDate > start }.sorted { $0.startDate < $1.startDate }
     }
 
+    private var tonight: PlannedMeal? {
+        (household.meals ?? []).first { Calendar.current.isDateInToday($0.date) && $0.slot == .dinner }
+    }
+
     private var upcoming: some View {
         VStack(alignment: .leading, spacing: Theme.Spacing.md) {
             SectionHeader(title: "Upcoming")
             Card(padding: 0) {
                 VStack(spacing: 0) {
+                    if entitlements.isPremium, let tonight {
+                        Button { appState.openMeals() } label: {
+                            UpcomingRow(title: "Tonight: \(tonight.displayTitle)", date: Date(), tone: .normal, icon: "fork.knife",
+                                        subtitle: household.adults.first { $0.id == tonight.cookAdultID }.map { "\($0.displayName) cooks" } ?? "Dinner")
+                                .padding(.horizontal, Theme.Spacing.lg).contentShape(Rectangle())
+                        }
+                        .buttonStyle(.plain)
+                        SandDivider().padding(.leading, Theme.Spacing.lg)
+                    }
                     ForEach(todayEvents.prefix(2), id: \.id) { event in
                         let who = household.adults.first { $0.id == event.ownerAdultID }?.displayName
                         UpcomingRow(title: who.map { "\(event.title) · \($0)" } ?? event.title,

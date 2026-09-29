@@ -13,6 +13,9 @@ enum AnalyticsEvent: String {
     case partnerInvited = "partner_invited"
     case foundingCodeRedeemed = "founding_code_redeemed"
     case lifeSyncEnabled = "life_sync_enabled"
+    case recipeShared = "recipe_shared"
+    case recipeImported = "recipe_imported"
+    case mealPlanned = "meal_planned"
 }
 
 enum Analytics {
