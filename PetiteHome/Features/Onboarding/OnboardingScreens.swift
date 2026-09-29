@@ -1,7 +1,7 @@
 import SwiftUI
 import SwiftData
 
-// MARK: Screen 0 — Intro: six seconds, four beats, then the hook
+// MARK: Screen 0 — Intro: four beats, about nine seconds, then the hook
 
 struct IntroScreen: View {
     let onContinue: () -> Void
@@ -12,11 +12,12 @@ struct IntroScreen: View {
     private struct Beat { let icon: String; let line: String }
     private let beats: [Beat] = [
         Beat(icon: "book.closed", line: "Everything a family needs to know, in one place."),
-        Beat(icon: "calendar", line: "Both calendars, the house, dinner, and date night on one week."),
+        Beat(icon: "calendar", line: "Both calendars, the house, and dinner on one week."),
         Beat(icon: "lock.doc", line: "The documents, locked. Only you can open them."),
         Beat(icon: "person.2", line: "Shared with the one person who needs it."),
     ]
-    private let cadence: Double = 1.4
+    /// Long enough to read a line twice. Four beats is about nine seconds; a tap skips.
+    private let cadence: Double = 2.2
 
     var body: some View {
         ZStack {
