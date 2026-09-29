@@ -11,6 +11,7 @@ struct PetiteHomeApp: App {
 
     init() {
         Analytics.start()
+        EntitlementStore.configure()
     }
 
     var body: some Scene {
@@ -21,7 +22,6 @@ struct PetiteHomeApp: App {
                 .preferredColorScheme(.light)   // the brand is light; no dark mode in v1
                 .tint(Theme.Colors.powderBlueDk)
                 .onOpenURL { appState.handle(url: $0) }
-                .task { await entitlements.loadProducts() }
                 .onAppear { appDelegate.appState = appState }
         }
         .modelContainer(PersistenceController.shared)

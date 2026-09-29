@@ -19,6 +19,9 @@ packages:
   PostHog:
     url: https://github.com/PostHog/posthog-ios
     from: "3.0.0"
+  RevenueCat:
+    url: https://github.com/RevenueCat/purchases-ios
+    from: "5.0.0"
 targets:
   PetiteHome:
     type: application
@@ -41,6 +44,8 @@ targets:
     dependencies:
       - package: PostHog
         product: PostHog
+      - package: RevenueCat
+        product: RevenueCat
     scheme:
       testTargets:
         - PetiteHomeTests

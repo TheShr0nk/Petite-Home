@@ -23,10 +23,10 @@ Then in Xcode:
 
 1. Set your team under Signing & Capabilities (the spec leaves `DEVELOPMENT_TEAM` empty).
 2. Confirm the iCloud container `iCloud.co.petitehome.app` exists in your developer account, or change it in `PersistenceController.cloudContainerID` and the entitlements file.
-3. Add `PostHogAPIKey` (and optionally `PostHogHost`) to the Info.plist for analytics. Without a key the SDK never starts.
+3. Fill in `RevenueCatAPIKey` and `PostHogAPIKey` in `PetiteHome/Resources/Info.plist`. Both are public SDK keys. Without the RevenueCat key the paywall shows list prices but cannot purchase; without the PostHog key analytics never start.
 4. Run. The scheme uses `Products.storekit` so the paywall works in the simulator.
 
-Requirements: Xcode 15.4+, iOS 17.0+, Swift 5.10. One dependency: `posthog-ios` via Swift Package Manager.
+Requirements: Xcode 15.4+, iOS 17.0+, Swift 5.10. Two dependencies via Swift Package Manager: `posthog-ios` and RevenueCat's `purchases-ios`.
 
 ## Where things live
 
@@ -102,6 +102,15 @@ nothing on either synced calendar, weekends first. `SitterSheet` builds the
 text sent to a sitter from the Binder: kids' allergies, meds, notes, who to
 call, the address. It never includes codes or account details. The sitter
 roster is a value list on the household, so both partners share it.
+
+**RevenueCat setup.** In the RevenueCat dashboard create the two App Store
+products (`co.petitehome.premium.monthly`, `co.petitehome.premium.annual`, one
+subscription group, 7-day introductory free trial on both), an entitlement
+called `premium`, and a current offering with a `$rc_annual` and a
+`$rc_monthly` package pointing at them. Paste the app's public API key into
+Info.plist. For simulator testing, keep `Products.storekit` attached to the
+scheme; RevenueCat reads from it in sandbox mode. After Sign in with Apple the
+app calls `logIn` with the Apple user ID so purchases follow the person.
 
 **Founding 500 codes.** Format `PH-XXXX-XXXX`; the last group is a checksum of
 the first (see `FoundingCode`). Issue codes with `FoundingCode.make(body:)`.

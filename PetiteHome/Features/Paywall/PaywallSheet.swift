@@ -1,5 +1,4 @@
 import SwiftUI
-import StoreKit
 
 /// The paywall, reused at every gate. Headline changes by gate; the three
 /// bullets sit in an ink card; plans are rows with a radio mark and a savings
@@ -10,26 +9,15 @@ struct PaywallSheet: View {
     @Environment(\.dismiss) private var dismiss
     let gate: PremiumGate
     @State private var annualSelected = true
+    @State private var lastLocalError: String?
 
     static func priceLine(_ store: EntitlementStore) -> String {
-        if let annual = store.annual {
-            return "\(annual.displayPrice)/year · 7-day free trial · cancel anytime"
-        }
-        return "$39/year · 7-day free trial · cancel anytime"
+        "\(store.annualPriceText)/year · 7-day free trial · cancel anytime"
     }
 
-    private var annualPrice: String { entitlements.annual?.displayPrice ?? "$39.00" }
-    private var monthlyPrice: String { entitlements.monthly?.displayPrice ?? "$4.99" }
-
-    /// "Save 35%" from the real prices when StoreKit has them.
-    private var savings: String? {
-        guard let a = entitlements.annual?.price, let m = entitlements.monthly?.price, m > 0 else { return "Save 35%" }
-        let yearOfMonthly = m * 12
-        guard yearOfMonthly > a else { return nil }
-        let fraction = NSDecimalNumber(decimal: (yearOfMonthly - a) / yearOfMonthly).doubleValue
-        let pct = Int((fraction * 100).rounded())
-        return "Save \(pct)%"
-    }
+    private var annualPrice: String { entitlements.annualPriceText }
+    private var monthlyPrice: String { entitlements.monthlyPriceText }
+    private var savings: String? { entitlements.savingsText }
 
     var body: some View {
         VStack(spacing: 0) {
@@ -65,12 +53,13 @@ struct PaywallSheet: View {
                 if entitlements.purchaseInProgress { PulsingDots() }
                 Button(entitlements.purchaseInProgress ? "One moment" : "Start free trial") {
                     Task {
-                        let product = annualSelected ? entitlements.annual : entitlements.monthly
-                        guard let product else { return }
-                        if await entitlements.purchase(product) { dismiss() }
+                        let package = annualSelected ? entitlements.annual : entitlements.monthly
+                        guard let package else { lastLocalError = "Prices haven't loaded yet. Try again in a moment."; return }
+                        if await entitlements.purchase(package) { dismiss() }
                     }
                 }
                 .buttonStyle(.primary(enabled: !entitlements.purchaseInProgress)).disabled(entitlements.purchaseInProgress)
+                if let lastLocalError { Text(lastLocalError).font(Typography.caption).foregroundStyle(Theme.Colors.danger) }
                 Text("Cancel anytime. Nothing is charged for 7 days.")
                     .font(Typography.caption).foregroundStyle(Theme.Colors.sandDeep)
                 HStack(spacing: Theme.Spacing.lg) {
@@ -89,7 +78,7 @@ struct PaywallSheet: View {
         .screenBackground()
         .presentationBackground(Theme.Colors.cream)
         .presentationDragIndicator(.visible)
-        .task { if entitlements.products.isEmpty { await entitlements.loadProducts() } }
+        .task { if entitlements.annual == nil { await entitlements.loadProducts() } }
     }
 
     /// The three bullets, cream on ink, with the wordmark ghosted in the corner.

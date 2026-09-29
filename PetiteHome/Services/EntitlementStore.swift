@@ -1,5 +1,5 @@
 import Foundation
-import StoreKit
+import RevenueCat
 import Observation
 
 /// Where premium features check whether they are unlocked. Never hide a
@@ -24,25 +24,35 @@ enum PremiumGate: String {
     }
 }
 
+/// RevenueCat identifiers. The products themselves are the two App Store
+/// subscriptions in one group; RevenueCat wraps them in an offering with an
+/// annual and a monthly package, and grants the "premium" entitlement.
 enum ProductID {
     static let monthly = "co.petitehome.premium.monthly"
     static let annual = "co.petitehome.premium.annual"
     static let all = [monthly, annual]
+    static let entitlement = "premium"
 }
 
+/// Subscriptions through RevenueCat. The public surface stays small so the
+/// views never touch the SDK: `isPremium`, the two packages, purchase,
+/// restore. The Founding 500 unlock is local and layered on top.
 @MainActor
 @Observable
 final class EntitlementStore {
     static let shared = EntitlementStore()
 
-    private(set) var products: [Product] = []
+    /// Set in Info.plist as `RevenueCatAPIKey` (the public SDK key). Empty disables the store.
+    static var apiKey: String { Bundle.main.object(forInfoDictionaryKey: "RevenueCatAPIKey") as? String ?? "" }
+
+    private(set) var annual: Package?
+    private(set) var monthly: Package?
     private(set) var hasActiveSubscription = false
     private(set) var isInTrial = false
     private(set) var foundingUnlockExpiresAt: Date?
     private(set) var purchaseInProgress = false
+    private(set) var storeAvailable = false
     var lastError: String?
-
-    private var updatesTask: Task<Void, Never>?
 
     var isPremium: Bool {
         if hasActiveSubscription { return true }
@@ -50,40 +60,61 @@ final class EntitlementStore {
         return false
     }
 
-    var monthly: Product? { products.first { $0.id == ProductID.monthly } }
-    var annual: Product? { products.first { $0.id == ProductID.annual } }
+    /// "$39.00" and "$4.99", from the store when it has answered, else the list prices.
+    var annualPriceText: String { annual?.storeProduct.localizedPriceString ?? "$39.00" }
+    var monthlyPriceText: String { monthly?.storeProduct.localizedPriceString ?? "$4.99" }
+
+    /// "Save 35%", from real prices when RevenueCat has them.
+    var savingsText: String? {
+        guard let a = annual?.storeProduct.price, let m = monthly?.storeProduct.price, m > 0 else { return "Save 35%" }
+        let yearOfMonthly = m * 12
+        guard yearOfMonthly > a else { return nil }
+        let fraction = NSDecimalNumber(decimal: (yearOfMonthly - a) / yearOfMonthly).doubleValue
+        return "Save \(Int((fraction * 100).rounded()))%"
+    }
 
     private init() {
         loadFoundingUnlock()
-        updatesTask = Task { await listenForTransactions() }
+    }
+
+    /// Call once at launch, before anything reads `isPremium`.
+    static func configure() {
+        guard !apiKey.isEmpty else { return }
+        Purchases.logLevel = .warn
+        Purchases.configure(with: Configuration.Builder(withAPIKey: apiKey).build())
+        Task { @MainActor in
+            shared.storeAvailable = true
+            await shared.loadProducts()
+            await shared.listenForCustomerInfo()
+        }
     }
 
     func loadProducts() async {
+        guard Purchases.isConfigured else { return }
         do {
-            products = try await Product.products(for: ProductID.all).sorted { $0.price > $1.price }
+            let offerings = try await Purchases.shared.offerings()
+            annual = offerings.current?.annual
+            monthly = offerings.current?.monthly
+            if annual == nil, monthly == nil { lastError = "Prices aren't loading. Check your connection." }
         } catch {
             lastError = "Couldn't load prices. Check your connection."
         }
         await refreshEntitlements()
     }
 
-    func purchase(_ product: Product) async -> Bool {
+    /// Buys the package. Returns true when premium is active afterwards.
+    func purchase(_ package: Package) async -> Bool {
+        guard Purchases.isConfigured else { lastError = "The store isn't set up on this build."; return false }
         purchaseInProgress = true
         defer { purchaseInProgress = false }
         do {
-            let result = try await product.purchase()
-            switch result {
-            case .success(let verification):
-                let transaction = try checkVerified(verification)
-                await transaction.finish()
-                await refreshEntitlements()
-                Analytics.track(.trialStarted, ["product": product.id])
-                return true
-            case .userCancelled, .pending:
-                return false
-            @unknown default:
-                return false
+            let result = try await Purchases.shared.purchase(package: package)
+            if result.userCancelled { return false }
+            apply(result.customerInfo)
+            if hasActiveSubscription {
+                Analytics.track(isInTrial ? .trialStarted : .subscriptionConverted, ["product": package.storeProduct.productIdentifier])
             }
+            return hasActiveSubscription
         } catch {
             lastError = "That didn't go through. Nothing was charged."
             return false
@@ -91,42 +122,37 @@ final class EntitlementStore {
     }
 
     func restore() async {
-        try? await AppStore.sync()
-        await refreshEntitlements()
+        guard Purchases.isConfigured else { return }
+        if let info = try? await Purchases.shared.restorePurchases() { apply(info) }
     }
 
     func refreshEntitlements() async {
-        var active = false
-        var trial = false
-        for await result in Transaction.currentEntitlements {
-            guard let transaction = try? checkVerified(result) else { continue }
-            guard ProductID.all.contains(transaction.productID) else { continue }
-            if transaction.revocationDate == nil, (transaction.expirationDate ?? .distantFuture) > Date() {
-                active = true
-                if transaction.offerType == .introductory { trial = true }
-            }
+        guard Purchases.isConfigured else { return }
+        if let info = try? await Purchases.shared.customerInfo() { apply(info) }
+    }
+
+    /// Pass the Sign in with Apple user ID so purchases follow the person across devices.
+    func identify(userID: String) async {
+        guard Purchases.isConfigured else { return }
+        if let result = try? await Purchases.shared.logIn(userID) { apply(result.customerInfo) }
+    }
+
+    private func listenForCustomerInfo() async {
+        for await info in Purchases.shared.customerInfoStream {
+            apply(info)
         }
+    }
+
+    private func apply(_ info: CustomerInfo) {
         let wasActive = hasActiveSubscription
-        hasActiveSubscription = active
-        isInTrial = trial
-        if active && !wasActive && !trial {
+        let entitlement = info.entitlements[ProductID.entitlement]
+        hasActiveSubscription = entitlement?.isActive ?? false
+        isInTrial = entitlement?.periodType == .trial
+        if hasActiveSubscription && !wasActive && !isInTrial {
             Analytics.track(.subscriptionConverted)
         }
-    }
-
-    private func listenForTransactions() async {
-        for await result in Transaction.updates {
-            if let transaction = try? checkVerified(result) {
-                await transaction.finish()
-                await refreshEntitlements()
-            }
-        }
-    }
-
-    private func checkVerified<T>(_ result: VerificationResult<T>) throws -> T {
-        switch result {
-        case .unverified: throw StoreKitError.notEntitled
-        case .verified(let safe): return safe
+        if !hasActiveSubscription {
+            NotificationService.shared.cancelAllPremium()
         }
     }
 

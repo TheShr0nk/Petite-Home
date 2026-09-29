@@ -260,6 +260,7 @@ struct RevealScreen: View {
                     if let email = signIn.email {
                         Task { await KlaviyoHandoff.subscribe(email: email, youngestChildAge: draft.segment) }
                     }
+                    Task { await EntitlementStore.shared.identify(userID: signIn.userID) }
                     onSaved(household)
                 case .failure:
                     errorText = "Sign in didn't finish. Your entries are still here. Try again."
@@ -274,6 +275,14 @@ struct RevealScreen: View {
                 .foregroundStyle(Theme.Colors.sandDeep)
                 .multilineTextAlignment(.center)
                 .frame(maxWidth: .infinity)
+            #if targetEnvironment(simulator)
+            // Sign in with Apple can't complete on the simulator. Debug builds get a way through.
+            Button("Save without signing in (simulator only)") {
+                let household = draft.commit(into: context)
+                onSaved(household)
+            }
+            .buttonStyle(.secondary)
+            #endif
         }
     }
 }
