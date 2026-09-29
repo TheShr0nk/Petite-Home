@@ -21,6 +21,9 @@ struct HomeView: View {
                     guardianNudge
                 }
                 upcoming
+                if let me = appState.currentAdult(in: household), !me.calendarSyncEnabled, household.adults.count > 1 {
+                    lifeSyncNudge(partnerName: household.adults.first { $0.id != me.id }?.displayName ?? "your partner")
+                }
                 if !household.kids.isEmpty {
                     SectionHeader(title: "The kids")
                     KidsRow(household: household)
@@ -79,16 +82,41 @@ struct HomeView: View {
         }
     }
 
+    private func lifeSyncNudge(partnerName: String) -> some View {
+        Card(background: Theme.Colors.powderBlueMist) {
+            VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
+                Text("See the week you and \(partnerName) actually have").font(Typography.sectionTitle).foregroundStyle(Theme.Colors.ink)
+                Text("Life Sync puts both calendars and the house tasks on the same days.").font(Typography.body).foregroundStyle(Theme.Colors.sandDeep)
+                if !entitlements.isPremium { PremiumPill() }
+                Button("Sync my calendar") { if entitlements.isPremium { appState.selectedTab = .lifeSync } else { appState.showPaywall(.lifeSync) } }.font(Typography.bodyEmphasis).foregroundStyle(Theme.Colors.powderBlueDk)
+            }
+        }
+    }
+
+    private var todayEvents: [CalendarEvent] {
+        let start = Calendar.current.startOfDay(for: Date())
+        let end = Calendar.current.date(byAdding: .day, value: 1, to: start) ?? start
+        return (household.calendarEvents ?? []).filter { $0.startDate < end && $0.endDate > start }.sorted { $0.startDate < $1.startDate }
+    }
+
     private var upcoming: some View {
         VStack(alignment: .leading, spacing: Theme.Spacing.md) {
             SectionHeader(title: "Upcoming")
             Card(padding: 0) {
                 VStack(spacing: 0) {
+                    ForEach(todayEvents.prefix(2), id: \.id) { event in
+                        let who = household.adults.first { $0.id == event.ownerAdultID }?.displayName
+                        UpcomingRow(title: who.map { "\(event.title) · \($0)" } ?? event.title,
+                                    date: event.startDate, tone: .normal, icon: "calendar",
+                                    subtitle: event.isAllDay ? "Today, all day" : "Today at \(event.startDate.formatted(date: .omitted, time: .shortened))")
+                            .padding(.horizontal, Theme.Spacing.lg)
+                        SandDivider().padding(.leading, Theme.Spacing.lg)
+                    }
                     if entitlements.isPremium {
                         let exps = ExpirationScheduler.upcoming(for: household)
                         let tasks = (household.tasks ?? []).filter { !$0.isDone }.sorted { $0.nextDue < $1.nextDue }.prefix(3)
                         if exps.isEmpty && tasks.isEmpty {
-                            EmptyStateRow(instruction: "Add a date that expires, or turn on the task templates", systemImage: "calendar") { appState.selectedTab = .tasks }
+                            EmptyStateRow(instruction: "Add a date that expires, or turn on the task templates", systemImage: "calendar") { appState.openTasks() }
                                 .padding(.horizontal, Theme.Spacing.lg)
                         }
                         ForEach(exps) { exp in
@@ -135,13 +163,14 @@ struct UpcomingRow: View {
     let date: Date
     let tone: Tone
     let icon: String
+    var subtitle: String? = nil
 
     var body: some View {
         HStack(spacing: Theme.Spacing.md) {
             BrandIcon(systemName: icon, isActive: tone != .normal)
             VStack(alignment: .leading, spacing: 2) {
                 Text(title).font(Typography.body).foregroundStyle(Theme.Colors.ink)
-                Text(relative).font(Typography.caption).foregroundStyle(color)
+                Text(subtitle ?? relative).font(Typography.caption).foregroundStyle(color)
             }
             Spacer()
         }

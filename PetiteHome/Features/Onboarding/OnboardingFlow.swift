@@ -2,7 +2,7 @@ import SwiftUI
 import SwiftData
 
 enum OnboardingStep: Int, CaseIterable {
-    case hook, household, firstContact, pediatrician, insurance, guardian, reveal, partnerInvite, premium
+    case hook, household, firstContact, pediatrician, insurance, guardian, reveal, partnerInvite, lifeSync, premium
 
     var analyticsName: String {
         switch self {
@@ -14,6 +14,7 @@ enum OnboardingStep: Int, CaseIterable {
         case .guardian: return "guardian"
         case .reveal: return "reveal"
         case .partnerInvite: return "partner_invite"
+        case .lifeSync: return "life_sync"
         case .premium: return "premium"
         }
     }
@@ -45,7 +46,8 @@ struct OnboardingFlow: View {
                     advance()
                 }
                 case .partnerInvite: PartnerInviteScreen(household: savedHousehold, partnerName: draft.partnerFirstName) { advance() }
-                case .premium: PremiumOfferScreen { finish() }
+                case .lifeSync: LifeSyncSetupScreen(draft: draft, household: savedHousehold) { advance() }
+                case .premium: PremiumOfferScreen(draft: draft, household: savedHousehold) { finish() }
                 }
             }
             .transition(.asymmetric(insertion: .move(edge: .trailing).combined(with: .opacity), removal: .opacity))

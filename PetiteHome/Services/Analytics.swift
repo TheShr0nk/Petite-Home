@@ -12,6 +12,7 @@ enum AnalyticsEvent: String {
     case pdfExported = "pdf_exported"
     case partnerInvited = "partner_invited"
     case foundingCodeRedeemed = "founding_code_redeemed"
+    case lifeSyncEnabled = "life_sync_enabled"
 }
 
 enum Analytics {

@@ -3,7 +3,9 @@ import SwiftUI
 import Observation
 
 enum AppTab: Hashable {
-    case home, familyFile, tasks, vault, picks
+    case home, familyFile, lifeSync, vault, picks
+    /// Kept so older deep links and the paywall gate for tasks still land somewhere sensible.
+    static let tasks = AppTab.lifeSync
 }
 
 /// Where the app is: onboarding or the tabs, which household is current,
@@ -17,6 +19,7 @@ final class AppState {
         static let currentHousehold = "app.currentHouseholdID"
         static let premiumOfferSeen = "app.premiumOfferSeenInOnboarding"
         static let onboardingCompletedAt = "app.onboardingCompletedAt"
+        static let currentAdult = "app.currentAdultID"
     }
 
     var hasCompletedOnboarding: Bool {
@@ -33,6 +36,11 @@ final class AppState {
     var premiumOfferSeenInOnboarding: Bool {
         didSet { defaults.set(premiumOfferSeenInOnboarding, forKey: Keys.premiumOfferSeen) }
     }
+    /// Which adult this phone belongs to. Life Sync mirrors that adult's calendars.
+    var currentAdultID: UUID? {
+        didSet { defaults.set(currentAdultID?.uuidString, forKey: Keys.currentAdult) }
+    }
+    var lifeSyncSegment: LifeSyncSegment = .week
 
     var selectedTab: AppTab = .home
     var paywallGate: PremiumGate?
@@ -44,6 +52,14 @@ final class AppState {
         hasCompletedOnboarding = defaults.bool(forKey: Keys.onboardingComplete)
         currentHouseholdID = defaults.string(forKey: Keys.currentHousehold).flatMap(UUID.init(uuidString:))
         premiumOfferSeenInOnboarding = defaults.bool(forKey: Keys.premiumOfferSeen)
+        currentAdultID = defaults.string(forKey: Keys.currentAdult).flatMap(UUID.init(uuidString:))
+    }
+
+    /// The adult using this phone: the explicit choice, else whoever signed in with Apple here, else the owner.
+    func currentAdult(in household: Household) -> Adult? {
+        if let id = currentAdultID, let a = household.adults.first(where: { $0.id == id }) { return a }
+        if let apple = AppleSignIn.storedUserID, household.ownerAppleUserID == apple { return household.owner }
+        return household.owner ?? household.adults.first
     }
 
     func showPaywall(_ gate: PremiumGate) {
@@ -63,4 +79,15 @@ final class AppState {
         selectedTab = .familyFile
         pendingField = field
     }
+
+    func openTasks() {
+        selectedTab = .lifeSync
+        lifeSyncSegment = .tasks
+    }
+}
+
+enum LifeSyncSegment: String, CaseIterable, Identifiable {
+    case week, tasks
+    var id: String { rawValue }
+    var label: String { self == .week ? "Week" : "Tasks" }
 }

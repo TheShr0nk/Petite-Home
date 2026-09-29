@@ -48,6 +48,8 @@
 	<string>To read your insurance card and, with Premium, keep a copy of documents in your vault</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>To add a photo of a document to your vault</string>
+	<key>NSCalendarsFullAccessUsageDescription</key>
+	<string>So your partner can see when you're busy, and you can see when they are</string>
 	<key>NSFaceIDUsageDescription</key>
 	<string>To open your vault</string>
 	<key>CFBundleURLTypes</key>

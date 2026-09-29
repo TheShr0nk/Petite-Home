@@ -35,8 +35,8 @@ PetiteHome/
   Models/      SwiftData models, value types, Completeness scoring
   Services/    persistence, CloudKit sharing, keychain, vault crypto, StoreKit, notifications,
                contacts, Vision card scan, PDF export, analytics, Klaviyo, task templates
-  Features/    Onboarding, Home, FamilyFile, Children, Tasks, Vault, Picks, Settings, Paywall,
-               Export, Sharing
+  Features/    Onboarding, Home, FamilyFile, Children, LifeSync, Tasks, Vault, Picks, Settings,
+               Paywall, Export, Sharing
   Resources/   Info.plist, entitlements, StoreKit config, bundled font, asset catalog
 PetiteHomeTests/  completeness, age segments, recurrence, crypto, founding codes, card parsing
 ```
@@ -78,6 +78,13 @@ launch.
 `kind: family-file`, `youngestChildAge` and `placement: ios_app`. The website's
 route only accepts a fixed set of placements, so add `ios_app` to `PLACEMENTS`
 in `02-web/src/app/api/subscribe/route.ts` or it records as `unknown`.
+
+**Life Sync (premium).** Each phone mirrors its owner's chosen calendars
+through EventKit into `CalendarEvent` rows on the household, so the partner
+sees them via the household share. Read-only; nothing is written back to the
+calendar. Calendar and task choices made during onboarding are held in
+`LifeSyncPending` until the trial starts, then applied once. The Tasks tab
+lives inside Life Sync as its second segment.
 
 **Founding 500 codes.** Format `PH-XXXX-XXXX`; the last group is a checksum of
 the first (see `FoundingCode`). Issue codes with `FoundingCode.make(body:)`.

@@ -5,7 +5,7 @@ import Observation
 /// Where premium features check whether they are unlocked. Never hide a
 /// premium feature; show it locked and open the paywall on tap.
 enum PremiumGate: String {
-    case vault, vaultSave, expirationReminder, tasks, trustedSharing, cleanExport, sizeHistory, multipleHouseholds, onboarding
+    case vault, vaultSave, expirationReminder, tasks, lifeSync, trustedSharing, cleanExport, sizeHistory, multipleHouseholds, onboarding
 
     var headline: String {
         switch self {
@@ -13,6 +13,7 @@ enum PremiumGate: String {
         case .vaultSave: return "Keep this document safe"
         case .expirationReminder: return "Never miss an expiration"
         case .tasks: return "Let the app remember the house"
+        case .lifeSync: return "See the week you actually have"
         case .trustedSharing: return "Share it with someone you trust"
         case .cleanExport: return "Export a sealed copy"
         case .sizeHistory: return "Keep track of how fast they grow"

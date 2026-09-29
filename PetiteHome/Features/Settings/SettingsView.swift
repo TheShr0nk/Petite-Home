@@ -31,6 +31,11 @@ struct SettingsView: View {
                 if household.adults.count < 2 {
                     Button { household.members?.append(Adult(firstName: "Partner", role: .parent)); try? context.save() } label: { Label("Add my partner", systemImage: "plus") }
                         .listRowBackground(Theme.Colors.creamDeep)
+                } else {
+                    Picker("This phone belongs to", selection: Binding(get: { appState.currentAdult(in: household)?.id ?? household.id }, set: { appState.currentAdultID = $0 })) {
+                        ForEach(household.adults) { a in Text(a.displayName).tag(a.id) }
+                    }
+                    .listRowBackground(Theme.Colors.creamDeep)
                 }
                 if households.count > 1 {
                     Picker("Current household", selection: Binding(get: { appState.currentHouseholdID ?? household.id }, set: { appState.currentHouseholdID = $0 })) {

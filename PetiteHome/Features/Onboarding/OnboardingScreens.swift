@@ -298,10 +298,70 @@ struct PartnerInviteScreen: View {
     }
 }
 
-// MARK: Screen 9 — Premium (soft, one time)
+// MARK: Screen 9 — Life Sync setup (calendars + tasks), applied when the trial starts
+
+struct LifeSyncSetupScreen: View {
+    @Bindable var draft: OnboardingDraft
+    let household: Household?
+    let onContinue: () -> Void
+
+    private var partnerName: String { draft.includesPartner && !draft.partnerFirstName.isEmpty ? draft.partnerFirstName : "your partner" }
+
+    var body: some View {
+        OnboardingScreen(hook: "Put both calendars and the house on the same week.",
+                         subline: "Pick which calendars \(partnerName) can see, and which chores the app should keep track of. Nothing is written to your calendar.") {
+            VStack(alignment: .leading, spacing: Theme.Spacing.xl) {
+                CalendarPickerBlock(granted: $draft.calendarAccessGranted, selected: $draft.selectedCalendarIDs)
+                VStack(alignment: .leading, spacing: Theme.Spacing.md) {
+                    Text("Tasks the app should remember").font(Typography.label).foregroundStyle(Theme.Colors.sandDeep)
+                    Card(padding: 0) {
+                        VStack(spacing: 0) {
+                            ForEach(TaskTemplate.pack) { t in
+                                templateToggle(title: t.title, detail: t.recurrence.label, icon: t.category.systemImage,
+                                               isOn: Binding(get: { draft.selectedTemplateKeys.contains(t.key) },
+                                                             set: { on in if on { draft.selectedTemplateKeys.insert(t.key) } else { draft.selectedTemplateKeys.remove(t.key) } }))
+                                SandDivider().padding(.leading, Theme.Spacing.lg)
+                            }
+                            if !draft.children.isEmpty {
+                                templateToggle(title: draft.children.count == 1 ? "\(draft.children[0].firstName)'s well-child visit" : "Well-child visits, one per kid",
+                                               detail: "Every year, around the birthday", icon: "heart.text.square", isOn: $draft.wantsWellChildVisits)
+                            }
+                        }
+                    }
+                    Text("Shared with \(partnerName). Either of you can check one off.").font(Typography.caption).foregroundStyle(Theme.Colors.sandDeep)
+                }
+                HStack { Spacer(); PremiumPill(); Spacer() }
+            }
+        } actions: {
+            Button("Continue") { draft.lifeSyncSkipped = false; onContinue() }.buttonStyle(.primary)
+            Button("I'll set this up later") { draft.lifeSyncSkipped = true; onContinue() }.buttonStyle(.secondary)
+        }
+        .onAppear { draft.calendarAccessGranted = CalendarSyncService.shared.hasAccess }
+    }
+
+    private func templateToggle(title: String, detail: String, icon: String, isOn: Binding<Bool>) -> some View {
+        Toggle(isOn: isOn) {
+            HStack(spacing: Theme.Spacing.md) {
+                BrandIcon(systemName: icon)
+                VStack(alignment: .leading, spacing: 1) {
+                    Text(title).font(Typography.body).foregroundStyle(Theme.Colors.ink)
+                    Text(detail).font(Typography.caption).foregroundStyle(Theme.Colors.sandDeep)
+                }
+            }
+        }
+        .tint(Theme.Colors.powderBlueDk)
+        .padding(.horizontal, Theme.Spacing.lg).padding(.vertical, Theme.Spacing.md)
+    }
+}
+
+// MARK: Screen 10 — Premium (soft, one time)
 
 struct PremiumOfferScreen: View {
     @Environment(EntitlementStore.self) private var entitlements
+    @Environment(AppState.self) private var appState
+    @Environment(\.modelContext) private var context
+    @Bindable var draft: OnboardingDraft
+    let household: Household?
     let onContinue: () -> Void
 
     var body: some View {
@@ -314,12 +374,24 @@ struct PremiumOfferScreen: View {
             Button("Start free trial") {
                 Task {
                     if let annual = entitlements.annual { _ = await entitlements.purchase(annual) }
+                    stashChoices()
+                    if entitlements.isPremium, let household {
+                        LifeSyncPending.apply(to: household, adult: appState.currentAdult(in: household), context: context)
+                    }
                     onContinue()
                 }
             }
             .buttonStyle(.primary)
-            Button("Not now", action: onContinue).buttonStyle(.secondary)
+            Button("Not now") { stashChoices(); onContinue() }.buttonStyle(.secondary)
         }
+    }
+
+    /// Keeps the Life Sync choices from the previous screen until premium is on.
+    private func stashChoices() {
+        guard !draft.lifeSyncSkipped else { return }
+        LifeSyncPending.save(calendarIDs: draft.calendarAccessGranted ? draft.selectedCalendarIDs : [],
+                             templateKeys: draft.selectedTemplateKeys,
+                             wellChild: draft.wantsWellChildVisits)
     }
 }
 
@@ -328,7 +400,7 @@ struct PremiumBullets: View {
         VStack(alignment: .leading, spacing: Theme.Spacing.md) {
             bullet("bell", "Reminds you when passports, car seats, and insurance expire")
             bullet("lock.doc", "Keeps birth certificates and SSN cards in an encrypted vault")
-            bullet("checklist", "Recurring house and car maintenance, shared with your partner")
+            bullet("calendar", "Life Sync: both calendars and the house tasks on one week, shared with your partner")
         }
     }
     private func bullet(_ icon: String, _ text: String) -> some View {

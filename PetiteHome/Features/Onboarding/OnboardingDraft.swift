@@ -27,6 +27,13 @@ final class OnboardingDraft {
     var guardian = Contact()
     var guardianUndecided = false
 
+    // Life Sync choices, applied when the trial starts (or kept pending until it does).
+    var calendarAccessGranted = false
+    var selectedCalendarIDs: Set<String> = []
+    var selectedTemplateKeys: Set<String> = Set(TaskTemplate.pack.map(\.key))
+    var wantsWellChildVisits = true
+    var lifeSyncSkipped = false
+
     var appleUserID: String?
     var appleEmail: String?
     var appleGivenName: String?

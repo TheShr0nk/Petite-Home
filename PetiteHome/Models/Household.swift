@@ -21,6 +21,7 @@ final class Household {
     @Relationship(deleteRule: .cascade, inverse: \HouseholdTask.household) var tasks: [HouseholdTask]? = []
     @Relationship(deleteRule: .cascade, inverse: \VaultDocument.household) var documents: [VaultDocument]? = []
     @Relationship(deleteRule: .cascade, inverse: \TrustedContact.household) var trustedContacts: [TrustedContact]? = []
+    @Relationship(deleteRule: .cascade, inverse: \CalendarEvent.household) var calendarEvents: [CalendarEvent]? = []
 
     init(name: String = "") {
         self.name = name
@@ -56,6 +57,9 @@ final class Adult {
     var workPhone: String = ""
     var roleRaw: String = AdultRole.parent.rawValue
     var isAccountOwner: Bool = false
+    /// Life Sync: whether this adult has turned on calendar mirroring on their phone, and when it last ran.
+    var calendarSyncEnabled: Bool = false
+    var calendarSyncedAt: Date? = nil
     /// Adult-owned expiring items (driver's licence, passport).
     var expiringItems: [ExpiringItem] = []
 
@@ -277,6 +281,6 @@ final class TrustedContact {
 enum PetiteSchema {
     static let models: [any PersistentModel.Type] = [
         Household.self, Adult.self, Child.self, FamilyFile.self,
-        HouseholdTask.self, VaultDocument.self, TrustedContact.self,
+        HouseholdTask.self, VaultDocument.self, TrustedContact.self, CalendarEvent.self,
     ]
 }

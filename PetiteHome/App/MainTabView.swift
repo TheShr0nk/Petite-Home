@@ -16,9 +16,9 @@ struct MainTabView: View {
             FamilyFileView(household: household)
                 .tabItem { Label("Family File", systemImage: "folder") }
                 .tag(AppTab.familyFile)
-            NavigationStack { TasksView(household: household) }
-                .tabItem { Label("Tasks", systemImage: "checklist") }
-                .tag(AppTab.tasks)
+            NavigationStack { LifeSyncView(household: household) }
+                .tabItem { Label("Life Sync", systemImage: "calendar") }
+                .tag(AppTab.lifeSync)
             NavigationStack { VaultView(household: household) }
                 .tabItem { Label("Vault", systemImage: "lock.doc") }
                 .tag(AppTab.vault)

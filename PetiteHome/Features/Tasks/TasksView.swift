@@ -8,6 +8,8 @@ struct TasksView: View {
     @Environment(EntitlementStore.self) private var entitlements
     @Environment(\.modelContext) private var context
     @Bindable var household: Household
+    /// True when shown as the Tasks segment of Life Sync, which owns the title and settings gear.
+    var embedded: Bool = false
     @State private var editingTask: HouseholdTask?
     @State private var showNew = false
 
@@ -27,9 +29,9 @@ struct TasksView: View {
             .padding(.vertical, Theme.Spacing.lg)
         }
         .screenBackground()
-        .navigationTitle("Tasks")
+        .navigationTitle(embedded ? "Life Sync" : "Tasks")
         .toolbar {
-            SettingsToolbarItem()
+            if !embedded { SettingsToolbarItem() }
             if entitlements.isPremium {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button { showNew = true } label: { Image(systemName: "plus").foregroundStyle(Theme.Colors.powderBlueDk) }.accessibilityLabel("New task")
