@@ -61,7 +61,7 @@ struct MealsView: View {
                                     if meals.isEmpty {
                                         Text("Decide dinner").font(Typography.body).foregroundStyle(Theme.Colors.powderBlueDk)
                                     } else {
-                                        ForEach(meals) { m in
+                                        ForEach(meals, id: \.uuid) { m in
                                             HStack(spacing: Theme.Spacing.xs) {
                                                 Text(m.displayTitle).font(Typography.body).foregroundStyle(Theme.Colors.ink).lineLimit(1)
                                                 if m.slot != .dinner { Text("· \(m.slot.label.lowercased())").font(Typography.caption).foregroundStyle(Theme.Colors.sandDeep) }
@@ -140,7 +140,7 @@ struct MealsView: View {
                     }
                 }
             } else {
-                ForEach(recipes) { recipe in
+                ForEach(recipes, id: \.uuid) { recipe in
                     NavigationLink(value: recipe) { RecipeRow(recipe: recipe) }.buttonStyle(.plain)
                 }
             }

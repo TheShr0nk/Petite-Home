@@ -189,7 +189,7 @@ struct PediatriciansEditor: View {
             if household.kids.isEmpty {
                 Text("Add a child first, then their doctor.").font(Typography.body).foregroundStyle(Theme.Colors.sandDeep)
             }
-            ForEach(household.kids) { child in
+            ForEach(household.kids, id: \.uuid) { child in
                 ChildDoctorRow(child: child, siblings: household.kids)
             }
         }

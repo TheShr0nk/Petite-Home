@@ -62,7 +62,7 @@ struct TasksView: View {
             SectionHeader(title: title)
             Card(padding: 0) {
                 VStack(spacing: 0) {
-                    ForEach(items) { task in
+                    ForEach(items, id: \.uuid) { task in
                         TaskRow(task: task, onComplete: { complete(task) }, onTap: { editingTask = task })
                         if task.uuid != items.last?.uuid { SandDivider().padding(.leading, Theme.Spacing.lg + 36) }
                     }
@@ -85,7 +85,7 @@ struct TasksView: View {
                             }
                         }
                     }
-                    ForEach(household.kids) { child in
+                    ForEach(household.kids, id: \.uuid) { child in
                         HStack(spacing: Theme.Spacing.md) {
                             BrandIcon(systemName: "heart.text.square")
                             VStack(alignment: .leading, spacing: 1) {
@@ -215,7 +215,7 @@ struct TaskEditorSheet: View {
                     Text("Who").font(Typography.label).foregroundStyle(Theme.Colors.sandDeep)
                     FlowLayout(spacing: Theme.Spacing.sm) {
                         Chip(label: "Either of us", isSelected: assigneeID == nil) { assigneeID = nil }
-                        ForEach(household.adults) { adult in Chip(label: adult.displayName, isSelected: assigneeID == adult.uuid) { assigneeID = adult.uuid } }
+                        ForEach(household.adults, id: \.uuid) { adult in Chip(label: adult.displayName, isSelected: assigneeID == adult.uuid) { assigneeID = adult.uuid } }
                     }
                 }
                 LabeledTextEditor(label: "Notes", text: $notes, hint: "Filter size, where the shutoff is, who to call")

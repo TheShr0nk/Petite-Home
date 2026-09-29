@@ -193,7 +193,7 @@ struct HomeView: View {
                                 .padding(.horizontal, Theme.Spacing.lg)
                             SandDivider().padding(.leading, Theme.Spacing.lg)
                         }
-                        ForEach(Array(tasks)) { task in
+                        ForEach(Array(tasks), id: \.uuid) { task in
                             UpcomingRow(title: task.title, date: task.nextDue, tone: task.isOverdue ? .danger : .normal, icon: task.category.systemImage)
                                 .padding(.horizontal, Theme.Spacing.lg)
                             SandDivider().padding(.leading, Theme.Spacing.lg)

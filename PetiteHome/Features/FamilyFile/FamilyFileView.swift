@@ -119,7 +119,7 @@ struct KidsRow: View {
     var body: some View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: Theme.Spacing.md) {
-                ForEach(household.kids) { child in
+                ForEach(household.kids, id: \.uuid) { child in
                     NavigationLink(value: child) {
                         VStack(spacing: Theme.Spacing.xs) {
                             AvatarView(initial: child.initial, kind: .child, size: 52)

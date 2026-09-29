@@ -364,7 +364,7 @@ struct LifeSyncSetupSheet: View {
                     VStack(alignment: .leading, spacing: Theme.Spacing.xs) {
                         Text("This phone belongs to").font(Typography.label).foregroundStyle(Theme.Colors.sandDeep)
                         HStack {
-                            ForEach(household.adults) { adult in
+                            ForEach(household.adults, id: \.uuid) { adult in
                                 Chip(label: adult.displayName, isSelected: appState.currentAdult(in: household)?.uuid == adult.uuid) { appState.currentAdultID = adult.uuid }
                             }
                         }

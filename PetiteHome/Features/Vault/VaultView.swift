@@ -38,7 +38,7 @@ struct VaultView: View {
                     if documents.isEmpty {
                         EmptyStateRow(instruction: "Add the first document. A photo of a birth certificate is a good start.", systemImage: "doc.badge.plus") { showAdd = true }
                     }
-                    ForEach(documents) { doc in
+                    ForEach(documents, id: \.uuid) { doc in
                         NavigationLink(value: doc) { DocumentCard(doc: doc) }.buttonStyle(.plain)
                     }
                 }
@@ -223,8 +223,8 @@ struct AddDocumentSheet: View {
                     Text("Whose").font(Typography.label).foregroundStyle(Theme.Colors.sandDeep)
                     FlowLayout(spacing: Theme.Spacing.sm) {
                         Chip(label: "The household", isSelected: linkedChildID == nil && linkedAdultID == nil) { linkedChildID = nil; linkedAdultID = nil }
-                        ForEach(household.kids) { c in Chip(label: c.displayName, isSelected: linkedChildID == c.uuid) { linkedChildID = c.uuid; linkedAdultID = nil } }
-                        ForEach(household.adults) { a in Chip(label: a.displayName, isSelected: linkedAdultID == a.uuid) { linkedAdultID = a.uuid; linkedChildID = nil } }
+                        ForEach(household.kids, id: \.uuid) { c in Chip(label: c.displayName, isSelected: linkedChildID == c.uuid) { linkedChildID = c.uuid; linkedAdultID = nil } }
+                        ForEach(household.adults, id: \.uuid) { a in Chip(label: a.displayName, isSelected: linkedAdultID == a.uuid) { linkedAdultID = a.uuid; linkedChildID = nil } }
                     }
                 }
                 RenewalRow(label: "Expires", date: $expiresOn, remindersEnabled: $remind, household: household)

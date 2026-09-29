@@ -22,7 +22,7 @@ struct SettingsView: View {
         List {
             Section("Household") {
                 LabeledField(label: "Name", text: $household.name, placeholder: household.displayName).listRowBackground(Theme.Colors.creamDeep)
-                ForEach(household.adults) { adult in
+                ForEach(household.adults, id: \.uuid) { adult in
                     NavigationLink { AdultProfileView(adult: adult) } label: {
                         HStack { AvatarView(initial: adult.displayName, kind: .adult, size: 32); Text(adult.fullName.isEmpty ? adult.displayName : adult.fullName).font(Typography.body); Spacer(); if adult.isAccountOwner { Text("You").font(Typography.caption).foregroundStyle(Theme.Colors.sandDeep) } }
                     }
@@ -33,13 +33,13 @@ struct SettingsView: View {
                         .listRowBackground(Theme.Colors.creamDeep)
                 } else {
                     Picker("This phone belongs to", selection: Binding(get: { appState.currentAdult(in: household)?.uuid ?? household.uuid }, set: { appState.currentAdultID = $0 })) {
-                        ForEach(household.adults) { a in Text(a.displayName).tag(a.uuid) }
+                        ForEach(household.adults, id: \.uuid) { a in Text(a.displayName).tag(a.uuid) }
                     }
                     .listRowBackground(Theme.Colors.creamDeep)
                 }
                 if households.count > 1 {
                     Picker("Current household", selection: Binding(get: { appState.currentHouseholdID ?? household.uuid }, set: { appState.currentHouseholdID = $0 })) {
-                        ForEach(households) { h in Text(h.displayName).tag(h.uuid) }
+                        ForEach(households, id: \.uuid) { h in Text(h.displayName).tag(h.uuid) }
                     }
                     .listRowBackground(Theme.Colors.creamDeep)
                 }

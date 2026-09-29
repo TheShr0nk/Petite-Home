@@ -37,7 +37,7 @@ struct TrustedSharingSheet: View {
                 let existing = (household.trustedContacts ?? []).filter { !$0.isExpired && $0.shareLink != nil }
                 if !existing.isEmpty {
                     SectionHeader(title: "Who has a link")
-                    ForEach(existing) { trusted in
+                    ForEach(existing, id: \.uuid) { trusted in
                         Card {
                             HStack {
                                 VStack(alignment: .leading, spacing: 2) {

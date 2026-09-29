@@ -50,7 +50,7 @@ struct PlansView: View {
         if upcoming.isEmpty {
             Card { Text("Nothing planned yet. Pick a date night above, or add an outing.").font(Typography.body).foregroundStyle(Theme.Colors.sandDeep) }
         } else {
-            ForEach(upcoming) { plan in PlanCard(plan: plan, household: household) { editing = plan } }
+            ForEach(upcoming, id: \.uuid) { plan in PlanCard(plan: plan, household: household) { editing = plan } }
         }
         BrandDivider()
         HStack {
@@ -62,7 +62,7 @@ struct PlansView: View {
         } else {
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: Theme.Spacing.md) {
-                    ForEach(household.sitters) { s in
+                    ForEach(household.sitters, id: \.id) { s in
                         VStack(spacing: Theme.Spacing.xs) {
                             AvatarView(initial: s.name, kind: .adult, size: 48)
                             Text(s.name.split(separator: " ").first.map(String.init) ?? s.name).font(Typography.caption).foregroundStyle(Theme.Colors.ink)
@@ -74,7 +74,7 @@ struct PlansView: View {
         }
         if !past.isEmpty {
             SectionHeader(title: "Recently")
-            ForEach(past) { plan in
+            ForEach(past, id: \.uuid) { plan in
                 HStack {
                     BrandIcon(systemName: plan.kind.systemImage)
                     Text(plan.displayTitle).font(Typography.body).foregroundStyle(Theme.Colors.sandDeep)
@@ -244,8 +244,8 @@ struct PlanEditorSheet: View {
                 VStack(alignment: .leading, spacing: Theme.Spacing.xs) {
                     Text("Who's going").font(Typography.label).foregroundStyle(Theme.Colors.sandDeep)
                     FlowLayout(spacing: Theme.Spacing.sm) {
-                        ForEach(household.adults) { a in Chip(label: a.displayName, isSelected: adultIDs.contains(a.uuid)) { toggle(&adultIDs, a.uuid) } }
-                        ForEach(household.kids) { c in Chip(label: c.displayName, isSelected: childIDs.contains(c.uuid)) { toggle(&childIDs, c.uuid); sitterStatus = childIDs.count == household.kids.count ? .notNeeded : (sitterStatus == .notNeeded ? .needed : sitterStatus) } }
+                        ForEach(household.adults, id: \.uuid) { a in Chip(label: a.displayName, isSelected: adultIDs.contains(a.uuid)) { toggle(&adultIDs, a.uuid) } }
+                        ForEach(household.kids, id: \.uuid) { c in Chip(label: c.displayName, isSelected: childIDs.contains(c.uuid)) { toggle(&childIDs, c.uuid); sitterStatus = childIDs.count == household.kids.count ? .notNeeded : (sitterStatus == .notNeeded ? .needed : sitterStatus) } }
                     }
                 }
 
@@ -261,7 +261,7 @@ struct PlanEditorSheet: View {
                                     Button { showSitters = true } label: { Label("Add a sitter", systemImage: "person.badge.plus") }.buttonStyle(.outline)
                                 } else {
                                     VStack(spacing: Theme.Spacing.sm) {
-                                        ForEach(household.sitters) { s in
+                                        ForEach(household.sitters, id: \.id) { s in
                                             SelectableRow(title: s.name, detail: [s.rateNotes, s.timesUsed > 0 ? "\(s.timesUsed)× before" : ""].filter { !$0.isEmpty }.joined(separator: " · "),
                                                           isSelected: sitterID == s.id) { sitterID = sitterID == s.id ? nil : s.id }
                                         }

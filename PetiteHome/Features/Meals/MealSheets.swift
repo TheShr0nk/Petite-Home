@@ -145,7 +145,7 @@ struct PlanMealSheet: View {
                 }
                 if !existing.isEmpty {
                     SectionHeader(title: "Already planned")
-                    ForEach(existing) { meal in
+                    ForEach(existing, id: \.uuid) { meal in
                         Card {
                             HStack {
                                 VStack(alignment: .leading, spacing: 1) {
@@ -168,7 +168,7 @@ struct PlanMealSheet: View {
                     if box.isEmpty {
                         Text("No recipes in the box yet. Type what's for dinner below, or add recipes from the Meals tab.").font(Typography.caption).foregroundStyle(Theme.Colors.sandDeep)
                     }
-                    ForEach(box.prefix(8)) { r in
+                    ForEach(box.prefix(8), id: \.uuid) { r in
                         SelectableRow(title: r.title, detail: r.summary, isSelected: recipe?.uuid == r.uuid) { recipe = recipe?.uuid == r.uuid ? nil : r; if recipe != nil { freeform = "" } }
                     }
                     LabeledField(label: "Or just say it", text: $freeform, placeholder: "Leftovers, takeout, pasta", autocapitalization: .sentences)
@@ -179,7 +179,7 @@ struct PlanMealSheet: View {
                         Text("Who's cooking").font(Typography.label).foregroundStyle(Theme.Colors.sandDeep)
                         HStack {
                             Chip(label: "Either of us", isSelected: cookID == nil) { cookID = nil }
-                            ForEach(household.adults) { a in Chip(label: a.displayName, isSelected: cookID == a.uuid) { cookID = a.uuid } }
+                            ForEach(household.adults, id: \.uuid) { a in Chip(label: a.displayName, isSelected: cookID == a.uuid) { cookID = a.uuid } }
                         }
                     }
                 }
