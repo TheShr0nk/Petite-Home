@@ -26,7 +26,8 @@ struct PaywallSheet: View {
         guard let a = entitlements.annual?.price, let m = entitlements.monthly?.price, m > 0 else { return "Save 35%" }
         let yearOfMonthly = m * 12
         guard yearOfMonthly > a else { return nil }
-        let pct = Int(((yearOfMonthly - a) / yearOfMonthly * 100).rounded())
+        let fraction = NSDecimalNumber(decimal: (yearOfMonthly - a) / yearOfMonthly).doubleValue
+        let pct = Int((fraction * 100).rounded())
         return "Save \(pct)%"
     }
 
