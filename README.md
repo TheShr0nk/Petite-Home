@@ -93,6 +93,15 @@ the first (see `FoundingCode`). Issue codes with `FoundingCode.make(body:)`.
 without Xcode. Expect a round of compile fixes on first build; the logic under
 test (`PetiteHomeTests`) is pure and should pass as is.
 
+## Motion
+
+`Design/Motion.swift` holds the motion vocabulary, ported from Seek Faith:
+0.6s crossfades between onboarding screens, staggered fade-ups within a
+screen (`.reveal(n)`), the hook's line-by-line reveal, spring selection on
+chips and plan rows, a spring pop on task completion, numeric transitions on
+the ring, pulsing dots for anything that takes a moment, and one dark "saved"
+moment screen after onboarding. Everything honours Reduce Motion.
+
 ## Copy rules
 
 Sentence case. No exclamation points. Never "in case of death". Empty states

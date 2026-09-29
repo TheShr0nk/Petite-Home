@@ -32,6 +32,7 @@ struct ExportOptionsSheet: View {
                         }.buttonStyle(.outline).disabled(rendering)
                     }
                 }
+                if rendering { HStack { Spacer(); PulsingDots(); Spacer() } }
                 Spacer()
             }
             .padding(Theme.Spacing.gutter)

@@ -14,20 +14,24 @@ struct HomeView: View {
         let report = Completeness.report(file: household.familyFile, household: household)
         ScrollView {
             VStack(alignment: .leading, spacing: Theme.Spacing.xl) {
+                greeting.reveal(0, baseDelay: 0.05)
                 if report.percent < 100 {
-                    finishCard(report)
+                    finishCard(report).reveal(1, baseDelay: 0.05)
                 }
                 if household.guardianUndecided, !report.isFilled(.designatedGuardian) {
                     guardianNudge
                 }
-                upcoming
+                BrandDivider()
+                upcoming.reveal(2, baseDelay: 0.05)
                 if let me = appState.currentAdult(in: household), !me.calendarSyncEnabled, household.adults.count > 1 {
                     lifeSyncNudge(partnerName: household.adults.first { $0.id != me.id }?.displayName ?? "your partner")
                 }
                 if !household.kids.isEmpty {
+                    BrandDivider()
                     SectionHeader(title: "The kids")
                     KidsRow(household: household)
                 }
+                BrandDivider()
                 SectionHeader(title: "Quick actions")
                 VStack(spacing: Theme.Spacing.sm) {
                     Button { showAddDocument = true } label: { Label("Add a document", systemImage: "doc.badge.plus") }.buttonStyle(.outline)
@@ -43,11 +47,35 @@ struct HomeView: View {
         }
         .screenBackground()
         .navigationTitle("Home")
+        .navigationBarTitleDisplayMode(.inline)
         .toolbar { SettingsToolbarItem() }
         .navigationDestination(for: Child.self) { child in ChildProfileView(child: child) }
         .sheet(isPresented: $showExport) { ExportOptionsSheet(household: household) }
         .sheet(item: $sharePayload) { payload in CloudSharingSheet(share: payload.share, container: payload.container) }
         .sheet(isPresented: $showAddDocument) { AddDocumentSheet(household: household) }
+    }
+
+    /// Seek Faith opens each tab with a greeting and a one-line subtitle. Ours names the day.
+    private var greeting: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Eyebrow(text: Date().formatted(.dateTime.weekday(.wide).month(.wide).day()))
+            Text(timeGreeting)
+                .font(Typography.title)
+                .foregroundStyle(Theme.Colors.ink)
+        }
+        .padding(.top, Theme.Spacing.sm)
+    }
+
+    private var timeGreeting: String {
+        let hour = Calendar.current.component(.hour, from: Date())
+        let name = appState.currentAdult(in: household)?.firstName ?? ""
+        let who = name.isEmpty || name == "Me" ? "" : ", \(name)"
+        switch hour {
+        case 5..<12: return "Good morning\(who)."
+        case 12..<17: return "Good afternoon\(who)."
+        case 17..<22: return "Good evening\(who)."
+        default: return "Still up\(who)?"
+        }
     }
 
     private func finishCard(_ report: CompletenessReport) -> some View {

@@ -6,12 +6,27 @@ import AuthenticationServices
 
 struct HookScreen: View {
     let onContinue: () -> Void
+    @State private var showButton = false
+
     var body: some View {
-        OnboardingScreen(hook: "If something happened to you tonight, would anyone know where to find your kids' insurance, their doctor, or who's supposed to take them?") {
-            EmptyView()
-        } actions: {
-            Button("Let's fix that", action: onContinue).buttonStyle(.primary)
+        VStack(alignment: .leading, spacing: 0) {
+            Spacer().frame(height: 60)
+            RevealLines(lines: [
+                "If something happened to you tonight,",
+                "would anyone know where to find your kids' insurance,",
+                "their doctor,",
+                "or who's supposed to take them?",
+            ]) {
+                withAnimation(.easeIn(duration: 1.0)) { showButton = true }
+            }
+            Spacer()
+            Button("Let's fix that", action: onContinue)
+                .buttonStyle(.primary)
+                .opacity(showButton ? 1 : 0)
+                .disabled(!showButton)
         }
+        .padding(.horizontal, Theme.Spacing.gutter)
+        .padding(.bottom, Theme.Spacing.lg)
     }
 }
 
@@ -23,7 +38,7 @@ struct HouseholdScreen: View {
     @State private var editingChild: OnboardingDraft.ChildDraft?
 
     var body: some View {
-        OnboardingScreen(hook: "Who's in your household?") {
+        OnboardingScreen(eyebrow: "Your household", hook: "Who's in your household?") {
             VStack(alignment: .leading, spacing: Theme.Spacing.lg) {
                 FlowLayout(spacing: Theme.Spacing.sm) {
                     Chip(label: "Me", systemImage: "checkmark", isSelected: true) { }
@@ -113,7 +128,7 @@ struct FirstContactScreen: View {
     let onContinue: () -> Void
 
     var body: some View {
-        OnboardingScreen(hook: "Start with the one thing that matters most. Who should be called first if you can't be?") {
+        OnboardingScreen(eyebrow: "Who to call", hook: "Start with the one thing that matters most. Who should be called first if you can't be?") {
             ContactEntry(contact: $draft.firstContact, showRelationship: true)
         } actions: {
             Button("Continue", action: onContinue)
@@ -135,7 +150,7 @@ struct PediatricianScreen: View {
     }
 
     var body: some View {
-        OnboardingScreen(hook: hook) {
+        OnboardingScreen(eyebrow: "The kids' doctor", hook: hook) {
             VStack(alignment: .leading, spacing: Theme.Spacing.lg) {
                 ContactEntry(contact: $draft.pediatrician, showRelationship: false, namePlaceholder: "Doctor or practice")
                 if draft.children.count > 1 {
@@ -158,7 +173,7 @@ struct InsuranceScreen: View {
     let onContinue: () -> Void
 
     var body: some View {
-        OnboardingScreen(hook: "Grab your insurance card. This takes 20 seconds.") {
+        OnboardingScreen(eyebrow: "Insurance", hook: "Grab your insurance card. This takes 20 seconds.") {
             InsuranceEntry(policy: $draft.healthInsurance, allowVaultSave: false)
         } actions: {
             Button("Continue", action: onContinue).buttonStyle(.primary(enabled: draft.healthInsurance.isFilled)).disabled(!draft.healthInsurance.isFilled)
@@ -174,7 +189,7 @@ struct GuardianScreen: View {
     let onContinue: () -> Void
 
     var body: some View {
-        OnboardingScreen(hook: "If neither of you could care for your kids, who would?",
+        OnboardingScreen(eyebrow: "If something happens", hook: "If neither of you could care for your kids, who would?",
                          subline: "This isn't legal paperwork. It's so the people around you know your wishes on the worst day.") {
             ContactEntry(contact: $draft.guardian, showRelationship: true)
         } actions: {
@@ -196,7 +211,7 @@ struct RevealScreen: View {
 
     var body: some View {
         let report = draft.previewReport()
-        OnboardingScreen(hook: "This is your Family File.",
+        OnboardingScreen(eyebrow: "Your Family File", hook: "This is your Family File.",
                          subline: "It syncs privately to your iCloud. Nothing leaves your Apple account.") {
             VStack(alignment: .leading, spacing: Theme.Spacing.lg) {
                 HStack {
@@ -206,7 +221,7 @@ struct RevealScreen: View {
                 }
                 Card {
                     VStack(spacing: 0) {
-                        ForEach(FamilyFileSection.allCases) { section in
+                        ForEach(Array(FamilyFileSection.allCases.enumerated()), id: \.element) { i, section in
                             let counts = report.counts(for: section)
                             HStack {
                                 BrandIcon(systemName: section.systemImage, isActive: counts.filled > 0)
@@ -215,6 +230,7 @@ struct RevealScreen: View {
                                 Text("\(counts.filled) of \(counts.total)").font(Typography.caption).foregroundStyle(Theme.Colors.sandDeep)
                             }
                             .padding(.vertical, Theme.Spacing.sm)
+                            .reveal(i, baseDelay: 0.9)
                             if section != FamilyFileSection.allCases.last { SandDivider() }
                         }
                     }
@@ -272,7 +288,7 @@ struct PartnerInviteScreen: View {
     @State private var errorText: String?
 
     var body: some View {
-        OnboardingScreen(hook: "Your partner should be able to see this too.",
+        OnboardingScreen(eyebrow: "Your partner", hook: "Your partner should be able to see this too.",
                          subline: "They'll get the same Family File on their phone, and every change syncs both ways.") {
             if let errorText {
                 Text(errorText).font(Typography.caption).foregroundStyle(Theme.Colors.danger)
@@ -308,24 +324,23 @@ struct LifeSyncSetupScreen: View {
     private var partnerName: String { draft.includesPartner && !draft.partnerFirstName.isEmpty ? draft.partnerFirstName : "your partner" }
 
     var body: some View {
-        OnboardingScreen(hook: "Put both calendars and the house on the same week.",
+        OnboardingScreen(eyebrow: "Life Sync", hook: "Put both calendars and the house on the same week.",
                          subline: "Pick which calendars \(partnerName) can see, and which chores the app should keep track of. Nothing is written to your calendar.") {
             VStack(alignment: .leading, spacing: Theme.Spacing.xl) {
                 CalendarPickerBlock(granted: $draft.calendarAccessGranted, selected: $draft.selectedCalendarIDs)
                 VStack(alignment: .leading, spacing: Theme.Spacing.md) {
                     Text("Tasks the app should remember").font(Typography.label).foregroundStyle(Theme.Colors.sandDeep)
-                    Card(padding: 0) {
-                        VStack(spacing: 0) {
-                            ForEach(TaskTemplate.pack) { t in
-                                templateToggle(title: t.title, detail: t.recurrence.label, icon: t.category.systemImage,
-                                               isOn: Binding(get: { draft.selectedTemplateKeys.contains(t.key) },
-                                                             set: { on in if on { draft.selectedTemplateKeys.insert(t.key) } else { draft.selectedTemplateKeys.remove(t.key) } }))
-                                SandDivider().padding(.leading, Theme.Spacing.lg)
+                    VStack(spacing: Theme.Spacing.sm) {
+                        ForEach(TaskTemplate.pack) { t in
+                            SelectableRow(title: t.title, detail: t.recurrence.label, systemImage: t.category.systemImage,
+                                          isSelected: draft.selectedTemplateKeys.contains(t.key)) {
+                                if draft.selectedTemplateKeys.contains(t.key) { draft.selectedTemplateKeys.remove(t.key) } else { draft.selectedTemplateKeys.insert(t.key) }
                             }
-                            if !draft.children.isEmpty {
-                                templateToggle(title: draft.children.count == 1 ? "\(draft.children[0].firstName)'s well-child visit" : "Well-child visits, one per kid",
-                                               detail: "Every year, around the birthday", icon: "heart.text.square", isOn: $draft.wantsWellChildVisits)
-                            }
+                        }
+                        if !draft.children.isEmpty {
+                            SelectableRow(title: draft.children.count == 1 ? "\(draft.children[0].firstName)'s well-child visit" : "Well-child visits, one per kid",
+                                          detail: "Every year, around the birthday", systemImage: "heart.text.square",
+                                          isSelected: draft.wantsWellChildVisits) { draft.wantsWellChildVisits.toggle() }
                         }
                     }
                     Text("Shared with \(partnerName). Either of you can check one off.").font(Typography.caption).foregroundStyle(Theme.Colors.sandDeep)
@@ -337,20 +352,6 @@ struct LifeSyncSetupScreen: View {
             Button("I'll set this up later") { draft.lifeSyncSkipped = true; onContinue() }.buttonStyle(.secondary)
         }
         .onAppear { draft.calendarAccessGranted = CalendarSyncService.shared.hasAccess }
-    }
-
-    private func templateToggle(title: String, detail: String, icon: String, isOn: Binding<Bool>) -> some View {
-        Toggle(isOn: isOn) {
-            HStack(spacing: Theme.Spacing.md) {
-                BrandIcon(systemName: icon)
-                VStack(alignment: .leading, spacing: 1) {
-                    Text(title).font(Typography.body).foregroundStyle(Theme.Colors.ink)
-                    Text(detail).font(Typography.caption).foregroundStyle(Theme.Colors.sandDeep)
-                }
-            }
-        }
-        .tint(Theme.Colors.powderBlueDk)
-        .padding(.horizontal, Theme.Spacing.lg).padding(.vertical, Theme.Spacing.md)
     }
 }
 
@@ -365,12 +366,13 @@ struct PremiumOfferScreen: View {
     let onContinue: () -> Void
 
     var body: some View {
-        OnboardingScreen(hook: "Now let the app remember for you.") {
+        OnboardingScreen(eyebrow: "Petite Home premium", hook: "Now let the app remember for you.") {
             PremiumBullets()
             Text(PaywallSheet.priceLine(entitlements))
                 .font(Typography.callout)
                 .foregroundStyle(Theme.Colors.sandDeep)
         } actions: {
+            if entitlements.purchaseInProgress { PulsingDots().padding(.bottom, Theme.Spacing.xs) }
             Button("Start free trial") {
                 Task {
                     if let annual = entitlements.annual { _ = await entitlements.purchase(annual) }

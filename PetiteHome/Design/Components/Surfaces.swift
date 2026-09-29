@@ -52,6 +52,7 @@ struct Wordmark: View {
 }
 
 /// A chip: full-round, powderBlue fill when selected (ink on top), creamDeep otherwise.
+/// Selection springs, and the check scales in the way Seek Faith's chips do.
 struct Chip: View {
     let label: String
     var systemImage: String? = nil
@@ -66,6 +67,8 @@ struct Chip: View {
                 if let systemImage {
                     Image(systemName: systemImage)
                         .font(.system(size: 13, weight: .medium))
+                        .transition(.scale.combined(with: .opacity))
+                        .id(systemImage)
                 }
                 Text(label)
                     .font(Typography.label)
@@ -76,9 +79,53 @@ struct Chip: View {
             .background(
                 Capsule().fill(isSelected ? Theme.Colors.powderBlue : Theme.Colors.creamDeep)
             )
+            .scaleEffect(isSelected ? 1 : 0.98)
         }
         .buttonStyle(.plain)
         .disabled(action == nil)
+        .animation(Motion.select, value: isSelected)
+    }
+}
+
+/// A full-width selectable row: title, optional detail, a check that scales in.
+/// Seek Faith's SFChip, in Petite Home's clothes. Used for lists of choices.
+struct SelectableRow: View {
+    let title: String
+    var detail: String? = nil
+    var systemImage: String? = nil
+    let isSelected: Bool
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: Theme.Spacing.md) {
+                if let systemImage { BrandIcon(systemName: systemImage, isActive: isSelected) }
+                VStack(alignment: .leading, spacing: 1) {
+                    Text(title).font(Typography.body).foregroundStyle(Theme.Colors.ink).multilineTextAlignment(.leading)
+                    if let detail { Text(detail).font(Typography.caption).foregroundStyle(Theme.Colors.sandDeep) }
+                }
+                Spacer()
+                if isSelected {
+                    Image(systemName: "checkmark")
+                        .font(.system(size: 15, weight: .semibold))
+                        .foregroundStyle(Theme.Colors.powderBlueDk)
+                        .transition(.scale.combined(with: .opacity))
+                }
+            }
+            .padding(.vertical, 14)
+            .padding(.horizontal, Theme.Spacing.lg)
+            .background(
+                RoundedRectangle(cornerRadius: Theme.Radius.card, style: .continuous)
+                    .fill(isSelected ? Theme.Colors.powderBlueMist : Theme.Colors.creamDeep)
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: Theme.Radius.card, style: .continuous)
+                    .stroke(isSelected ? Theme.Colors.powderBlue : Color.clear, lineWidth: 1.5)
+            )
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .animation(Motion.select, value: isSelected)
     }
 }
 
@@ -125,48 +172,72 @@ struct BrandIcon: View {
 }
 
 /// Completeness ring: powderBlueDk stroke on creamDeep track, serif number in the center.
+/// Sweeps up from zero when it appears, and the number ticks with a numeric transition.
 struct CompletenessRing: View {
     let percent: Int
     var size: CGFloat = 140
     var lineWidth: CGFloat = Theme.Metrics.ringLineWidth
+    var animatesIn: Bool = true
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var shown: Int = 0
 
     var body: some View {
         ZStack {
             Circle()
                 .stroke(Theme.Colors.creamDeep, lineWidth: lineWidth)
             Circle()
-                .trim(from: 0, to: CGFloat(min(max(percent, 0), 100)) / 100)
-                .stroke(percent >= 100 ? Theme.Colors.success : Theme.Colors.powderBlueDk,
+                .trim(from: 0, to: CGFloat(min(max(shown, 0), 100)) / 100)
+                .stroke(shown >= 100 ? Theme.Colors.success : Theme.Colors.powderBlueDk,
                         style: StrokeStyle(lineWidth: lineWidth, lineCap: .round))
                 .rotationEffect(.degrees(-90))
-                .animation(.easeOut(duration: 0.6), value: percent)
             VStack(spacing: 0) {
-                Text("\(percent)")
+                Text("\(shown)")
                     .font(Typography.ringNumber(size * 0.32))
                     .foregroundStyle(Theme.Colors.ink)
+                    .contentTransition(.numericText(value: Double(shown)))
                 Text("percent")
                     .font(Typography.caption)
                     .foregroundStyle(Theme.Colors.sandDeep)
             }
         }
         .frame(width: size, height: size)
+        .onAppear {
+            if animatesIn && !reduceMotion {
+                shown = 0
+                withAnimation(Motion.settle.delay(0.2)) { shown = percent }
+            } else {
+                shown = percent
+            }
+        }
+        .onChange(of: percent) { _, new in withAnimation(Motion.settle) { shown = new } }
         .accessibilityLabel("Family File \(percent) percent complete")
     }
 }
 
-/// Thin progress bar for onboarding.
+/// Thin progress bar for onboarding, with a "3 of 10" caption beneath.
 struct ProgressBar: View {
     let progress: Double
+    var current: Int? = nil
+    var total: Int? = nil
     var body: some View {
-        GeometryReader { geo in
-            ZStack(alignment: .leading) {
-                Capsule().fill(Theme.Colors.creamDeep)
-                Capsule().fill(Theme.Colors.powderBlueDk)
-                    .frame(width: geo.size.width * min(max(progress, 0), 1))
-                    .animation(.easeOut(duration: 0.35), value: progress)
+        VStack(spacing: 6) {
+            GeometryReader { geo in
+                ZStack(alignment: .leading) {
+                    Capsule().fill(Theme.Colors.creamDeep)
+                    Capsule().fill(Theme.Colors.powderBlueDk)
+                        .frame(width: geo.size.width * min(max(progress, 0), 1))
+                        .animation(.easeInOut(duration: 0.4), value: progress)
+                }
+            }
+            .frame(height: 3)
+            if let current, let total {
+                Text("\(current) of \(total)")
+                    .font(Typography.caption)
+                    .foregroundStyle(Theme.Colors.sandDeep)
+                    .contentTransition(.numericText())
+                    .animation(.easeInOut(duration: 0.3), value: current)
             }
         }
-        .frame(height: 4)
     }
 }
 

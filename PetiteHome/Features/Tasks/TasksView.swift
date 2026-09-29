@@ -130,13 +130,23 @@ struct TaskRow: View {
     let task: HouseholdTask
     let onComplete: () -> Void
     let onTap: () -> Void
+    @State private var justDone = false
 
     var body: some View {
         HStack(spacing: Theme.Spacing.md) {
-            Button(action: onComplete) {
-                Image(systemName: task.isDone ? "checkmark.circle.fill" : "circle")
+            Button {
+                guard !justDone else { return }
+                withAnimation(Motion.pop) { justDone = true }
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.9) {
+                    onComplete()
+                    justDone = false
+                }
+            } label: {
+                Image(systemName: task.isDone || justDone ? "checkmark.circle.fill" : "circle")
                     .font(.system(size: 24, weight: .light))
-                    .foregroundStyle(task.isDone ? Theme.Colors.success : Theme.Colors.sand)
+                    .foregroundStyle(task.isDone || justDone ? Theme.Colors.success : Theme.Colors.sand)
+                    .scaleEffect(justDone ? 1.25 : 1)
+                    .contentTransition(.symbolEffect(.replace))
             }
             .buttonStyle(.plain)
             .disabled(task.isDone)
@@ -144,8 +154,9 @@ struct TaskRow: View {
                 VStack(alignment: .leading, spacing: 2) {
                     Text(task.title).font(Typography.body).foregroundStyle(Theme.Colors.ink)
                     HStack(spacing: Theme.Spacing.xs) {
-                        Text(task.isDone ? "Done" : task.nextDue.formatted(date: .abbreviated, time: .omitted))
-                            .foregroundStyle(task.isOverdue && !task.isDone ? Theme.Colors.danger : Theme.Colors.sandDeep)
+                        Text(justDone ? "Done. Rolled to \(task.recurrence.next(after: Date()).map { $0.formatted(date: .abbreviated, time: .omitted) } ?? "done")" : (task.isDone ? "Done" : task.nextDue.formatted(date: .abbreviated, time: .omitted)))
+                            .foregroundStyle(justDone ? Theme.Colors.success : (task.isOverdue && !task.isDone ? Theme.Colors.danger : Theme.Colors.sandDeep))
+                            .contentTransition(.opacity)
                         if let who = task.assignedTo { Text("· \(who.displayName)").foregroundStyle(Theme.Colors.sandDeep) }
                         if !task.completions.isEmpty, !task.isDone { Text("· done \(task.completions.count)×").foregroundStyle(Theme.Colors.sandDeep) }
                     }
