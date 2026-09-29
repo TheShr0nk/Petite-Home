@@ -7,8 +7,10 @@ final class Household {
     var uuid: UUID = UUID()
     var name: String = ""
     var createdAt: Date = Date()
-    /// Set once the household's file has been saved (after Sign in with Apple).
-    var ownerAppleUserID: String? = nil
+    /// The iCloud user record name of whoever created the household. Set when the binder is first saved.
+    var ownerUserID: String? = nil
+    /// The vault's AES key. CloudKit encrypts this field end to end and hands it to share participants.
+    @Attribute(.allowsCloudEncryption) var vaultKey: Data? = nil
     /// The youngest-child segment captured at onboarding, for the Klaviyo handoff.
     var youngestChildSegmentRaw: String? = nil
     /// True while the parents are expecting and no child is born yet.

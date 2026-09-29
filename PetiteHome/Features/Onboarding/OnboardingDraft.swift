@@ -34,10 +34,9 @@ final class OnboardingDraft {
     var wantsWellChildVisits = true
     var lifeSyncSkipped = false
 
-    var appleUserID: String?
-    var appleEmail: String?
-    var appleGivenName: String?
-    var appleFamilyName: String?
+    /// Optional. Only used to send the printable Family File and join the list; never required.
+    var email = ""
+    var firstName = ""
 
     var youngest: ChildDraft? { children.max(by: { $0.dateOfBirth < $1.dateOfBirth }) }
     var segment: AgeSegment? { AgeSegment.forYoungest(birthdates: children.map(\.dateOfBirth), expecting: isExpecting) }
@@ -59,13 +58,13 @@ final class OnboardingDraft {
     func commit(into context: ModelContext) -> Household {
         let household = Household()
         context.insert(household)
-        household.ownerAppleUserID = appleUserID
+        household.ownerUserID = CloudIdentity.cachedUserID
         household.isExpecting = isExpecting
         household.guardianUndecided = guardianUndecided
         household.youngestChildSegment = segment
 
-        let me = Adult(firstName: appleGivenName ?? "Me", lastName: appleFamilyName ?? "", role: .parent, isAccountOwner: true)
-        me.email = appleEmail ?? ""
+        let me = Adult(firstName: firstName.isEmpty ? "Me" : firstName, role: .parent, isAccountOwner: true)
+        me.email = email
         household.members = [me]
         if includesPartner {
             household.members?.append(Adult(firstName: partnerFirstName.isEmpty ? "Partner" : partnerFirstName, role: .parent))

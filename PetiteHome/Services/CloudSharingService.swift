@@ -104,6 +104,23 @@ final class CloudSharingService: NSObject {
         return share.participants.filter { $0.role != .owner }
     }
 
+    /// Owner: ends the share. The partner's copy disappears from their phone; the owner's data stays.
+    func stopSharing(householdID: UUID) async throws {
+        guard let container else { throw SharingError.modelUnavailable }
+        let object = try managedHousehold(id: householdID)
+        guard let share = try container.fetchShares(matching: [object.objectID])[object.objectID] else { return }
+        let ckContainer = CKContainer(identifier: PersistenceController.cloudContainerID)
+        _ = try await ckContainer.privateCloudDatabase.deleteRecord(withID: share.recordID)
+    }
+
+    /// Partner: leaves a household that was shared with them. Removes it from this phone and the share.
+    func leave(householdID: UUID) async throws {
+        guard let container, let sharedStore else { throw SharingError.modelUnavailable }
+        let object = try managedHousehold(id: householdID)
+        guard let share = try container.fetchShares(matching: [object.objectID])[object.objectID] else { return }
+        try container.purgeObjectsAndRecordsInZone(with: share.recordID.zoneID, in: sharedStore)
+    }
+
     /// Called from the app delegate when the partner opens the invite link.
     func accept(_ metadata: CKShare.Metadata) {
         guard let container, let sharedStore else { return }

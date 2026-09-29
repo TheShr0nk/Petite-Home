@@ -21,7 +21,7 @@ open PetiteHome.xcodeproj
 
 Then in Xcode:
 
-1. Set your team under Signing & Capabilities (the spec leaves `DEVELOPMENT_TEAM` empty).
+1. Set your team under Signing & Capabilities (the spec leaves `DEVELOPMENT_TEAM` empty). The App ID needs iCloud (CloudKit) and In-App Purchase; nothing else.
 2. Confirm the iCloud container `iCloud.co.petitehome.app` exists in your developer account, or change it in `PersistenceController.cloudContainerID` and the entitlements file.
 3. Fill in `RevenueCatAPIKey` and `PostHogAPIKey` in `PetiteHome/Resources/Info.plist`. Both are public SDK keys. Without the RevenueCat key the paywall shows list prices but cannot purchase; without the PostHog key analytics never start.
 4. Run. The scheme uses `Products.storekit` so the paywall works in the simulator.
@@ -67,16 +67,19 @@ persistence layer to Core Data + `NSPersistentCloudKitContainer` (the models
 are already shaped for it: every attribute has a default, every relationship
 is optional). Nothing in the views would change.
 
-**Vault key sharing.** The AES key lives in the iCloud Keychain, so it follows
-the owner's Apple ID across devices. A partner on a different Apple ID cannot
-open vault documents yet; that needs the key wrapped for their account.
+**Vault key sharing.** The household's AES key is stored on the Household
+record in a field marked `.allowsCloudEncryption`. CloudKit encrypts that
+field end to end and hands it to accepted share participants, so a partner on
+a different Apple ID opens the vault once the household share works. The
+iCloud Keychain keeps a cache for offline use. Gate and alarm codes use a
+separate device key that never touches a record.
 
 **Trusted-person links.** These are CloudKit shares with public read-only
 permission on a rendered PDF. The recipient needs the app installed to open
 the link. The owner's app revokes the share after the expiry date on next
 launch.
 
-**Klaviyo.** The app posts to the site's existing `/api/subscribe` with
+**Klaviyo.** If the user types an email on the reveal screen, the app posts to the site's existing `/api/subscribe` with
 `kind: family-file`, `youngestChildAge` and `placement: ios_app`. The website's
 route only accepts a fixed set of placements, so add `ios_app` to `PLACEMENTS`
 in `02-web/src/app/api/subscribe/route.ts` or it records as `unknown`.
@@ -109,8 +112,8 @@ subscription group, 7-day introductory free trial on both), an entitlement
 called `premium`, and a current offering with a `$rc_annual` and a
 `$rc_monthly` package pointing at them. Paste the app's public API key into
 Info.plist. For simulator testing, keep `Products.storekit` attached to the
-scheme; RevenueCat reads from it in sandbox mode. After Sign in with Apple the
-app calls `logIn` with the Apple user ID so purchases follow the person.
+scheme; RevenueCat reads from it in sandbox mode. The app calls `logIn` with the iCloud user record name so purchases follow
+the person across their devices.
 
 **Founding 500 codes.** Format `PH-XXXX-XXXX`; the last group is a checksum of
 the first (see `FoundingCode`). Issue codes with `FoundingCode.make(body:)`.
@@ -142,10 +145,9 @@ moment screen after onboarding. Everything honours Reduce Motion.
 - `PrivacyInfo.xcprivacy` declares email, purchase history and anonymous
   analytics. Update it if a new SDK or data type is added. RevenueCat and
   PostHog ship their own manifests.
-- Account deletion (guideline 5.1.1): if Sign in with Apple stays, add a
-  "Delete my account" action that clears the CloudKit container and revokes
-  the Apple token. Token revocation needs a server call with your Sign in
-  with Apple private key; the website's Vercel API routes are the place for it.
+- There is no sign-in. Identity is the iCloud user record (`CloudIdentity`),
+  so there is no account to delete; Settings offers "Delete this household"
+  which removes everything from the phone and iCloud.
 - App icon: `Assets.xcassets/AppIcon` is empty. A 1024×1024 image is required.
 - Export compliance: the vault uses CryptoKit AES-GCM, which is standard
   encryption; `ITSAppUsesNonExemptEncryption` is false. Confirm the annual

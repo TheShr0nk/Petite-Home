@@ -1,6 +1,5 @@
 import SwiftUI
 import SwiftData
-import AuthenticationServices
 
 // MARK: Screen 1 — Hook
 
@@ -201,13 +200,13 @@ struct GuardianScreen: View {
     }
 }
 
-// MARK: Screen 7 — Reveal + Sign in with Apple
+// MARK: Screen 7 — Reveal and save
 
 struct RevealScreen: View {
     @Environment(\.modelContext) private var context
     @Bindable var draft: OnboardingDraft
     let onSaved: (Household) -> Void
-    @State private var errorText: String?
+    @State private var saving = false
 
     var body: some View {
         let report = draft.previewReport()
@@ -240,49 +239,35 @@ struct RevealScreen: View {
                         .font(Typography.bodyEmphasis)
                         .foregroundStyle(Theme.Colors.powderBlueDk)
                 }
+                LabeledField(label: "Your first name", text: $draft.firstName, placeholder: "First name", contentType: .givenName)
+                LabeledField(label: "Email, if you'd like the printable version", text: $draft.email, placeholder: "Optional", keyboard: .emailAddress, contentType: .emailAddress, autocapitalization: .never)
+                Text("We'll send the printable Family File and the occasional note from Casey. Leave it blank and nothing is sent.")
+                    .font(Typography.caption).foregroundStyle(Theme.Colors.sandDeep)
                 Wordmark().padding(.top, Theme.Spacing.sm)
-                if let errorText {
-                    Text(errorText).font(Typography.caption).foregroundStyle(Theme.Colors.danger)
-                }
             }
         } actions: {
-            SignInWithAppleButton(.continue) { request in
-                request.requestedScopes = [.fullName, .email]
-            } onCompletion: { result in
-                switch result {
-                case .success(let auth):
-                    guard let signIn = AppleSignIn.handle(auth) else { return }
-                    draft.appleUserID = signIn.userID
-                    draft.appleEmail = signIn.email
-                    draft.appleGivenName = signIn.fullName?.givenName
-                    draft.appleFamilyName = signIn.fullName?.familyName
+            if saving { PulsingDots() }
+            Button("Save my \(AppCopy.binderLower)") {
+                saving = true
+                Task {
+                    let userID = await CloudIdentity.userID()
                     let household = draft.commit(into: context)
-                    if let email = signIn.email {
-                        Task { await KlaviyoHandoff.subscribe(email: email, youngestChildAge: draft.segment) }
+                    household.ownerUserID = userID
+                    try? context.save()
+                    if !draft.email.isEmpty {
+                        Task { await KlaviyoHandoff.subscribe(email: draft.email, youngestChildAge: draft.segment) }
                     }
-                    Task { await EntitlementStore.shared.identify(userID: signIn.userID) }
+                    await EntitlementStore.shared.identify(userID: userID)
+                    saving = false
                     onSaved(household)
-                case .failure:
-                    errorText = "Sign in didn't finish. Your entries are still here. Try again."
                 }
             }
-            .signInWithAppleButtonStyle(.black)
-            .frame(height: Theme.Metrics.primaryButtonHeight)
-            .clipShape(RoundedRectangle(cornerRadius: Theme.Radius.control, style: .continuous))
-            .accessibilityLabel("Save my \(AppCopy.binder)")
-            Text("Save your \(AppCopy.binderLower) with your Apple ID. No email or password to make up.")
+            .buttonStyle(.primary(enabled: !saving)).disabled(saving)
+            Text(CloudIdentity.isICloudAvailable ? "Saved to your iCloud. No account, no password." : "iCloud is off on this phone, so this stays on the phone only. Turn on iCloud in Settings to sync and share.")
                 .font(Typography.caption)
                 .foregroundStyle(Theme.Colors.sandDeep)
                 .multilineTextAlignment(.center)
                 .frame(maxWidth: .infinity)
-            #if targetEnvironment(simulator)
-            // Sign in with Apple can't complete on the simulator. Debug builds get a way through.
-            Button("Save without signing in (simulator only)") {
-                let household = draft.commit(into: context)
-                onSaved(household)
-            }
-            .buttonStyle(.secondary)
-            #endif
         }
     }
 }

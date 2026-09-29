@@ -17,9 +17,20 @@ struct SettingsView: View {
     @State private var showAddHousehold = false
     @State private var newHouseholdName = ""
     @State private var showManageSubscription = false
+    @State private var confirmDelete = false
+    @State private var confirmStopSharing = false
+    @State private var confirmLeave = false
+    @State private var dangerError: String?
 
     var body: some View {
         List {
+            if !CloudIdentity.isICloudAvailable {
+                Section {
+                    Label("iCloud is off on this phone. Everything stays on this phone only, and sharing with a partner won't work until it's on.", systemImage: "icloud.slash")
+                        .font(Typography.caption).foregroundStyle(Theme.Colors.sandDeep)
+                }
+                .listRowBackground(Theme.Colors.powderBlueMist)
+            }
             Section("Household") {
                 LabeledField(label: "Name", text: $household.name, placeholder: household.displayName).listRowBackground(Theme.Colors.creamDeep)
                 ForEach(household.adults, id: \.uuid) { adult in
@@ -64,6 +75,12 @@ struct SettingsView: View {
                         }
                     }
                     Button("Manage sharing") { invitePartner() }
+                    if isOwner {
+                        Button("Stop sharing with my partner", role: .destructive) { confirmStopSharing = true }
+                    }
+                }
+                if !isOwner, household.ownerUserID != nil {
+                    Button("Leave this household", role: .destructive) { confirmLeave = true }
                 }
                 if let shareError { Text(shareError).font(Typography.caption).foregroundStyle(Theme.Colors.danger) }
             } header: { Text("Partner sharing") } footer: { Text("Your partner sees the same \(AppCopy.binder), and changes sync both ways. Free, always.") }
@@ -96,6 +113,14 @@ struct SettingsView: View {
             .listRowBackground(Theme.Colors.creamDeep)
 
             Section {
+                Button("Delete this household and everything in it", role: .destructive) { confirmDelete = true }
+                if let dangerError { Text(dangerError).font(Typography.caption).foregroundStyle(Theme.Colors.danger) }
+            } header: { Text("Your data") } footer: {
+                Text("Deleting removes the \(AppCopy.binderLower), the vault, plans, meals and tasks from this phone and from iCloud. Export a PDF first if you want a copy. This can't be undone.")
+            }
+            .listRowBackground(Theme.Colors.creamDeep)
+
+            Section {
                 NavigationLink { PicksView() } label: { Label("Petite Picks", systemImage: "sparkles") }
                 Link("Privacy", destination: URL(string: "https://petitehome.co/privacy")!)
                 Link("Terms", destination: URL(string: "https://petitehome.co/terms")!)
@@ -119,14 +144,65 @@ struct SettingsView: View {
                 context.insert(h)
                 h.familyFile = FamilyFile()
                 h.members = [Adult(firstName: household.owner?.firstName ?? "Me", lastName: household.owner?.lastName ?? "", role: .parent, isAccountOwner: true)]
-                h.ownerAppleUserID = household.ownerAppleUserID
+                h.ownerUserID = household.ownerUserID
                 try? context.save()
                 appState.currentHouseholdID = h.uuid
                 newHouseholdName = ""
             }
             Button("Cancel", role: .cancel) {}
         } message: { Text("For a separated household, or a parent's file you're looking after.") }
+        .confirmationDialog("Delete this household?", isPresented: $confirmDelete, titleVisibility: .visible) {
+            Button("Delete everything", role: .destructive) { deleteHousehold() }
+        } message: { Text("Everything in it is removed from this phone and from iCloud. This can't be undone.") }
+        .confirmationDialog("Stop sharing?", isPresented: $confirmStopSharing, titleVisibility: .visible) {
+            Button("Stop sharing", role: .destructive) {
+                Task {
+                    do { try await CloudSharingService.shared.stopSharing(householdID: household.uuid) } catch { dangerError = error.localizedDescription }
+                }
+            }
+        } message: { Text("Your partner loses access on their phone. Your data stays.") }
+        .confirmationDialog("Leave this household?", isPresented: $confirmLeave, titleVisibility: .visible) {
+            Button("Leave", role: .destructive) {
+                Task {
+                    do {
+                        try await CloudSharingService.shared.leave(householdID: household.uuid)
+                        appState.currentHouseholdID = nil
+                        appState.hasCompletedOnboarding = false
+                        dismiss()
+                    } catch { dangerError = error.localizedDescription }
+                }
+            }
+        } message: { Text("It disappears from this phone. The owner keeps everything.") }
         .onDisappear { try? context.save() }
+    }
+
+    private var isOwner: Bool {
+        household.ownerUserID == nil || household.ownerUserID == CloudIdentity.cachedUserID
+    }
+
+    /// Everything goes: models cascade from the household, reminders are cancelled, trusted links are
+    /// revoked, and if this was the last household the app returns to onboarding.
+    private func deleteHousehold() {
+        for t in household.tasks ?? [] { NotificationService.shared.cancelTaskDue(id: t.uuid) }
+        for p in household.plans ?? [] { NotificationService.shared.cancelTaskDue(id: p.uuid) }
+        for exp in ExpirationScheduler.expirations(for: household) { NotificationService.shared.cancelExpiration(id: exp.id) }
+        for trusted in household.trustedContacts ?? [] {
+            if let name = trusted.shareRecordName { Task { await TrustedShareService.shared.revoke(recordName: name) } }
+        }
+        let id = household.uuid
+        Task { try? await CloudSharingService.shared.stopSharing(householdID: id) }
+        context.delete(household)
+        try? context.save()
+        let remaining = households.filter { $0.uuid != id }
+        if let next = remaining.first {
+            appState.currentHouseholdID = next.uuid
+        } else {
+            KeychainService.shared.remove(.gateCode, synchronizable: true)
+            KeychainService.shared.remove(.alarmCode, synchronizable: true)
+            appState.currentHouseholdID = nil
+            appState.hasCompletedOnboarding = false
+        }
+        dismiss()
     }
 
     private var premiumStatus: String {

@@ -12,7 +12,7 @@ struct KeychainService {
         case alarmCode = "familyfile.alarmCode"
         case vaultKey = "vault.key.v1"
         case foundingUnlock = "premium.founding"
-        case appleUserID = "auth.appleUserID"
+        case deviceKey = "codes.key.v1"
     }
 
     func set(_ data: Data, for key: Key, synchronizable: Bool = false) {
@@ -65,8 +65,8 @@ struct KeychainService {
 }
 
 /// Gate and alarm codes: the one exception to "never store a code". They are
-/// sealed with the vault key and kept in the iCloud Keychain so both parents'
-/// devices can read them, and never touch the SwiftData store.
+/// sealed with a key that lives only in the iCloud Keychain (so the same Apple
+/// ID can read them on every device) and never touch the SwiftData store.
 enum SecureCodes {
     static func save(_ code: String, for key: KeychainService.Key) throws {
         guard key == .gateCode || key == .alarmCode else { return }
@@ -74,13 +74,13 @@ enum SecureCodes {
             KeychainService.shared.remove(key, synchronizable: true)
             return
         }
-        let sealed = try VaultCrypto.shared.seal(Data(code.utf8))
+        let sealed = try VaultCrypto.seal(Data(code.utf8), with: VaultCrypto.deviceKey())
         KeychainService.shared.set(sealed, for: key, synchronizable: true)
     }
 
     static func read(_ key: KeychainService.Key) -> String? {
         guard let sealed = KeychainService.shared.data(for: key, synchronizable: true) else { return nil }
-        guard let plain = try? VaultCrypto.shared.open(sealed) else { return nil }
+        guard let plain = try? VaultCrypto.open(sealed, with: VaultCrypto.deviceKey()) else { return nil }
         return String(data: plain, encoding: .utf8)
     }
 }

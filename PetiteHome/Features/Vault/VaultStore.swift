@@ -5,6 +5,7 @@ import UIKit
 /// Writes and reads vault documents. Everything is sealed before it touches
 /// the model, so the CloudKit asset is ciphertext.
 enum VaultStore {
+    @MainActor
     @discardableResult
     static func save(image: UIImage, title: String, category: VaultCategory, household: Household, context: ModelContext,
                      linkedChild: Child? = nil, linkedAdult: Adult? = nil, expiresOn: Date? = nil) -> VaultDocument? {
@@ -13,10 +14,11 @@ enum VaultStore {
                     linkedChild: linkedChild, linkedAdult: linkedAdult, expiresOn: expiresOn)
     }
 
+    @MainActor
     @discardableResult
     static func save(data: Data, mimeType: String, title: String, category: VaultCategory, household: Household, context: ModelContext,
                      linkedChild: Child? = nil, linkedAdult: Adult? = nil, expiresOn: Date? = nil) -> VaultDocument? {
-        guard let sealed = try? VaultCrypto.shared.seal(data) else { return nil }
+        guard let sealed = try? VaultCrypto.seal(data, with: VaultCrypto.householdKey(for: household)) else { return nil }
         let doc = VaultDocument(title: title, category: category)
         doc.encryptedAsset = sealed
         doc.mimeType = mimeType
@@ -29,11 +31,13 @@ enum VaultStore {
         return doc
     }
 
+    @MainActor
     static func open(_ doc: VaultDocument) -> Data? {
-        guard let sealed = doc.encryptedAsset else { return nil }
-        return try? VaultCrypto.shared.open(sealed)
+        guard let sealed = doc.encryptedAsset, let household = doc.household else { return nil }
+        return try? VaultCrypto.open(sealed, with: VaultCrypto.householdKey(for: household))
     }
 
+    @MainActor
     static func image(for doc: VaultDocument) -> UIImage? {
         guard doc.mimeType.hasPrefix("image"), let data = open(doc) else { return nil }
         return UIImage(data: data)

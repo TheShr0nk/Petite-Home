@@ -55,10 +55,11 @@ final class AppState {
         currentAdultID = defaults.string(forKey: Keys.currentAdult).flatMap(UUID.init(uuidString:))
     }
 
-    /// The adult using this phone: the explicit choice, else whoever signed in with Apple here, else the owner.
+    /// The adult using this phone: the explicit choice, else the owner if this iCloud account created the household, else the partner.
     func currentAdult(in household: Household) -> Adult? {
         if let id = currentAdultID, let a = household.adults.first(where: { $0.uuid == id }) { return a }
-        if let apple = AppleSignIn.storedUserID, household.ownerAppleUserID == apple { return household.owner }
+        if let mine = CloudIdentity.cachedUserID, household.ownerUserID == mine { return household.owner }
+        if CloudIdentity.cachedUserID != nil, household.ownerUserID != nil { return household.partner ?? household.owner }
         return household.owner ?? household.adults.first
     }
 

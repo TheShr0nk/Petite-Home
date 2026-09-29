@@ -28,7 +28,7 @@ struct RootView: View {
     private func repairHouseholdSelection() {
         if appState.currentHouseholdID == nil, let first = households.first {
             appState.currentHouseholdID = first.uuid
-            if first.ownerAppleUserID != nil { appState.hasCompletedOnboarding = true }
+            if first.ownerUserID != nil { appState.hasCompletedOnboarding = true }
         }
     }
 }
