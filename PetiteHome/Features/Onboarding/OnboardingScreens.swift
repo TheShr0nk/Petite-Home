@@ -1,13 +1,11 @@
 import SwiftUI
 import SwiftData
 
-// MARK: Screen 0 — Intro: four beats, about nine seconds, then the hook
+// MARK: Screen 0 — Intro: four beats, tapped through, then the hook
 
 struct IntroScreen: View {
     let onContinue: () -> Void
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
-    @State private var beat = -1
-    @State private var finished = false
+    @State private var beat = 0
 
     private struct Beat { let icon: String; let line: String }
     private let beats: [Beat] = [
@@ -16,8 +14,7 @@ struct IntroScreen: View {
         Beat(icon: "lock.doc", line: "The documents, locked. Only you can open them."),
         Beat(icon: "person.2", line: "Shared with the one person who needs it."),
     ]
-    /// Long enough to read a line twice. Four beats is about nine seconds; a tap skips.
-    private let cadence: Double = 2.2
+    private var isLast: Bool { beat == beats.count - 1 }
 
     var body: some View {
         ZStack {
@@ -26,27 +23,21 @@ struct IntroScreen: View {
                 Spacer()
                 ZStack {
                     Circle().fill(Theme.Colors.powderBlueMist).frame(width: 120, height: 120)
-                    if beat >= 0 {
-                        Image(systemName: beats[beat].icon)
-                            .font(.system(size: 44, weight: .light))
-                            .foregroundStyle(Theme.Colors.powderBlueDk)
-                            .id(beat)
-                            .transition(.scale(scale: 0.6).combined(with: .opacity))
-                    }
+                    Image(systemName: beats[beat].icon)
+                        .font(.system(size: 44, weight: .light))
+                        .foregroundStyle(Theme.Colors.powderBlueDk)
+                        .id(beat)
+                        .transition(.scale(scale: 0.6).combined(with: .opacity))
                 }
-                ZStack {
-                    if beat >= 0 {
-                        Text(beats[beat].line)
-                            .font(Typography.serif(26))
-                            .lineSpacing(6)
-                            .multilineTextAlignment(.center)
-                            .foregroundStyle(Theme.Colors.ink)
-                            .fixedSize(horizontal: false, vertical: true)
-                            .id(beat)
-                            .transition(.opacity.combined(with: .offset(y: 8)))
-                    }
-                }
-                .frame(minHeight: 110)
+                Text(beats[beat].line)
+                    .font(Typography.serif(26))
+                    .lineSpacing(6)
+                    .multilineTextAlignment(.center)
+                    .foregroundStyle(Theme.Colors.ink)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .id(beat)
+                    .transition(.opacity.combined(with: .offset(y: 8)))
+                    .frame(minHeight: 110)
                 Spacer()
                 HStack(spacing: 6) {
                     ForEach(0..<beats.count, id: \.self) { i in
@@ -55,35 +46,26 @@ struct IntroScreen: View {
                     }
                 }
                 .animation(Motion.select, value: beat)
+                VStack(spacing: Theme.Spacing.sm) {
+                    Button(isLast ? "Let's go" : "Next") {
+                        if isLast { onContinue() } else { withAnimation(Motion.settle) { beat += 1 } }
+                    }
+                    .buttonStyle(.primary)
+                    Button("Skip") { onContinue() }
+                        .buttonStyle(.secondary)
+                        .opacity(isLast ? 0 : 1)
+                        .disabled(isLast)
+                }
                 Wordmark()
-                    .padding(.bottom, Theme.Spacing.xl)
+                    .padding(.bottom, Theme.Spacing.md)
             }
-            .padding(.horizontal, Theme.Spacing.xxl)
+            .padding(.horizontal, Theme.Spacing.gutter)
         }
         .contentShape(Rectangle())
-        .onTapGesture { finish() }
-        .accessibilityAction(named: "Skip intro") { finish() }
-        .onAppear(perform: play)
-    }
-
-    private func play() {
-        if reduceMotion {
-            beat = beats.count - 1
-            DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) { finish() }
-            return
+        .onTapGesture {
+            // Tapping the copy itself also advances, so the screen feels like pages, not a form.
+            if !isLast { withAnimation(Motion.settle) { beat += 1 } }
         }
-        for i in 0..<beats.count {
-            DispatchQueue.main.asyncAfter(deadline: .now() + Double(i) * cadence) {
-                withAnimation(Motion.settle) { beat = i }
-            }
-        }
-        DispatchQueue.main.asyncAfter(deadline: .now() + Double(beats.count) * cadence + 0.3) { finish() }
-    }
-
-    private func finish() {
-        guard !finished else { return }
-        finished = true
-        onContinue()
     }
 }
 
