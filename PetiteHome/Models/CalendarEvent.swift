@@ -7,6 +7,8 @@ import SwiftData
 /// plan around each other is kept: title, time, which calendar, whose it is.
 @Model
 final class CalendarEvent {
+    /// The stored UUID is the Identifiable id, not SwiftData's PersistentIdentifier.
+    typealias ID = UUID
     var id: UUID = UUID()
     /// EventKit's identifier on the device that mirrored it, so re-syncs update in place.
     var sourceIdentifier: String = ""

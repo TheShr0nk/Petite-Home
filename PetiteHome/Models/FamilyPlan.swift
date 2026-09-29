@@ -65,6 +65,8 @@ struct SitterProfile: Codable, Hashable, Identifiable {
 /// A plan the two of you make: date night, a day out, a trip, a visit.
 @Model
 final class FamilyPlan {
+    /// The stored UUID is the Identifiable id, not SwiftData's PersistentIdentifier.
+    typealias ID = UUID
     var id: UUID = UUID()
     var title: String = ""
     var kindRaw: String = PlanKind.dateNight.rawValue

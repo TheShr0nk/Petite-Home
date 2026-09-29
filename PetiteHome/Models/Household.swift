@@ -3,6 +3,8 @@ import SwiftData
 
 @Model
 final class Household {
+    /// The stored UUID is the Identifiable id, not SwiftData's PersistentIdentifier.
+    typealias ID = UUID
     var id: UUID = UUID()
     var name: String = ""
     var createdAt: Date = Date()
@@ -54,6 +56,8 @@ final class Household {
 
 @Model
 final class Adult {
+    /// The stored UUID is the Identifiable id, not SwiftData's PersistentIdentifier.
+    typealias ID = UUID
     var id: UUID = UUID()
     var firstName: String = ""
     var lastName: String = ""
@@ -89,6 +93,8 @@ final class Adult {
 
 @Model
 final class Child {
+    /// The stored UUID is the Identifiable id, not SwiftData's PersistentIdentifier.
+    typealias ID = UUID
     var id: UUID = UUID()
     var firstName: String = ""
     var dateOfBirth: Date = Date()
@@ -132,6 +138,8 @@ final class Child {
 
 @Model
 final class FamilyFile {
+    /// The stored UUID is the Identifiable id, not SwiftData's PersistentIdentifier.
+    typealias ID = UUID
     var id: UUID = UUID()
 
     // Section 1 — In an emergency
@@ -181,6 +189,8 @@ final class FamilyFile {
 
 @Model
 final class HouseholdTask {
+    /// The stored UUID is the Identifiable id, not SwiftData's PersistentIdentifier.
+    typealias ID = UUID
     var id: UUID = UUID()
     var title: String = ""
     var notes: String = ""
@@ -229,6 +239,8 @@ final class HouseholdTask {
 
 @Model
 final class VaultDocument {
+    /// The stored UUID is the Identifiable id, not SwiftData's PersistentIdentifier.
+    typealias ID = UUID
     var id: UUID = UUID()
     var title: String = ""
     var categoryRaw: String = VaultCategory.other.rawValue
@@ -261,6 +273,8 @@ final class VaultDocument {
 
 @Model
 final class TrustedContact {
+    /// The stored UUID is the Identifiable id, not SwiftData's PersistentIdentifier.
+    typealias ID = UUID
     var id: UUID = UUID()
     var contact: Contact = Contact()
     var accessLevelRaw: String = TrustedAccessLevel.viewFamilyFile.rawValue
