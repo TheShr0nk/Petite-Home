@@ -111,7 +111,7 @@ struct RecipeEditorSheet: View {
         target.tags = tagsText.components(separatedBy: ",").map { $0.trimmingCharacters(in: .whitespaces).lowercased() }.filter { !$0.isEmpty }
         target.sourceURL = sourceURL; target.photo = photo
         if recipe == nil {
-            target.createdByAdultID = household.flatMap { appState.currentAdult(in: $0)?.id }
+            target.createdByAdultID = household.flatMap { appState.currentAdult(in: $0)?.uuid }
             household?.recipes?.append(target)
         }
         try? context.save()
@@ -150,7 +150,7 @@ struct PlanMealSheet: View {
                             HStack {
                                 VStack(alignment: .leading, spacing: 1) {
                                     Text(meal.displayTitle).font(Typography.body).foregroundStyle(Theme.Colors.ink)
-                                    Text(meal.slot.label + (household?.adults.first { $0.id == meal.cookAdultID }.map { " · \($0.displayName) cooks" } ?? "")).font(Typography.caption).foregroundStyle(Theme.Colors.sandDeep)
+                                    Text(meal.slot.label + (household?.adults.first { $0.uuid == meal.cookAdultID }.map { " · \($0.displayName) cooks" } ?? "")).font(Typography.caption).foregroundStyle(Theme.Colors.sandDeep)
                                 }
                                 Spacer()
                                 Button("Remove") { context.delete(meal); try? context.save() }.font(Typography.caption).foregroundStyle(Theme.Colors.danger)
@@ -169,7 +169,7 @@ struct PlanMealSheet: View {
                         Text("No recipes in the box yet. Type what's for dinner below, or add recipes from the Meals tab.").font(Typography.caption).foregroundStyle(Theme.Colors.sandDeep)
                     }
                     ForEach(box.prefix(8)) { r in
-                        SelectableRow(title: r.title, detail: r.summary, isSelected: recipe?.id == r.id) { recipe = recipe?.id == r.id ? nil : r; if recipe != nil { freeform = "" } }
+                        SelectableRow(title: r.title, detail: r.summary, isSelected: recipe?.uuid == r.uuid) { recipe = recipe?.uuid == r.uuid ? nil : r; if recipe != nil { freeform = "" } }
                     }
                     LabeledField(label: "Or just say it", text: $freeform, placeholder: "Leftovers, takeout, pasta", autocapitalization: .sentences)
                         .onChange(of: freeform) { _, v in if !v.isEmpty { recipe = nil } }
@@ -179,7 +179,7 @@ struct PlanMealSheet: View {
                         Text("Who's cooking").font(Typography.label).foregroundStyle(Theme.Colors.sandDeep)
                         HStack {
                             Chip(label: "Either of us", isSelected: cookID == nil) { cookID = nil }
-                            ForEach(household.adults) { a in Chip(label: a.displayName, isSelected: cookID == a.id) { cookID = a.id } }
+                            ForEach(household.adults) { a in Chip(label: a.displayName, isSelected: cookID == a.uuid) { cookID = a.uuid } }
                         }
                     }
                 }

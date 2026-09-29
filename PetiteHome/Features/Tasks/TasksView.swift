@@ -64,7 +64,7 @@ struct TasksView: View {
                 VStack(spacing: 0) {
                     ForEach(items) { task in
                         TaskRow(task: task, onComplete: { complete(task) }, onTap: { editingTask = task })
-                        if task.id != items.last?.id { SandDivider().padding(.leading, Theme.Spacing.lg + 36) }
+                        if task.uuid != items.last?.uuid { SandDivider().padding(.leading, Theme.Spacing.lg + 36) }
                     }
                 }
             }
@@ -215,7 +215,7 @@ struct TaskEditorSheet: View {
                     Text("Who").font(Typography.label).foregroundStyle(Theme.Colors.sandDeep)
                     FlowLayout(spacing: Theme.Spacing.sm) {
                         Chip(label: "Either of us", isSelected: assigneeID == nil) { assigneeID = nil }
-                        ForEach(household.adults) { adult in Chip(label: adult.displayName, isSelected: assigneeID == adult.id) { assigneeID = adult.id } }
+                        ForEach(household.adults) { adult in Chip(label: adult.displayName, isSelected: assigneeID == adult.uuid) { assigneeID = adult.uuid } }
                     }
                 }
                 LabeledTextEditor(label: "Notes", text: $notes, hint: "Filter size, where the shutoff is, who to call")
@@ -239,7 +239,7 @@ struct TaskEditorSheet: View {
             guard let task else { return }
             title = task.title; notes = task.notes; recurrence = task.recurrence
             if case .custom(let d) = task.recurrence { customDays = d }
-            nextDue = task.nextDue; category = task.category; assigneeID = task.assignedTo?.id
+            nextDue = task.nextDue; category = task.category; assigneeID = task.assignedTo?.uuid
         }
     }
 
@@ -247,7 +247,7 @@ struct TaskEditorSheet: View {
         let target = task ?? HouseholdTask(title: title, recurrence: recurrence, nextDue: nextDue, category: category)
         target.title = title; target.notes = notes; target.recurrence = recurrence
         target.nextDue = nextDue; target.category = category
-        target.assignedTo = household.adults.first { $0.id == assigneeID }
+        target.assignedTo = household.adults.first { $0.uuid == assigneeID }
         if task == nil { household.tasks?.append(target) }
         try? context.save()
         dismiss()

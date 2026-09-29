@@ -60,7 +60,7 @@ struct OnboardingFlow: View {
                 case .guardian: GuardianScreen(draft: draft) { advance() }
                 case .reveal: RevealScreen(draft: draft) { household in
                     savedHousehold = household
-                    appState.currentHouseholdID = household.id
+                    appState.currentHouseholdID = household.uuid
                     advance()
                 }
                 case .partnerInvite: PartnerInviteScreen(household: savedHousehold, partnerName: draft.partnerFirstName) { advance() }

@@ -15,7 +15,7 @@ struct LifeSyncView: View {
     @State private var editingTask: HouseholdTask?
 
     private var me: Adult? { appState.currentAdult(in: household) }
-    private var partner: Adult? { household.adults.first { $0.id != me?.id } }
+    private var partner: Adult? { household.adults.first { $0.uuid != me?.uuid } }
 
     var body: some View {
         @Bindable var appState = appState
@@ -163,8 +163,8 @@ struct LifeSyncView: View {
     /// Up to three dots: mine, theirs, tasks.
     private func dots(for day: LifeSyncAgenda.Day) -> [Color] {
         var out: [Color] = []
-        if day.items.contains(where: { $0.kind == .event && $0.ownerAdultID == me?.id }) { out.append(Theme.Colors.powderBlueDk) }
-        if day.items.contains(where: { $0.kind == .event && $0.ownerAdultID != me?.id }) { out.append(Theme.Colors.sand) }
+        if day.items.contains(where: { $0.kind == .event && $0.ownerAdultID == me?.uuid }) { out.append(Theme.Colors.powderBlueDk) }
+        if day.items.contains(where: { $0.kind == .event && $0.ownerAdultID != me?.uuid }) { out.append(Theme.Colors.sand) }
         if day.items.contains(where: { $0.kind == .task || $0.kind == .meal || $0.kind == .plan }) { out.append(Theme.Colors.success) }
         return out
     }
@@ -183,7 +183,7 @@ struct LifeSyncView: View {
                     VStack(spacing: 0) {
                         ForEach(day.items) { item in
                             AgendaRow(item: item, me: me, partner: partner) {
-                                if item.kind == .task, let task = (household.tasks ?? []).first(where: { $0.id == item.id }) { editingTask = task }
+                                if item.kind == .task, let task = (household.tasks ?? []).first(where: { $0.uuid == item.id }) { editingTask = task }
                                 if item.kind == .meal { appState.openMeals() }
                                 if item.kind == .plan { appState.openPlans() }
                             }
@@ -211,16 +211,16 @@ enum SampleWeek {
             let start = cal.date(byAdding: .hour, value: hour, to: cal.date(byAdding: .day, value: day, to: today)!)!
             return CalendarEvent(sourceIdentifier: title, title: title, startDate: start, endDate: start.addingTimeInterval(3600), isAllDay: false, calendarName: "Home", ownerAdultID: who)
         }
-        return [ev("Daycare pickup", day: 0, hour: 16, who: partner?.id), ev("Dentist", day: 1, hour: 14, who: me?.id), ev("Standup", day: 2, hour: 9, who: me?.id), ev("Date night", day: 4, hour: 19, who: partner?.id)]
+        return [ev("Daycare pickup", day: 0, hour: 16, who: partner?.uuid), ev("Dentist", day: 1, hour: 14, who: me?.uuid), ev("Standup", day: 2, hour: 9, who: me?.uuid), ev("Date night", day: 4, hour: 19, who: partner?.uuid)]
     }
     static func today(me: Adult?, partner: Adult?) -> [AgendaItem] {
         let cal = Calendar.current
         let today = cal.startOfDay(for: Date())
         return [
             AgendaItem(id: UUID(), kind: .task, title: "Check car seat straps and fit", start: today, end: nil, isAllDay: true, ownerAdultID: nil, detail: "Every month", isOverdue: false),
-            AgendaItem(id: UUID(), kind: .event, title: "Standup", start: cal.date(byAdding: .hour, value: 9, to: today)!, end: cal.date(byAdding: .hour, value: 10, to: today)!, isAllDay: false, ownerAdultID: me?.id, detail: "Work", isOverdue: false),
-            AgendaItem(id: UUID(), kind: .event, title: "Daycare pickup", start: cal.date(byAdding: .hour, value: 16, to: today)!, end: cal.date(byAdding: .hour, value: 17, to: today)!, isAllDay: false, ownerAdultID: partner?.id, detail: "Family", isOverdue: false),
-            AgendaItem(id: UUID(), kind: .meal, title: "Sheet-pan chicken", start: cal.date(byAdding: .hour, value: 18, to: today)!, end: nil, isAllDay: false, ownerAdultID: me?.id, detail: "Dinner", isOverdue: false),
+            AgendaItem(id: UUID(), kind: .event, title: "Standup", start: cal.date(byAdding: .hour, value: 9, to: today)!, end: cal.date(byAdding: .hour, value: 10, to: today)!, isAllDay: false, ownerAdultID: me?.uuid, detail: "Work", isOverdue: false),
+            AgendaItem(id: UUID(), kind: .event, title: "Daycare pickup", start: cal.date(byAdding: .hour, value: 16, to: today)!, end: cal.date(byAdding: .hour, value: 17, to: today)!, isAllDay: false, ownerAdultID: partner?.uuid, detail: "Family", isOverdue: false),
+            AgendaItem(id: UUID(), kind: .meal, title: "Sheet-pan chicken", start: cal.date(byAdding: .hour, value: 18, to: today)!, end: nil, isAllDay: false, ownerAdultID: me?.uuid, detail: "Dinner", isOverdue: false),
             AgendaItem(id: UUID(), kind: .plan, title: "Date night", start: cal.date(byAdding: .hour, value: 19, to: today)!, end: nil, isAllDay: false, ownerAdultID: nil, detail: "Date night · confirmed", isOverdue: false),
         ]
     }
@@ -232,7 +232,7 @@ struct AgendaRow: View {
     let partner: Adult?
     let onTap: () -> Void
 
-    private var owner: Adult? { [me, partner].compactMap { $0 }.first { $0.id == item.ownerAdultID } }
+    private var owner: Adult? { [me, partner].compactMap { $0 }.first { $0.uuid == item.ownerAdultID } }
 
     var body: some View {
         Button(action: onTap) {
@@ -252,7 +252,7 @@ struct AgendaRow: View {
                         if item.kind == .event {
                             Text(item.isAllDay ? "All day" : timeRange)
                             if !item.detail.isEmpty { Text("· \(item.detail)") }
-                            if let owner, owner.id != me?.id { Text("· \(owner.displayName)") }
+                            if let owner, owner.uuid != me?.uuid { Text("· \(owner.displayName)") }
                         } else if item.kind == .meal {
                             Text(item.detail)
                             if let owner { Text("· \(owner.displayName) cooks") }
@@ -365,7 +365,7 @@ struct LifeSyncSetupSheet: View {
                         Text("This phone belongs to").font(Typography.label).foregroundStyle(Theme.Colors.sandDeep)
                         HStack {
                             ForEach(household.adults) { adult in
-                                Chip(label: adult.displayName, isSelected: appState.currentAdult(in: household)?.id == adult.id) { appState.currentAdultID = adult.id }
+                                Chip(label: adult.displayName, isSelected: appState.currentAdult(in: household)?.uuid == adult.uuid) { appState.currentAdultID = adult.uuid }
                             }
                         }
                     }

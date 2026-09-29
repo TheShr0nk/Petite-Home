@@ -298,7 +298,7 @@ struct PartnerInviteScreen: View {
                 guard let household else { onContinue(); return }
                 Task {
                     do {
-                        let (share, container) = try await CloudSharingService.shared.share(for: household.id, title: "Our \(AppCopy.binder)")
+                        let (share, container) = try await CloudSharingService.shared.share(for: household.uuid, title: "Our \(AppCopy.binder)")
                         sharePayload = SharePayload(share: share, container: container)
                     } catch {
                         errorText = error.localizedDescription

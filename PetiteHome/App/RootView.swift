@@ -20,14 +20,14 @@ struct RootView: View {
     }
 
     private var currentHousehold: Household? {
-        if let id = appState.currentHouseholdID, let h = households.first(where: { $0.id == id }) { return h }
+        if let id = appState.currentHouseholdID, let h = households.first(where: { $0.uuid == id }) { return h }
         return households.first
     }
 
     /// Onboarding done on another device, or the household arrived via sync: pick it up.
     private func repairHouseholdSelection() {
         if appState.currentHouseholdID == nil, let first = households.first {
-            appState.currentHouseholdID = first.id
+            appState.currentHouseholdID = first.uuid
             if first.ownerAppleUserID != nil { appState.hasCompletedOnboarding = true }
         }
     }

@@ -65,9 +65,8 @@ struct SitterProfile: Codable, Hashable, Identifiable {
 /// A plan the two of you make: date night, a day out, a trip, a visit.
 @Model
 final class FamilyPlan {
-    /// The stored UUID is the Identifiable id, not SwiftData's PersistentIdentifier.
-    typealias ID = UUID
-    var id: UUID = UUID()
+    /// Stable identity that survives sync. SwiftData supplies `id`; never declare one on a model.
+    var uuid: UUID = UUID()
     var title: String = ""
     var kindRaw: String = PlanKind.dateNight.rawValue
     var startDate: Date = Date()
@@ -148,7 +147,7 @@ enum SitterSheet {
         if !plan.location.isEmpty { when += ", at \(plan.location)" }
         lines.append(when + ".")
         lines.append("")
-        let kids = household.kids.filter { plan.childIDs.isEmpty || plan.childIDs.contains($0.id) }
+        let kids = household.kids.filter { plan.childIDs.isEmpty || plan.childIDs.contains($0.uuid) }
         for child in kids {
             var parts = ["\(child.displayName), \(child.ageShort)"]
             if !child.allergies.isEmpty { parts.append("Allergies: \(child.allergies.joined(separator: ", "))") }

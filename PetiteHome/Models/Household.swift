@@ -3,9 +3,8 @@ import SwiftData
 
 @Model
 final class Household {
-    /// The stored UUID is the Identifiable id, not SwiftData's PersistentIdentifier.
-    typealias ID = UUID
-    var id: UUID = UUID()
+    /// Stable identity that survives sync. SwiftData supplies `id`; never declare one on a model.
+    var uuid: UUID = UUID()
     var name: String = ""
     var createdAt: Date = Date()
     /// Set once the household's file has been saved (after Sign in with Apple).
@@ -56,9 +55,8 @@ final class Household {
 
 @Model
 final class Adult {
-    /// The stored UUID is the Identifiable id, not SwiftData's PersistentIdentifier.
-    typealias ID = UUID
-    var id: UUID = UUID()
+    /// Stable identity that survives sync. SwiftData supplies `id`; never declare one on a model.
+    var uuid: UUID = UUID()
     var firstName: String = ""
     var lastName: String = ""
     var phone: String = ""
@@ -93,9 +91,8 @@ final class Adult {
 
 @Model
 final class Child {
-    /// The stored UUID is the Identifiable id, not SwiftData's PersistentIdentifier.
-    typealias ID = UUID
-    var id: UUID = UUID()
+    /// Stable identity that survives sync. SwiftData supplies `id`; never declare one on a model.
+    var uuid: UUID = UUID()
     var firstName: String = ""
     var dateOfBirth: Date = Date()
     var pediatrician: Contact? = nil
@@ -138,9 +135,8 @@ final class Child {
 
 @Model
 final class FamilyFile {
-    /// The stored UUID is the Identifiable id, not SwiftData's PersistentIdentifier.
-    typealias ID = UUID
-    var id: UUID = UUID()
+    /// Stable identity that survives sync. SwiftData supplies `id`; never declare one on a model.
+    var uuid: UUID = UUID()
 
     // Section 1 — In an emergency
     var emergencyContacts: [Contact] = []
@@ -189,9 +185,8 @@ final class FamilyFile {
 
 @Model
 final class HouseholdTask {
-    /// The stored UUID is the Identifiable id, not SwiftData's PersistentIdentifier.
-    typealias ID = UUID
-    var id: UUID = UUID()
+    /// Stable identity that survives sync. SwiftData supplies `id`; never declare one on a model.
+    var uuid: UUID = UUID()
     var title: String = ""
     var notes: String = ""
     var recurrenceKey: String = Recurrence.none.storageKey
@@ -239,9 +234,8 @@ final class HouseholdTask {
 
 @Model
 final class VaultDocument {
-    /// The stored UUID is the Identifiable id, not SwiftData's PersistentIdentifier.
-    typealias ID = UUID
-    var id: UUID = UUID()
+    /// Stable identity that survives sync. SwiftData supplies `id`; never declare one on a model.
+    var uuid: UUID = UUID()
     var title: String = ""
     var categoryRaw: String = VaultCategory.other.rawValue
     /// AES-GCM sealed box (nonce + ciphertext + tag), sealed client-side before it syncs.
@@ -273,9 +267,8 @@ final class VaultDocument {
 
 @Model
 final class TrustedContact {
-    /// The stored UUID is the Identifiable id, not SwiftData's PersistentIdentifier.
-    typealias ID = UUID
-    var id: UUID = UUID()
+    /// Stable identity that survives sync. SwiftData supplies `id`; never declare one on a model.
+    var uuid: UUID = UUID()
     var contact: Contact = Contact()
     var accessLevelRaw: String = TrustedAccessLevel.viewFamilyFile.rawValue
     var shareLink: URL? = nil

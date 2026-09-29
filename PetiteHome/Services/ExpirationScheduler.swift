@@ -17,10 +17,10 @@ enum ExpirationScheduler {
     static func expirations(for household: Household) -> [Expiration] {
         var out: [Expiration] = []
         if let file = household.familyFile {
-            if let d = file.healthInsurance.expiresOn { out.append(Expiration(id: file.id, title: "Health insurance renewal", date: d, remindersEnabled: file.healthInsurance.remindersEnabled)) }
-            if let dental = file.dentalInsurance, let d = dental.expiresOn { out.append(Expiration(id: stable(file.id, "dental"), title: "Dental insurance renewal", date: d, remindersEnabled: dental.remindersEnabled)) }
-            if let home = file.homeownersOrRenters, let d = home.expiresOn { out.append(Expiration(id: stable(file.id, "home"), title: "Home insurance renewal", date: d, remindersEnabled: home.remindersEnabled)) }
-            if let auto = file.autoInsurance, let d = auto.expiresOn { out.append(Expiration(id: stable(file.id, "auto"), title: "Auto insurance renewal", date: d, remindersEnabled: auto.remindersEnabled)) }
+            if let d = file.healthInsurance.expiresOn { out.append(Expiration(id: file.uuid, title: "Health insurance renewal", date: d, remindersEnabled: file.healthInsurance.remindersEnabled)) }
+            if let dental = file.dentalInsurance, let d = dental.expiresOn { out.append(Expiration(id: stable(file.uuid, "dental"), title: "Dental insurance renewal", date: d, remindersEnabled: dental.remindersEnabled)) }
+            if let home = file.homeownersOrRenters, let d = home.expiresOn { out.append(Expiration(id: stable(file.uuid, "home"), title: "Home insurance renewal", date: d, remindersEnabled: home.remindersEnabled)) }
+            if let auto = file.autoInsurance, let d = auto.expiresOn { out.append(Expiration(id: stable(file.uuid, "auto"), title: "Auto insurance renewal", date: d, remindersEnabled: auto.remindersEnabled)) }
             for v in file.vehicles { if let d = v.registrationExpiresOn { out.append(Expiration(id: v.id, title: "\(v.yearMakeModel) registration", date: d, remindersEnabled: v.remindersEnabled)) } }
         }
         for adult in household.adults {
@@ -30,7 +30,7 @@ enum ExpirationScheduler {
             for item in child.expiringItems { out.append(Expiration(id: item.id, title: "\(child.displayName)'s \(item.title.lowercased())", date: item.expiresOn, remindersEnabled: item.remindersEnabled)) }
         }
         for doc in household.documents ?? [] {
-            if let d = doc.expiresOn { out.append(Expiration(id: doc.id, title: doc.title, date: d, remindersEnabled: doc.remindersEnabled)) }
+            if let d = doc.expiresOn { out.append(Expiration(id: doc.uuid, title: doc.title, date: d, remindersEnabled: doc.remindersEnabled)) }
         }
         return out.sorted { $0.date < $1.date }
     }
@@ -51,9 +51,9 @@ enum ExpirationScheduler {
         }
         for task in household.tasks ?? [] {
             if isPremium && !task.isDone {
-                service.scheduleTaskDue(id: task.id, title: task.title, due: task.nextDue)
+                service.scheduleTaskDue(id: task.uuid, title: task.title, due: task.nextDue)
             } else {
-                service.cancelTaskDue(id: task.id)
+                service.cancelTaskDue(id: task.uuid)
             }
         }
     }

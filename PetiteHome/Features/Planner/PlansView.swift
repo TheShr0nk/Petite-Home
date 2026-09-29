@@ -244,8 +244,8 @@ struct PlanEditorSheet: View {
                 VStack(alignment: .leading, spacing: Theme.Spacing.xs) {
                     Text("Who's going").font(Typography.label).foregroundStyle(Theme.Colors.sandDeep)
                     FlowLayout(spacing: Theme.Spacing.sm) {
-                        ForEach(household.adults) { a in Chip(label: a.displayName, isSelected: adultIDs.contains(a.id)) { toggle(&adultIDs, a.id) } }
-                        ForEach(household.kids) { c in Chip(label: c.displayName, isSelected: childIDs.contains(c.id)) { toggle(&childIDs, c.id); sitterStatus = childIDs.count == household.kids.count ? .notNeeded : (sitterStatus == .notNeeded ? .needed : sitterStatus) } }
+                        ForEach(household.adults) { a in Chip(label: a.displayName, isSelected: adultIDs.contains(a.uuid)) { toggle(&adultIDs, a.uuid) } }
+                        ForEach(household.kids) { c in Chip(label: c.displayName, isSelected: childIDs.contains(c.uuid)) { toggle(&childIDs, c.uuid); sitterStatus = childIDs.count == household.kids.count ? .notNeeded : (sitterStatus == .notNeeded ? .needed : sitterStatus) } }
                     }
                 }
 
@@ -298,17 +298,17 @@ struct PlanEditorSheet: View {
         .presentationBackground(Theme.Colors.cream)
         .sheet(isPresented: $showSitters) { SitterRosterSheet(household: household) }
         .confirmationDialog("Cancel this plan?", isPresented: $confirmDelete, titleVisibility: .visible) {
-            Button("Cancel the plan", role: .destructive) { if let plan { NotificationService.shared.cancelTaskDue(id: plan.id); context.delete(plan); try? context.save() }; dismiss() }
+            Button("Cancel the plan", role: .destructive) { if let plan { NotificationService.shared.cancelTaskDue(id: plan.uuid); context.delete(plan); try? context.save() }; dismiss() }
         }
         .onAppear {
             end = Calendar.current.date(byAdding: .hour, value: 3, to: date) ?? date
-            adultIDs = Set(household.adults.map(\.id))
+            adultIDs = Set(household.adults.map(\.uuid))
             if let plan {
                 title = plan.title; kind = plan.kind; date = plan.startDate; hasEnd = plan.endDate != nil; end = plan.endDate ?? end
                 location = plan.location; notes = plan.notes; adultIDs = Set(plan.adultIDs); childIDs = Set(plan.childIDs)
                 sitterStatus = plan.sitterStatus; sitterID = plan.sitterID; reminder = plan.reminderEnabled
             } else if !kind.usuallyNeedsSitter {
-                childIDs = Set(household.kids.map(\.id)); sitterStatus = .notNeeded
+                childIDs = Set(household.kids.map(\.uuid)); sitterStatus = .notNeeded
             }
         }
     }
@@ -338,9 +338,9 @@ struct PlanEditorSheet: View {
             household.sitters[i].timesUsed += 1; household.sitters[i].lastUsedAt = date
         }
         if reminder, let dayBefore = Calendar.current.date(byAdding: .day, value: -1, to: date) {
-            NotificationService.shared.scheduleTaskDue(id: target.id, title: "Tomorrow: \(target.displayTitle)", due: dayBefore)
+            NotificationService.shared.scheduleTaskDue(id: target.uuid, title: "Tomorrow: \(target.displayTitle)", due: dayBefore)
         } else {
-            NotificationService.shared.cancelTaskDue(id: target.id)
+            NotificationService.shared.cancelTaskDue(id: target.uuid)
         }
         try? context.save()
         dismiss()

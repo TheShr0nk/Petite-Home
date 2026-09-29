@@ -57,7 +57,7 @@ final class AppState {
 
     /// The adult using this phone: the explicit choice, else whoever signed in with Apple here, else the owner.
     func currentAdult(in household: Household) -> Adult? {
-        if let id = currentAdultID, let a = household.adults.first(where: { $0.id == id }) { return a }
+        if let id = currentAdultID, let a = household.adults.first(where: { $0.uuid == id }) { return a }
         if let apple = AppleSignIn.storedUserID, household.ownerAppleUserID == apple { return household.owner }
         return household.owner ?? household.adults.first
     }

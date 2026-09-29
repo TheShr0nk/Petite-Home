@@ -145,7 +145,7 @@ struct DocumentDetailView: View {
         .navigationBarTitleDisplayMode(.inline)
         .confirmationDialog("Delete this document?", isPresented: $confirmDelete, titleVisibility: .visible) {
             Button("Delete", role: .destructive) {
-                NotificationService.shared.cancelExpiration(id: doc.id)
+                NotificationService.shared.cancelExpiration(id: doc.uuid)
                 context.delete(doc); try? context.save(); dismiss()
             }
         }
@@ -223,8 +223,8 @@ struct AddDocumentSheet: View {
                     Text("Whose").font(Typography.label).foregroundStyle(Theme.Colors.sandDeep)
                     FlowLayout(spacing: Theme.Spacing.sm) {
                         Chip(label: "The household", isSelected: linkedChildID == nil && linkedAdultID == nil) { linkedChildID = nil; linkedAdultID = nil }
-                        ForEach(household.kids) { c in Chip(label: c.displayName, isSelected: linkedChildID == c.id) { linkedChildID = c.id; linkedAdultID = nil } }
-                        ForEach(household.adults) { a in Chip(label: a.displayName, isSelected: linkedAdultID == a.id) { linkedAdultID = a.id; linkedChildID = nil } }
+                        ForEach(household.kids) { c in Chip(label: c.displayName, isSelected: linkedChildID == c.uuid) { linkedChildID = c.uuid; linkedAdultID = nil } }
+                        ForEach(household.adults) { a in Chip(label: a.displayName, isSelected: linkedAdultID == a.uuid) { linkedAdultID = a.uuid; linkedChildID = nil } }
                     }
                 }
                 RenewalRow(label: "Expires", date: $expiresOn, remindersEnabled: $remind, household: household)
@@ -255,8 +255,8 @@ struct AddDocumentSheet: View {
     }
 
     private func save() {
-        let child = household.kids.first { $0.id == linkedChildID }
-        let adult = household.adults.first { $0.id == linkedAdultID }
+        let child = household.kids.first { $0.uuid == linkedChildID }
+        let adult = household.adults.first { $0.uuid == linkedAdultID }
         let finalTitle = title.isEmpty ? category.label : title
         var saved: VaultDocument?
         if let image {

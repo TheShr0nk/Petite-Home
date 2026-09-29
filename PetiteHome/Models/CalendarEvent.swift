@@ -7,9 +7,8 @@ import SwiftData
 /// plan around each other is kept: title, time, which calendar, whose it is.
 @Model
 final class CalendarEvent {
-    /// The stored UUID is the Identifiable id, not SwiftData's PersistentIdentifier.
-    typealias ID = UUID
-    var id: UUID = UUID()
+    /// Stable identity that survives sync. SwiftData supplies `id`; never declare one on a model.
+    var uuid: UUID = UUID()
     /// EventKit's identifier on the device that mirrored it, so re-syncs update in place.
     var sourceIdentifier: String = ""
     var title: String = ""
@@ -64,7 +63,7 @@ enum LifeSyncAgenda {
                   let dayEnd = calendar.date(byAdding: .day, value: 1, to: dayStart) else { return nil }
             var items: [AgendaItem] = []
             for e in events where e.startDate < dayEnd && e.endDate > dayStart {
-                items.append(AgendaItem(id: e.id, kind: .event, title: e.title, start: e.startDate, end: e.endDate, isAllDay: e.isAllDay,
+                items.append(AgendaItem(id: e.uuid, kind: .event, title: e.title, start: e.startDate, end: e.endDate, isAllDay: e.isAllDay,
                                         ownerAdultID: e.ownerAdultID, detail: e.calendarName, isOverdue: false))
             }
             for t in tasks where !t.isDone {
@@ -72,18 +71,18 @@ enum LifeSyncAgenda {
                 // Overdue tasks pile onto today so they are not lost in the past.
                 let showsToday = offset == 0 && due < startOfFirst
                 if due == dayStart || showsToday {
-                    items.append(AgendaItem(id: t.id, kind: .task, title: t.title, start: dayStart, end: nil, isAllDay: true,
-                                            ownerAdultID: t.assignedTo?.id, detail: t.recurrence.label, isOverdue: showsToday))
+                    items.append(AgendaItem(id: t.uuid, kind: .task, title: t.title, start: dayStart, end: nil, isAllDay: true,
+                                            ownerAdultID: t.assignedTo?.uuid, detail: t.recurrence.label, isOverdue: showsToday))
                 }
             }
             for m in meals where calendar.startOfDay(for: m.date) == dayStart {
                 let at = calendar.date(byAdding: .hour, value: m.slot.hour, to: dayStart) ?? dayStart
-                items.append(AgendaItem(id: m.id, kind: .meal, title: m.displayTitle, start: at, end: nil, isAllDay: false,
+                items.append(AgendaItem(id: m.uuid, kind: .meal, title: m.displayTitle, start: at, end: nil, isAllDay: false,
                                         ownerAdultID: m.cookAdultID, detail: m.slot.label, isOverdue: false))
             }
             for p in plans where calendar.isDate(p.startDate, inSameDayAs: dayStart) {
                 let detail = p.sitterStatus == .notNeeded ? p.kind.label : "\(p.kind.label) · \(p.sitterStatus.label.lowercased())"
-                items.append(AgendaItem(id: p.id, kind: .plan, title: p.displayTitle, start: p.startDate, end: p.endDate, isAllDay: false,
+                items.append(AgendaItem(id: p.uuid, kind: .plan, title: p.displayTitle, start: p.startDate, end: p.endDate, isAllDay: false,
                                         ownerAdultID: nil, detail: detail, isOverdue: p.needsAttention))
             }
             items.sort { a, b in

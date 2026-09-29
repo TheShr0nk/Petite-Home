@@ -65,7 +65,7 @@ struct MealsView: View {
                                             HStack(spacing: Theme.Spacing.xs) {
                                                 Text(m.displayTitle).font(Typography.body).foregroundStyle(Theme.Colors.ink).lineLimit(1)
                                                 if m.slot != .dinner { Text("· \(m.slot.label.lowercased())").font(Typography.caption).foregroundStyle(Theme.Colors.sandDeep) }
-                                                if let cook = household.adults.first(where: { $0.id == m.cookAdultID }) { Text("· \(cook.displayName) cooks").font(Typography.caption).foregroundStyle(Theme.Colors.sandDeep) }
+                                                if let cook = household.adults.first(where: { $0.uuid == m.cookAdultID }) { Text("· \(cook.displayName) cooks").font(Typography.caption).foregroundStyle(Theme.Colors.sandDeep) }
                                             }
                                         }
                                     }

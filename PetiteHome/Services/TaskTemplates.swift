@@ -20,7 +20,7 @@ struct TaskTemplate: Identifiable, Hashable {
 
     /// The annual well-child visit, one per kid, anchored to the birthday.
     static func wellChild(for child: Child, calendar: Calendar = .current, now: Date = Date()) -> TaskTemplate {
-        TaskTemplate(key: "well_child_\(child.id.uuidString)",
+        TaskTemplate(key: "well_child_\(child.uuid.uuidString)",
                      title: "\(child.displayName)'s well-child visit",
                      recurrence: .annual,
                      category: .health,

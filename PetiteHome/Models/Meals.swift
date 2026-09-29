@@ -21,9 +21,8 @@ enum MealSlot: String, Codable, CaseIterable, Identifiable {
 /// plainly (it still syncs through CloudKit as an asset).
 @Model
 final class Recipe {
-    /// The stored UUID is the Identifiable id, not SwiftData's PersistentIdentifier.
-    typealias ID = UUID
-    var id: UUID = UUID()
+    /// Stable identity that survives sync. SwiftData supplies `id`; never declare one on a model.
+    var uuid: UUID = UUID()
     var title: String = ""
     var ingredients: [String] = []
     var steps: [String] = []
@@ -61,9 +60,8 @@ final class Recipe {
 /// One meal on one day. Either points at a recipe or is just a title ("Leftovers", "Takeout").
 @Model
 final class PlannedMeal {
-    /// The stored UUID is the Identifiable id, not SwiftData's PersistentIdentifier.
-    typealias ID = UUID
-    var id: UUID = UUID()
+    /// Stable identity that survives sync. SwiftData supplies `id`; never declare one on a model.
+    var uuid: UUID = UUID()
     var date: Date = Date()
     var slotRaw: String = MealSlot.dinner.rawValue
     var title: String = ""

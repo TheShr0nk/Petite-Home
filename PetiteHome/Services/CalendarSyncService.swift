@@ -50,7 +50,7 @@ final class CalendarSyncService {
         let fresh = store.events(matching: predicate)
 
         var existing: [String: CalendarEvent] = [:]
-        for e in household.calendarEvents ?? [] where e.ownerAdultID == adult.id {
+        for e in household.calendarEvents ?? [] where e.ownerAdultID == adult.uuid {
             existing[e.sourceIdentifier] = e
         }
 
@@ -69,7 +69,7 @@ final class CalendarSyncService {
                 mirrored.mirroredAt = Date()
             } else {
                 let mirrored = CalendarEvent(sourceIdentifier: key, title: ek.title ?? "", startDate: ek.startDate, endDate: ek.endDate,
-                                             isAllDay: ek.isAllDay, calendarName: ek.calendar.title, ownerAdultID: adult.id)
+                                             isAllDay: ek.isAllDay, calendarName: ek.calendar.title, ownerAdultID: adult.uuid)
                 mirrored.location = ek.location ?? ""
                 household.calendarEvents?.append(mirrored)
             }
@@ -86,7 +86,7 @@ final class CalendarSyncService {
     func disable(adult: Adult, household: Household, context: ModelContext) {
         adult.calendarSyncEnabled = false
         adult.calendarSyncedAt = nil
-        for e in household.calendarEvents ?? [] where e.ownerAdultID == adult.id { context.delete(e) }
+        for e in household.calendarEvents ?? [] where e.ownerAdultID == adult.uuid { context.delete(e) }
         try? context.save()
     }
 }

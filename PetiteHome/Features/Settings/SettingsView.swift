@@ -32,14 +32,14 @@ struct SettingsView: View {
                     Button { household.members?.append(Adult(firstName: "Partner", role: .parent)); try? context.save() } label: { Label("Add my partner", systemImage: "plus") }
                         .listRowBackground(Theme.Colors.creamDeep)
                 } else {
-                    Picker("This phone belongs to", selection: Binding(get: { appState.currentAdult(in: household)?.id ?? household.id }, set: { appState.currentAdultID = $0 })) {
-                        ForEach(household.adults) { a in Text(a.displayName).tag(a.id) }
+                    Picker("This phone belongs to", selection: Binding(get: { appState.currentAdult(in: household)?.uuid ?? household.uuid }, set: { appState.currentAdultID = $0 })) {
+                        ForEach(household.adults) { a in Text(a.displayName).tag(a.uuid) }
                     }
                     .listRowBackground(Theme.Colors.creamDeep)
                 }
                 if households.count > 1 {
-                    Picker("Current household", selection: Binding(get: { appState.currentHouseholdID ?? household.id }, set: { appState.currentHouseholdID = $0 })) {
-                        ForEach(households) { h in Text(h.displayName).tag(h.id) }
+                    Picker("Current household", selection: Binding(get: { appState.currentHouseholdID ?? household.uuid }, set: { appState.currentHouseholdID = $0 })) {
+                        ForEach(households) { h in Text(h.displayName).tag(h.uuid) }
                     }
                     .listRowBackground(Theme.Colors.creamDeep)
                 }
@@ -52,7 +52,7 @@ struct SettingsView: View {
             }
 
             Section {
-                let partners = CloudSharingService.shared.participants(householdID: household.id)
+                let partners = CloudSharingService.shared.participants(householdID: household.uuid)
                 if partners.isEmpty {
                     Button { invitePartner() } label: { Label(household.partner.map { "Invite \($0.displayName)" } ?? "Invite my partner", systemImage: "person.2") }
                 } else {
@@ -121,7 +121,7 @@ struct SettingsView: View {
                 h.members = [Adult(firstName: household.owner?.firstName ?? "Me", lastName: household.owner?.lastName ?? "", role: .parent, isAccountOwner: true)]
                 h.ownerAppleUserID = household.ownerAppleUserID
                 try? context.save()
-                appState.currentHouseholdID = h.id
+                appState.currentHouseholdID = h.uuid
                 newHouseholdName = ""
             }
             Button("Cancel", role: .cancel) {}
@@ -138,7 +138,7 @@ struct SettingsView: View {
     private func invitePartner() {
         Task {
             do {
-                let (share, container) = try await CloudSharingService.shared.share(for: household.id, title: "Our \(AppCopy.binder)")
+                let (share, container) = try await CloudSharingService.shared.share(for: household.uuid, title: "Our \(AppCopy.binder)")
                 sharePayload = SharePayload(share: share, container: container)
             } catch { shareError = error.localizedDescription }
         }

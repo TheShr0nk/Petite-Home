@@ -24,7 +24,7 @@ struct HomeView: View {
                 BrandDivider()
                 upcoming.reveal(2, baseDelay: 0.05)
                 if let me = appState.currentAdult(in: household), !me.calendarSyncEnabled, household.adults.count > 1 {
-                    lifeSyncNudge(partnerName: household.adults.first { $0.id != me.id }?.displayName ?? "your partner")
+                    lifeSyncNudge(partnerName: household.adults.first { $0.uuid != me.uuid }?.displayName ?? "your partner")
                 }
                 if !household.kids.isEmpty {
                     BrandDivider()
@@ -167,14 +167,14 @@ struct HomeView: View {
                     if entitlements.isPremium, let tonight {
                         Button { appState.openMeals() } label: {
                             UpcomingRow(title: "Tonight: \(tonight.displayTitle)", date: Date(), tone: .normal, icon: "fork.knife",
-                                        subtitle: household.adults.first { $0.id == tonight.cookAdultID }.map { "\($0.displayName) cooks" } ?? "Dinner")
+                                        subtitle: household.adults.first { $0.uuid == tonight.cookAdultID }.map { "\($0.displayName) cooks" } ?? "Dinner")
                                 .padding(.horizontal, Theme.Spacing.lg).contentShape(Rectangle())
                         }
                         .buttonStyle(.plain)
                         SandDivider().padding(.leading, Theme.Spacing.lg)
                     }
-                    ForEach(todayEvents.prefix(2), id: \.id) { event in
-                        let who = household.adults.first { $0.id == event.ownerAdultID }?.displayName
+                    ForEach(todayEvents.prefix(2), id: \.uuid) { event in
+                        let who = household.adults.first { $0.uuid == event.ownerAdultID }?.displayName
                         UpcomingRow(title: who.map { "\(event.title) · \($0)" } ?? event.title,
                                     date: event.startDate, tone: .normal, icon: "calendar",
                                     subtitle: event.isAllDay ? "Today, all day" : "Today at \(event.startDate.formatted(date: .omitted, time: .shortened))")
@@ -217,7 +217,7 @@ struct HomeView: View {
     private func invitePartner() {
         Task {
             do {
-                let (share, container) = try await CloudSharingService.shared.share(for: household.id, title: "Our \(AppCopy.binder)")
+                let (share, container) = try await CloudSharingService.shared.share(for: household.uuid, title: "Our \(AppCopy.binder)")
                 sharePayload = SharePayload(share: share, container: container)
             } catch {
                 shareError = error.localizedDescription
