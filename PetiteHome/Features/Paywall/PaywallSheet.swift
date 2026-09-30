@@ -52,6 +52,10 @@ struct PaywallSheet: View {
                 }
                 if entitlements.purchaseInProgress { PulsingDots() }
                 Button(entitlements.purchaseInProgress ? "One moment" : "Start free trial") {
+                    if entitlements.usesLocalTrial {
+                        if entitlements.startLocalTrial() { dismiss() }
+                        return
+                    }
                     Task {
                         let package = annualSelected ? entitlements.annual : entitlements.monthly
                         guard let package else { lastLocalError = "Prices haven't loaded yet. Try again in a moment."; return }
@@ -60,7 +64,9 @@ struct PaywallSheet: View {
                 }
                 .buttonStyle(.primary(enabled: !entitlements.purchaseInProgress)).disabled(entitlements.purchaseInProgress)
                 if let lastLocalError { Text(lastLocalError).font(Typography.caption).foregroundStyle(Theme.Colors.danger) }
-                Text("Nothing is charged for 7 days. Then it renews automatically at the price shown until you cancel in Settings.")
+                Text(entitlements.usesLocalTrial
+                     ? "Free for \(EntitlementStore.localTrialDays) days while we're in testing. Nothing to cancel."
+                     : "Nothing is charged for 7 days. Then it renews automatically at the price shown until you cancel in Settings.")
                     .font(Typography.caption).foregroundStyle(Theme.Colors.sandDeep).multilineTextAlignment(.center)
                 HStack(spacing: Theme.Spacing.lg) {
                     Button("Restore purchases") { Task { await entitlements.restore(); if entitlements.isPremium { dismiss() } } }

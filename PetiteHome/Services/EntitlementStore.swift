@@ -50,6 +50,9 @@ final class EntitlementStore {
     private(set) var hasActiveSubscription = false
     private(set) var isInTrial = false
     private(set) var foundingUnlockExpiresAt: Date?
+    /// TestFlight trial: premium granted on this phone without a store, while RevenueCat has no key.
+    private(set) var localTrialExpiresAt: Date?
+    static let localTrialDays = 30
     private(set) var purchaseInProgress = false
     private(set) var storeAvailable = false
     var lastError: String?
@@ -57,8 +60,12 @@ final class EntitlementStore {
     var isPremium: Bool {
         if hasActiveSubscription { return true }
         if let exp = foundingUnlockExpiresAt, exp > Date() { return true }
+        if let exp = localTrialExpiresAt, exp > Date() { return true }
         return false
     }
+
+    /// True while the app runs without a RevenueCat key: trials are granted locally.
+    var usesLocalTrial: Bool { !Purchases.isConfigured }
 
     /// "$39.00" and "$4.99", from the store when it has answered, else the list prices.
     var annualPriceText: String { annual?.storeProduct.localizedPriceString ?? "$39.00" }
@@ -75,6 +82,21 @@ final class EntitlementStore {
 
     private init() {
         loadFoundingUnlock()
+        if let raw = KeychainService.shared.string(for: .localTrial), let interval = TimeInterval(raw) {
+            localTrialExpiresAt = Date(timeIntervalSince1970: interval)
+        }
+    }
+
+    /// Grants premium on this phone for `localTrialDays`. Only used when there is no store.
+    @discardableResult
+    func startLocalTrial() -> Bool {
+        guard usesLocalTrial else { return false }
+        if let exp = localTrialExpiresAt, exp > Date() { return true }
+        let expires = Calendar.current.date(byAdding: .day, value: Self.localTrialDays, to: Date()) ?? Date()
+        KeychainService.shared.setString(String(expires.timeIntervalSince1970), for: .localTrial)
+        localTrialExpiresAt = expires
+        Analytics.track(.trialStarted, ["product": "local_trial"])
+        return true
     }
 
     /// Call once at launch, before anything reads `isPremium`.
@@ -104,7 +126,7 @@ final class EntitlementStore {
 
     /// Buys the package. Returns true when premium is active afterwards.
     func purchase(_ package: Package) async -> Bool {
-        guard Purchases.isConfigured else { lastError = "The store isn't set up on this build."; return false }
+        guard Purchases.isConfigured else { return startLocalTrial() }
         purchaseInProgress = true
         defer { purchaseInProgress = false }
         do {

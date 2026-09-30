@@ -106,6 +106,11 @@ text sent to a sitter from the Binder: kids' allergies, meds, notes, who to
 call, the address. It never includes codes or account details. The sitter
 roster is a value list on the household, so both partners share it.
 
+**Trials without a store (TestFlight).** While `RevenueCatAPIKey` is empty,
+"Start free trial" grants premium on that phone for 30 days, stored in the
+Keychain, with no purchase. Adding the key switches every trial button to real
+RevenueCat purchases; existing local trials run out on their own.
+
 **RevenueCat setup.** In the RevenueCat dashboard create the two App Store
 products (`co.petitehome.premium.monthly`, `co.petitehome.premium.annual`, one
 subscription group, 7-day introductory free trial on both), an entitlement

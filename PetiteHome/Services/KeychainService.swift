@@ -12,6 +12,7 @@ struct KeychainService {
         case alarmCode = "familyfile.alarmCode"
         case vaultKey = "vault.key.v1"
         case foundingUnlock = "premium.founding"
+        case localTrial = "premium.localTrial"
         case deviceKey = "codes.key.v1"
     }
 

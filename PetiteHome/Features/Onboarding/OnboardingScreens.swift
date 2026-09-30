@@ -437,7 +437,11 @@ struct PremiumOfferScreen: View {
             if entitlements.purchaseInProgress { PulsingDots().padding(.bottom, Theme.Spacing.xs) }
             Button("Start free trial") {
                 Task {
-                    if let annual = entitlements.annual { _ = await entitlements.purchase(annual) }
+                    if entitlements.usesLocalTrial {
+                        entitlements.startLocalTrial()
+                    } else if let annual = entitlements.annual {
+                        _ = await entitlements.purchase(annual)
+                    }
                     stashChoices()
                     if entitlements.isPremium, let household {
                         LifeSyncPending.apply(to: household, adult: appState.currentAdult(in: household), context: context)

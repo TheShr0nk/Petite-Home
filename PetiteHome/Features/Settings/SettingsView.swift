@@ -207,7 +207,8 @@ struct SettingsView: View {
 
     private var premiumStatus: String {
         if entitlements.hasActiveSubscription { return entitlements.isInTrial ? "Free trial" : "Active" }
-        if let exp = entitlements.foundingUnlockExpiresAt { return "Founding member until \(exp.formatted(date: .abbreviated, time: .omitted))" }
+        if let exp = entitlements.foundingUnlockExpiresAt, exp > Date() { return "Founding member until \(exp.formatted(date: .abbreviated, time: .omitted))" }
+        if let exp = entitlements.localTrialExpiresAt, exp > Date() { return "Trial until \(exp.formatted(date: .abbreviated, time: .omitted))" }
         return "Active"
     }
 
