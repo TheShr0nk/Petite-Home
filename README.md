@@ -148,7 +148,8 @@ moment screen after onboarding. Everything honours Reduce Motion.
 - There is no sign-in. Identity is the iCloud user record (`CloudIdentity`),
   so there is no account to delete; Settings offers "Delete this household"
   which removes everything from the phone and iCloud.
-- App icon: `Assets.xcassets/AppIcon` is empty. A 1024×1024 image is required.
+- App icon: a placeholder (the site's powder-blue mark with a serif P) is in
+  `Assets.xcassets/AppIcon`. Replace it with final artwork before release.
 - Export compliance: the vault uses CryptoKit AES-GCM, which is standard
   encryption; `ITSAppUsesNonExemptEncryption` is false. Confirm the annual
   self-classification with your counsel if selling outside the US.
