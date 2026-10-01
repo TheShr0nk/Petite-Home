@@ -111,7 +111,10 @@ roster is a value list on the household, so both partners share it.
 Keychain, with no purchase. Adding the key switches every trial button to real
 RevenueCat purchases; existing local trials run out on their own.
 
-**RevenueCat setup.** In the RevenueCat dashboard create the two App Store
+**RevenueCat setup.** Info.plist carries a RevenueCat *Test Store* key
+(`test_…`), which lets the paywall run real purchase flows against
+RevenueCat's simulated store with no App Store Connect products. Swap it for
+the `appl_…` production key before release. In the RevenueCat dashboard create the two App Store
 products (`co.petitehome.premium.monthly`, `co.petitehome.premium.annual`, one
 subscription group, 7-day introductory free trial on both), an entitlement
 called `premium`, and a current offering with a `$rc_annual` and a
