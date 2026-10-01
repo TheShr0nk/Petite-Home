@@ -113,8 +113,11 @@ RevenueCat purchases; existing local trials run out on their own.
 
 **RevenueCat setup.** Info.plist carries a RevenueCat *Test Store* key
 (`test_…`), which lets the paywall run real purchase flows against
-RevenueCat's simulated store with no App Store Connect products. Swap it for
-the `appl_…` production key before release. In the RevenueCat dashboard create the three App Store
+RevenueCat's simulated store in debug builds, with no App Store Connect
+products. The SDK crashes a Release build that uses a test key, so
+`EntitlementStore.configure()` skips it outside DEBUG: TestFlight builds run
+without a store and use the local testing unlock. Swap in the `appl_…`
+production key for real purchases on TestFlight and release. In the RevenueCat dashboard create the three App Store
 products (`co.petitehome.premium.weekly`, `.monthly`, `.annual`) in one
 subscription group. Intro offer on all three: $0.99 pay-up-front for the first week, then the
 plan's price. There are no free trials. Apple allows one intro offer per

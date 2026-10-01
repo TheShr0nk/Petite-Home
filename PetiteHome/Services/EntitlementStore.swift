@@ -186,8 +186,16 @@ final class EntitlementStore {
     }
 
     /// Call once at launch, before anything reads `isPremium`.
+    ///
+    /// A RevenueCat Test Store key (`test_…`) is only allowed in debug builds; the
+    /// SDK deliberately crashes a Release build that uses one. TestFlight builds are
+    /// Release, so with a test key they run without a store and the paywall grants
+    /// the local testing unlock instead. A production `appl_…` key works everywhere.
     static func configure() {
         guard !apiKey.isEmpty else { return }
+        #if !DEBUG
+        if apiKey.hasPrefix("test_") { return }
+        #endif
         Purchases.logLevel = .warn
         Purchases.configure(with: Configuration.Builder(withAPIKey: apiKey).build())
         Task { @MainActor in
