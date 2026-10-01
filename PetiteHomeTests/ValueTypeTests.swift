@@ -35,6 +35,19 @@ final class ValueTypeTests: XCTestCase {
         XCTAssertEqual(Recurrence.custom(days: 10).next(after: d), cal.date(byAdding: .day, value: 10, to: d))
     }
 
+    func testDailyAndWeeklyTemplatesStartSensibly() {
+        let template = TaskTemplate.pack.first { $0.key == "plan_dinner" }!
+        XCTAssertEqual(template.cadence, .daily)
+        let morning = cal.date(bySettingHour: 8, minute: 0, second: 0, of: Date())!
+        XCTAssertEqual(TaskTemplate.firstDue(for: template, now: morning), cal.startOfDay(for: morning), "before 3pm, plan dinner is due today")
+        let evening = cal.date(bySettingHour: 20, minute: 0, second: 0, of: Date())!
+        XCTAssertEqual(TaskTemplate.firstDue(for: template, now: evening), cal.date(byAdding: .day, value: 1, to: cal.startOfDay(for: evening)))
+        let week = TaskTemplate.pack.first { $0.key == "plan_week" }!
+        XCTAssertEqual(cal.component(.weekday, from: TaskTemplate.firstDue(for: week, now: Date())), 1, "plan the week lands on a Sunday")
+        XCTAssertEqual(week.makeTask(due: Date()).reminderHour, 19)
+        XCTAssertEqual(TaskTemplate.grouped().map(\.0), [.daily, .weekly, .monthly, .seasonal])
+    }
+
     func testTaskCompletionRollsForward() {
         let due = Date()
         let task = HouseholdTask(title: "Filter", recurrence: .quarterly, nextDue: due, category: .home)

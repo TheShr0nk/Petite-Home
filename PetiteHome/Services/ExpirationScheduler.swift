@@ -51,7 +51,7 @@ enum ExpirationScheduler {
         }
         for task in household.tasks ?? [] {
             if isPremium && !task.isDone {
-                service.scheduleTaskDue(id: task.uuid, title: task.title, due: task.nextDue)
+                service.scheduleTaskDue(id: task.uuid, title: task.title, due: task.nextDue, hour: task.reminderHour)
             } else {
                 service.cancelTaskDue(id: task.uuid)
             }

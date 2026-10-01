@@ -392,20 +392,24 @@ struct LifeSyncSetupScreen: View {
                 CalendarPickerBlock(granted: $draft.calendarAccessGranted, selected: $draft.selectedCalendarIDs)
                 VStack(alignment: .leading, spacing: Theme.Spacing.md) {
                     Text("Tasks the app should remember").font(Typography.label).foregroundStyle(Theme.Colors.sandDeep)
-                    VStack(spacing: Theme.Spacing.sm) {
-                        ForEach(TaskTemplate.pack) { t in
-                            SelectableRow(title: t.title, detail: t.recurrence.label, systemImage: t.category.systemImage,
-                                          isSelected: draft.selectedTemplateKeys.contains(t.key)) {
-                                if draft.selectedTemplateKeys.contains(t.key) { draft.selectedTemplateKeys.remove(t.key) } else { draft.selectedTemplateKeys.insert(t.key) }
+                    VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
+                        ForEach(TaskTemplate.grouped(), id: \.0) { cadence, templates in
+                            Eyebrow(text: cadence.label).padding(.top, Theme.Spacing.xs)
+                            ForEach(templates) { t in
+                                SelectableRow(title: t.title, detail: t.recurrence.label + (t.weekday.map { " · \(Calendar.current.weekdaySymbols[$0 - 1])" } ?? ""), systemImage: t.category.systemImage,
+                                              isSelected: draft.selectedTemplateKeys.contains(t.key)) {
+                                    if draft.selectedTemplateKeys.contains(t.key) { draft.selectedTemplateKeys.remove(t.key) } else { draft.selectedTemplateKeys.insert(t.key) }
+                                }
                             }
                         }
+                        Eyebrow(text: "Every year").padding(.top, Theme.Spacing.xs)
                         if !draft.children.isEmpty {
                             SelectableRow(title: draft.children.count == 1 ? "\(draft.children[0].firstName)'s well-child visit" : "Well-child visits, one per kid",
                                           detail: "Every year, around the birthday", systemImage: "heart.text.square",
                                           isSelected: draft.wantsWellChildVisits) { draft.wantsWellChildVisits.toggle() }
                         }
                     }
-                    Text("Shared with \(partnerName). Either of you can check one off.").font(Typography.caption).foregroundStyle(Theme.Colors.sandDeep)
+                    Text("Shared with \(partnerName). Either of you can check one off. They can also go into your phone's Reminders and Calendar, in a list called Petite Home, from Settings.").font(Typography.caption).foregroundStyle(Theme.Colors.sandDeep)
                 }
                 HStack { Spacer(); PremiumPill(); Spacer() }
             }

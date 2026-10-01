@@ -124,12 +124,13 @@ enum TaskCategory: String, Codable, CaseIterable, Identifiable {
 }
 
 enum Recurrence: Codable, Hashable {
-    case none, weekly, monthly, quarterly, semiannual, annual
+    case none, daily, weekly, monthly, quarterly, semiannual, annual
     case custom(days: Int)
 
     var label: String {
         switch self {
         case .none: return "Once"
+        case .daily: return "Every day"
         case .weekly: return "Every week"
         case .monthly: return "Every month"
         case .quarterly: return "Every 3 months"
@@ -143,6 +144,7 @@ enum Recurrence: Codable, Hashable {
     func next(after date: Date, calendar: Calendar = .current) -> Date? {
         switch self {
         case .none: return nil
+        case .daily: return calendar.date(byAdding: .day, value: 1, to: date)
         case .weekly: return calendar.date(byAdding: .day, value: 7, to: date)
         case .monthly: return calendar.date(byAdding: .month, value: 1, to: date)
         case .quarterly: return calendar.date(byAdding: .month, value: 3, to: date)
@@ -156,6 +158,7 @@ enum Recurrence: Codable, Hashable {
     var storageKey: String {
         switch self {
         case .none: return "none"
+        case .daily: return "daily"
         case .weekly: return "weekly"
         case .monthly: return "monthly"
         case .quarterly: return "quarterly"
@@ -170,6 +173,7 @@ enum Recurrence: Codable, Hashable {
     }
     static func from(key: String, days: Int) -> Recurrence {
         switch key {
+        case "daily": return .daily
         case "weekly": return .weekly
         case "monthly": return .monthly
         case "quarterly": return .quarterly
@@ -179,7 +183,31 @@ enum Recurrence: Codable, Hashable {
         default: return .none
         }
     }
-    static let presets: [Recurrence] = [.none, .weekly, .monthly, .quarterly, .semiannual, .annual]
+    static let presets: [Recurrence] = [.none, .daily, .weekly, .monthly, .quarterly, .semiannual, .annual]
+
+    /// Daily, weekly, monthly, or longer: how the Planner groups templates.
+    var cadence: Cadence {
+        switch self {
+        case .daily: return .daily
+        case .weekly: return .weekly
+        case .monthly: return .monthly
+        case .custom(let d): return d <= 1 ? .daily : d <= 7 ? .weekly : d <= 31 ? .monthly : .seasonal
+        default: return .seasonal
+        }
+    }
+}
+
+enum Cadence: String, CaseIterable, Identifiable {
+    case daily, weekly, monthly, seasonal
+    var id: String { rawValue }
+    var label: String {
+        switch self {
+        case .daily: return "Every day"
+        case .weekly: return "Every week"
+        case .monthly: return "Every month"
+        case .seasonal: return "A few times a year"
+        }
+    }
 }
 
 enum VaultCategory: String, Codable, CaseIterable, Identifiable {

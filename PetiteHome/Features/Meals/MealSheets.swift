@@ -198,6 +198,7 @@ struct PlanMealSheet: View {
         household?.meals?.append(meal)
         try? context.save()
         Analytics.track(.mealPlanned, ["slot": slot.rawValue, "fromRecipe": recipe != nil])
+        if let household { PhoneSyncService.shared.syncIfEnabled(household: household, context: context, isPremium: true) }
         dismiss()
     }
 }

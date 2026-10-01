@@ -30,7 +30,7 @@ final class OnboardingDraft {
     // Life Sync choices, applied when the trial starts (or kept pending until it does).
     var calendarAccessGranted = false
     var selectedCalendarIDs: Set<String> = []
-    var selectedTemplateKeys: Set<String> = Set(TaskTemplate.pack.map(\.key))
+    var selectedTemplateKeys: Set<String> = Set(TaskTemplate.pack.filter(\.onByDefault).map(\.key))
     var wantsWellChildVisits = true
     var lifeSyncSkipped = false
 

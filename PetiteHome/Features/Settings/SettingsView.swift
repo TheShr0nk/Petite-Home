@@ -113,6 +113,13 @@ struct SettingsView: View {
             .listRowBackground(Theme.Colors.creamDeep)
 
             Section {
+                PhoneSyncToggles(household: household)
+            } header: { Text("On this phone") } footer: {
+                Text("Tasks land in a Petite Home list in Reminders, due at their hour. Plans, meals and expirations land in a Petite Home calendar. Check a task off in either place and the other follows. Each phone keeps its own copies.")
+            }
+            .listRowBackground(Theme.Colors.creamDeep)
+
+            Section {
                 Button("Delete this household and everything in it", role: .destructive) { confirmDelete = true }
                 if let dangerError { Text(dangerError).font(Typography.caption).foregroundStyle(Theme.Colors.danger) }
             } header: { Text("Your data") } footer: {
@@ -218,6 +225,62 @@ struct SettingsView: View {
                 let (share, container) = try await CloudSharingService.shared.share(for: household.uuid, title: "Our \(AppCopy.binder)")
                 sharePayload = SharePayload(share: share, container: container)
             } catch { shareError = error.localizedDescription }
+        }
+    }
+}
+
+/// The two per-phone switches for Reminders and Calendar export. Premium, like the Planner.
+struct PhoneSyncToggles: View {
+    @Environment(AppState.self) private var appState
+    @Environment(EntitlementStore.self) private var entitlements
+    @Environment(\.modelContext) private var context
+    let household: Household
+    @State private var tasksOn = PhoneSyncService.shared.tasksToReminders
+    @State private var calendarOn = PhoneSyncService.shared.plansToCalendar
+    @State private var denied: String?
+
+    var body: some View {
+        Toggle(isOn: Binding(get: { tasksOn }, set: { on in set(tasks: on) })) {
+            Label("Tasks in Reminders", systemImage: "checklist")
+        }
+        .tint(Theme.Colors.powderBlueDk)
+        Toggle(isOn: Binding(get: { calendarOn }, set: { on in set(calendar: on) })) {
+            Label("Plans and meals in Calendar", systemImage: "calendar.badge.plus")
+        }
+        .tint(Theme.Colors.powderBlueDk)
+        if !entitlements.isPremium {
+            HStack { Text("Part of the \(AppCopy.planner).").font(Typography.caption).foregroundStyle(Theme.Colors.sandDeep); Spacer(); PremiumPill() }
+        }
+        if let denied {
+            Text(denied).font(Typography.caption).foregroundStyle(Theme.Colors.danger)
+        }
+    }
+
+    private func set(tasks on: Bool) {
+        guard entitlements.isPremium else { appState.showPaywall(.tasks); return }
+        if !on { PhoneSyncService.shared.disableTasks(); tasksOn = false; return }
+        Task {
+            if await PhoneSyncService.shared.requestRemindersAccess() {
+                PhoneSyncService.shared.tasksToReminders = true
+                tasksOn = true
+                PhoneSyncService.shared.syncIfEnabled(household: household, context: context, isPremium: true)
+            } else {
+                denied = "Reminders access is off. Turn it on in Settings → Privacy & Security → Reminders."
+            }
+        }
+    }
+
+    private func set(calendar on: Bool) {
+        guard entitlements.isPremium else { appState.showPaywall(.lifeSync); return }
+        if !on { PhoneSyncService.shared.disableCalendar(); calendarOn = false; return }
+        Task {
+            if await PhoneSyncService.shared.requestCalendarAccess() {
+                PhoneSyncService.shared.plansToCalendar = true
+                calendarOn = true
+                PhoneSyncService.shared.syncIfEnabled(household: household, context: context, isPremium: true)
+            } else {
+                denied = "Calendar access is off. Turn it on in Settings → Privacy & Security → Calendars."
+            }
         }
     }
 }

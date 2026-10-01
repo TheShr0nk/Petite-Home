@@ -58,7 +58,9 @@
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>To add a photo of a document to your vault</string>
 	<key>NSCalendarsFullAccessUsageDescription</key>
-	<string>So your partner can see when you're busy, and you can see when they are</string>
+	<string>So your partner can see when you're busy, and so plans and meals can go on your calendar</string>
+	<key>NSRemindersFullAccessUsageDescription</key>
+	<string>To put the house tasks in a Petite Home list in Reminders</string>
 	<key>NSFaceIDUsageDescription</key>
 	<string>To open your vault</string>
 	<key>CFBundleURLTypes</key>

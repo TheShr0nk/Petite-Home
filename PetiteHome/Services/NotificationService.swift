@@ -82,7 +82,7 @@ final class NotificationService {
 
     // MARK: Tasks (premium)
 
-    func scheduleTaskDue(id: UUID, title: String, due: Date) {
+    func scheduleTaskDue(id: UUID, title: String, due: Date, hour: Int = 9) {
         cancelTaskDue(id: id)
         guard due > Date() else { return }
         let content = UNMutableNotificationContent()
@@ -91,7 +91,7 @@ final class NotificationService {
         content.sound = .default
         content.categoryIdentifier = Category.task.rawValue
         var comps = Calendar.current.dateComponents([.year, .month, .day], from: due)
-        comps.hour = 9
+        comps.hour = hour
         let trigger = UNCalendarNotificationTrigger(dateMatching: comps, repeats: false)
         center.add(UNNotificationRequest(identifier: "task.\(id.uuidString)", content: content, trigger: trigger))
     }

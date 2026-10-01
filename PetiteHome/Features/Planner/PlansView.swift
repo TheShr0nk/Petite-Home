@@ -343,6 +343,7 @@ struct PlanEditorSheet: View {
             NotificationService.shared.cancelTaskDue(id: target.uuid)
         }
         try? context.save()
+        PhoneSyncService.shared.syncIfEnabled(household: household, context: context, isPremium: true)
         dismiss()
     }
 }

@@ -5,6 +5,7 @@ struct MainTabView: View {
     @Environment(AppState.self) private var appState
     @Environment(EntitlementStore.self) private var entitlements
     @Environment(\.modelContext) private var context
+    @Environment(\.scenePhase) private var scenePhase
     @Bindable var household: Household
 
     var body: some View {
@@ -30,6 +31,9 @@ struct MainTabView: View {
             NavigationStack { SettingsView(household: household) }
         }
         .onAppear(perform: onLaunch)
+        .onChange(of: scenePhase) { _, phase in
+            if phase == .active { PhoneSyncService.shared.syncIfEnabled(household: household, context: context, isPremium: entitlements.isPremium) }
+        }
         .onReceive(NotificationCenter.default.publisher(for: .didReceiveSharedFile)) { note in
             if let title = note.userInfo?["title"] as? String, let pdf = note.userInfo?["pdf"] as? Data {
                 appState.pendingSharedFile = (title, pdf)
@@ -52,6 +56,7 @@ struct MainTabView: View {
             }
         }
         expireTrustedShares()
+        PhoneSyncService.shared.syncIfEnabled(household: household, context: context, isPremium: entitlements.isPremium)
         UITabBar.appearance().unselectedItemTintColor = UIColor(hex: 0x6E6259)
     }
 

@@ -199,6 +199,8 @@ final class HouseholdTask {
     var isFromTemplate: Bool = false
     var templateKey: String? = nil
     var createdAt: Date = Date()
+    /// Hour of the day the reminder fires (local time). "Plan dinner" wants mid-afternoon, most things 9am.
+    var reminderHour: Int = 9
 
     var assignedTo: Adult? = nil
     var household: Household? = nil
@@ -223,6 +225,10 @@ final class HouseholdTask {
         set { categoryRaw = newValue.rawValue }
     }
     var isOverdue: Bool { nextDue < Calendar.current.startOfDay(for: Date()) }
+    /// The due date with the reminder hour applied.
+    var dueMoment: Date {
+        Calendar.current.date(bySettingHour: reminderHour, minute: 0, second: 0, of: nextDue) ?? nextDue
+    }
     var isDone: Bool { recurrence.storageKey == "none" && !completions.isEmpty }
 
     /// Marks the task complete. Repeating tasks roll forward; one-off tasks stay done.

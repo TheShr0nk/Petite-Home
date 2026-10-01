@@ -46,6 +46,15 @@ struct TasksView: View {
         if tasks.isEmpty {
             Text("Add the things the house needs, and the app will ask at the right time.").font(Typography.body).foregroundStyle(Theme.Colors.sandDeep)
         }
+        if !PhoneSyncService.shared.tasksToReminders, !tasks.isEmpty {
+            Card(background: Theme.Colors.powderBlueMist) {
+                VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
+                    Text("Want these in your Reminders app too?").font(Typography.sectionTitle).foregroundStyle(Theme.Colors.ink)
+                    Text("They show up in a Petite Home list, due at their hour. Check one off in either place.").font(Typography.caption).foregroundStyle(Theme.Colors.sandDeep)
+                    Button("Add to Reminders") { enableReminders() }.buttonStyle(.primary)
+                }
+            }
+        }
         if !templatesEnabled {
             templateList(greyed: false)
         }
@@ -76,15 +85,19 @@ struct TasksView: View {
             SectionHeader(title: "Start with the usual")
             Card {
                 VStack(alignment: .leading, spacing: Theme.Spacing.md) {
-                    ForEach(TaskTemplate.pack) { t in
-                        HStack(spacing: Theme.Spacing.md) {
-                            BrandIcon(systemName: t.category.systemImage)
-                            VStack(alignment: .leading, spacing: 1) {
-                                Text(t.title).font(Typography.body).foregroundStyle(Theme.Colors.ink)
-                                Text(t.recurrence.label).font(Typography.caption).foregroundStyle(Theme.Colors.sandDeep)
+                    ForEach(TaskTemplate.grouped(), id: \.0) { cadence, templates in
+                        Eyebrow(text: cadence.label).padding(.top, cadence == .daily ? 0 : Theme.Spacing.xs)
+                        ForEach(templates) { t in
+                            HStack(spacing: Theme.Spacing.md) {
+                                BrandIcon(systemName: t.category.systemImage)
+                                VStack(alignment: .leading, spacing: 1) {
+                                    Text(t.title).font(Typography.body).foregroundStyle(Theme.Colors.ink)
+                                    Text(t.recurrence.label + (t.weekday.map { " · \(Calendar.current.weekdaySymbols[$0 - 1])" } ?? "")).font(Typography.caption).foregroundStyle(Theme.Colors.sandDeep)
+                                }
                             }
                         }
                     }
+                    Eyebrow(text: "Every year").padding(.top, Theme.Spacing.xs)
                     ForEach(household.kids, id: \.uuid) { child in
                         HStack(spacing: Theme.Spacing.md) {
                             BrandIcon(systemName: "heart.text.square")
@@ -102,8 +115,17 @@ struct TasksView: View {
         }
     }
 
+    private func enableReminders() {
+        Task {
+            if await PhoneSyncService.shared.requestRemindersAccess() {
+                PhoneSyncService.shared.tasksToReminders = true
+                PhoneSyncService.shared.syncIfEnabled(household: household, context: context, isPremium: true)
+            }
+        }
+    }
+
     private func enableTemplates() {
-        for t in TaskTemplate.pack where !tasks.contains(where: { $0.templateKey == t.key }) {
+        for t in TaskTemplate.pack where t.onByDefault && !tasks.contains(where: { $0.templateKey == t.key }) {
             household.tasks?.append(t.makeTask(due: TaskTemplate.firstDue(for: t)))
         }
         for child in household.kids {
@@ -123,6 +145,7 @@ struct TasksView: View {
         try? context.save()
         Task { _ = await NotificationService.shared.requestPermission() }
         ExpirationScheduler.sync(household: household, isPremium: entitlements.isPremium)
+        PhoneSyncService.shared.syncIfEnabled(household: household, context: context, isPremium: entitlements.isPremium)
     }
 }
 
@@ -186,6 +209,8 @@ struct TaskEditorSheet: View {
     @State private var nextDue = Date()
     @State private var category: TaskCategory = .home
     @State private var assigneeID: UUID?
+    @State private var hour = 9
+    private let hours: [(Int, String)] = [(8, "8 am"), (9, "9 am"), (12, "Noon"), (15, "3 pm"), (17, "5 pm"), (19, "7 pm")]
 
     var body: some View {
         NavigationStack {
@@ -205,6 +230,12 @@ struct TaskEditorSheet: View {
                     }
                 }
                 DatePicker("Next due", selection: $nextDue, displayedComponents: .date).font(Typography.body).tint(Theme.Colors.powderBlueDk)
+                VStack(alignment: .leading, spacing: Theme.Spacing.xs) {
+                    Text("Remind at").font(Typography.label).foregroundStyle(Theme.Colors.sandDeep)
+                    FlowLayout(spacing: Theme.Spacing.sm) {
+                        ForEach(hours, id: \.0) { h, label in Chip(label: label, isSelected: hour == h) { hour = h } }
+                    }
+                }
                 VStack(alignment: .leading, spacing: Theme.Spacing.xs) {
                     Text("Category").font(Typography.label).foregroundStyle(Theme.Colors.sandDeep)
                     FlowLayout(spacing: Theme.Spacing.sm) {
@@ -239,14 +270,14 @@ struct TaskEditorSheet: View {
             guard let task else { return }
             title = task.title; notes = task.notes; recurrence = task.recurrence
             if case .custom(let d) = task.recurrence { customDays = d }
-            nextDue = task.nextDue; category = task.category; assigneeID = task.assignedTo?.uuid
+            nextDue = task.nextDue; category = task.category; assigneeID = task.assignedTo?.uuid; hour = task.reminderHour
         }
     }
 
     private func save() {
         let target = task ?? HouseholdTask(title: title, recurrence: recurrence, nextDue: nextDue, category: category)
         target.title = title; target.notes = notes; target.recurrence = recurrence
-        target.nextDue = nextDue; target.category = category
+        target.nextDue = nextDue; target.category = category; target.reminderHour = hour
         target.assignedTo = household.adults.first { $0.uuid == assigneeID }
         if task == nil { household.tasks?.append(target) }
         try? context.save()

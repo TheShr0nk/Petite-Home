@@ -98,6 +98,17 @@ system share sheet as a branded 1080×1350 card plus the recipe text
 (`RecipeShare`). Planned meals appear on the Life Sync agenda and as
 "Tonight" on Home; the shopping list is computed from the week's recipes.
 
+**Reminders and Calendar on the phone.** `PhoneSyncService` writes tasks into
+a "Petite Home" list in the Reminders app (one reminder each, due at the
+task's hour, no EventKit recurrence: the app rolls tasks forward and re-points
+the reminder) and plans, meals and expirations into a "Petite Home" calendar.
+Every item carries an "Added by Petite Home" note. A reminder completed in the
+Reminders app completes the task on the next sync. Both channels are per-phone
+switches in Settings and run on launch, on return to the foreground, and after
+each save. Templates now come in daily ("Plan dinner" at 3 pm), weekly ("Plan
+the week together" on Sunday evening, "Grocery run"), monthly and seasonal
+cadences.
+
 **Plans.** `FamilyPlan` covers date nights, outings, trips, appointments and
 visitors, with who's going and a sitter state (kids come along / need a
 sitter / asked / confirmed). `FreeEveningFinder` proposes evenings with
