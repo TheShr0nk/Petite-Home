@@ -27,7 +27,7 @@ struct OnboardingFlow: View {
     @Environment(AppState.self) private var appState
     @Environment(\.modelContext) private var context
     @State private var draft = OnboardingDraft()
-    @State private var step: OnboardingStep = .hook
+    @State private var step: OnboardingStep = .intro
     @State private var savedHousehold: Household?
     @State private var showSavedMoment = false
 
