@@ -430,35 +430,38 @@ struct PremiumOfferScreen: View {
     @Bindable var draft: OnboardingDraft
     let household: Household?
     let onContinue: () -> Void
+    @State private var showPlans = false
 
     var body: some View {
         OnboardingScreen(eyebrow: "Petite Home premium", hook: "Now let the app remember for you.") {
             PremiumBullets()
-            Text(PaywallSheet.priceLine(entitlements))
+            Text("Weekly, monthly or yearly. $0.99 for the first week on any of them, then the plan's price. Cancel anytime.")
                 .font(Typography.callout)
                 .foregroundStyle(Theme.Colors.sandDeep)
-            Text("The button starts the annual plan: $0.99 for the first week, then \(entitlements.annualPriceText) a year. Weekly and monthly are a tap away whenever you like.")
-                .font(Typography.caption)
-                .foregroundStyle(Theme.Colors.sandDeep)
         } actions: {
-            if entitlements.purchaseInProgress { PulsingDots().padding(.bottom, Theme.Spacing.xs) }
-            Button(entitlements.usesLocalTrial ? "Unlock while we're testing" : entitlements.callToAction(for: .annual)) {
-                Task {
-                    if entitlements.usesLocalTrial {
-                        entitlements.startLocalTrial()
-                    } else if let annual = entitlements.annual {
-                        _ = await entitlements.purchase(annual)
-                    }
-                    stashChoices()
-                    if entitlements.isPremium, let household {
-                        LifeSyncPending.apply(to: household, adult: appState.currentAdult(in: household), context: context)
-                    }
-                    onContinue()
+            Button(entitlements.usesLocalTrial ? "Unlock while we're testing" : "Start my premium subscription") {
+                if entitlements.usesLocalTrial {
+                    entitlements.startLocalTrial()
+                    finish()
+                } else {
+                    showPlans = true
                 }
             }
             .buttonStyle(.primary)
-            Button("Not now") { stashChoices(); onContinue() }.buttonStyle(.secondary)
+            Button("Not now") { finish() }.buttonStyle(.secondary)
         }
+        .sheet(isPresented: $showPlans, onDismiss: { if entitlements.isPremium { finish() } }) {
+            PaywallSheet(gate: .onboarding)
+        }
+    }
+
+    /// Stashes the Planner choices, applies them if premium is on, and moves to Home.
+    private func finish() {
+        stashChoices()
+        if entitlements.isPremium, let household {
+            LifeSyncPending.apply(to: household, adult: appState.currentAdult(in: household), context: context)
+        }
+        onContinue()
     }
 
     /// Keeps the Life Sync choices from the previous screen until premium is on.
