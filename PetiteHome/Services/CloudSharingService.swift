@@ -118,7 +118,7 @@ final class CloudSharingService: NSObject {
         guard let container, let sharedStore else { throw SharingError.modelUnavailable }
         let object = try managedHousehold(id: householdID)
         guard let share = try container.fetchShares(matching: [object.objectID])[object.objectID] else { return }
-        try container.purgeObjectsAndRecordsInZone(with: share.recordID.zoneID, in: sharedStore)
+        _ = try await container.purgeObjectsAndRecordsInZone(with: share.recordID.zoneID, in: sharedStore)
     }
 
     /// Called from the app delegate when the partner opens the invite link.
