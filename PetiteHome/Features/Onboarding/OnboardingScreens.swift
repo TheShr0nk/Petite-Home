@@ -433,9 +433,12 @@ struct PremiumOfferScreen: View {
             Text(PaywallSheet.priceLine(entitlements))
                 .font(Typography.callout)
                 .foregroundStyle(Theme.Colors.sandDeep)
+            Text("The button starts the annual plan: $0.99 for the first week, then \(entitlements.annualPriceText) a year. Weekly and monthly are a tap away whenever you like.")
+                .font(Typography.caption)
+                .foregroundStyle(Theme.Colors.sandDeep)
         } actions: {
             if entitlements.purchaseInProgress { PulsingDots().padding(.bottom, Theme.Spacing.xs) }
-            Button("Start free trial") {
+            Button(entitlements.usesLocalTrial ? "Unlock while we're testing" : entitlements.callToAction(for: .annual)) {
                 Task {
                     if entitlements.usesLocalTrial {
                         entitlements.startLocalTrial()

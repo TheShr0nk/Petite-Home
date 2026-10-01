@@ -106,19 +106,23 @@ text sent to a sitter from the Binder: kids' allergies, meds, notes, who to
 call, the address. It never includes codes or account details. The sitter
 roster is a value list on the household, so both partners share it.
 
-**Trials without a store (TestFlight).** While `RevenueCatAPIKey` is empty,
-"Start free trial" grants premium on that phone for 30 days, stored in the
-Keychain, with no purchase. Adding the key switches every trial button to real
+**Unlock without a store (TestFlight).** While `RevenueCatAPIKey` is empty,
+the paywall button reads "Unlock while we're testing" and grants premium on
+that phone for 30 days, stored in the Keychain, with no purchase. Adding the key switches every trial button to real
 RevenueCat purchases; existing local trials run out on their own.
 
 **RevenueCat setup.** Info.plist carries a RevenueCat *Test Store* key
 (`test_…`), which lets the paywall run real purchase flows against
 RevenueCat's simulated store with no App Store Connect products. Swap it for
-the `appl_…` production key before release. In the RevenueCat dashboard create the two App Store
-products (`co.petitehome.premium.monthly`, `co.petitehome.premium.annual`, one
-subscription group, 7-day introductory free trial on both), an entitlement
-called `premium`, and a current offering with a `$rc_annual` and a
-`$rc_monthly` package pointing at them. Paste the app's public API key into
+the `appl_…` production key before release. In the RevenueCat dashboard create the three App Store
+products (`co.petitehome.premium.weekly`, `.monthly`, `.annual`) in one
+subscription group. Intro offer on all three: $0.99 pay-up-front for the first week, then the
+plan's price. There are no free trials. Apple allows one intro offer per
+product. The paywall reads each product's intro offer from the
+store and words the button and fine print from it, so the shape can change in
+App Store Connect without a code change. Create an entitlement called
+`premium` and a current offering with `$rc_annual`, `$rc_monthly` and
+`$rc_weekly` packages. Paste the app's public API key into
 Info.plist. For simulator testing, keep `Products.storekit` attached to the
 scheme; RevenueCat reads from it in sandbox mode. The app calls `logIn` with the iCloud user record name so purchases follow
 the person across their devices.

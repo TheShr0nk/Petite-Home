@@ -8,15 +8,13 @@ struct PaywallSheet: View {
     @Environment(EntitlementStore.self) private var entitlements
     @Environment(\.dismiss) private var dismiss
     let gate: PremiumGate
-    @State private var annualSelected = true
+    @State private var selected: Plan = .annual
     @State private var lastLocalError: String?
 
     static func priceLine(_ store: EntitlementStore) -> String {
-        "\(store.annualPriceText)/year · 7-day free trial · cancel anytime"
+        "$0.99 for the first week on any plan · then from \(store.weeklyPriceText) a week · cancel anytime"
     }
 
-    private var annualPrice: String { entitlements.annualPriceText }
-    private var monthlyPrice: String { entitlements.monthlyPriceText }
     private var savings: String? { entitlements.savingsText }
 
     var body: some View {
@@ -35,9 +33,11 @@ struct PaywallSheet: View {
                     Text(gate.headline).font(Typography.hook).lineSpacing(6).foregroundStyle(Theme.Colors.ink).fixedSize(horizontal: false, vertical: true).reveal(1)
                     featuresCard.reveal(2)
                     VStack(spacing: Theme.Spacing.sm) {
-                        Text("7 days free, then").font(Typography.caption).foregroundStyle(Theme.Colors.sandDeep)
-                        planRow(title: "Annual", price: "\(annualPrice) / year", badge: savings, selected: annualSelected) { annualSelected = true }
-                        planRow(title: "Monthly", price: "\(monthlyPrice) / month", badge: nil, selected: !annualSelected) { annualSelected = false }
+                        ForEach(Plan.allCases) { plan in
+                            planRow(plan: plan,
+                                    badge: plan == .annual ? savings : (plan == .weekly ? "Try it" : nil),
+                                    selected: selected == plan) { selected = plan }
+                        }
                     }
                     .reveal(3)
                 }
@@ -51,14 +51,13 @@ struct PaywallSheet: View {
                     Text(error).font(Typography.caption).foregroundStyle(Theme.Colors.danger)
                 }
                 if entitlements.purchaseInProgress { PulsingDots() }
-                Button(entitlements.purchaseInProgress ? "One moment" : "Start free trial") {
+                Button(entitlements.purchaseInProgress ? "One moment" : (entitlements.usesLocalTrial ? "Unlock while we're testing" : entitlements.callToAction(for: selected))) {
                     if entitlements.usesLocalTrial {
                         if entitlements.startLocalTrial() { dismiss() }
                         return
                     }
                     Task {
-                        let package = annualSelected ? entitlements.annual : entitlements.monthly
-                        guard let package else { lastLocalError = "Prices haven't loaded yet. Try again in a moment."; return }
+                        guard let package = entitlements.package(for: selected) else { lastLocalError = "Prices haven't loaded yet. Try again in a moment."; return }
                         if await entitlements.purchase(package) { dismiss() }
                     }
                 }
@@ -66,7 +65,7 @@ struct PaywallSheet: View {
                 if let lastLocalError { Text(lastLocalError).font(Typography.caption).foregroundStyle(Theme.Colors.danger) }
                 Text(entitlements.usesLocalTrial
                      ? "Free for \(EntitlementStore.localTrialDays) days while we're in testing. Nothing to cancel."
-                     : "Nothing is charged for 7 days. Then it renews automatically at the price shown until you cancel in Settings.")
+                     : finePrint)
                     .font(Typography.caption).foregroundStyle(Theme.Colors.sandDeep).multilineTextAlignment(.center)
                 HStack(spacing: Theme.Spacing.lg) {
                     Button("Restore purchases") { Task { await entitlements.restore(); if entitlements.isPremium { dismiss() } } }
@@ -85,6 +84,15 @@ struct PaywallSheet: View {
         .presentationBackground(Theme.Colors.cream)
         .presentationDragIndicator(.visible)
         .task { if entitlements.annual == nil { await entitlements.loadProducts() } }
+    }
+
+    /// Apple wants the intro, the renewal price and the auto-renewal stated together.
+    private var finePrint: String {
+        let price = "\(entitlements.priceText(for: selected)) a \(selected.per)"
+        if let intro = entitlements.introText(for: selected) {
+            return "\(intro), then \(price). Renews automatically until you cancel in Settings."
+        }
+        return "\(price), renewing automatically until you cancel in Settings."
     }
 
     /// The three bullets, cream on ink, with the wordmark ghosted in the corner.
@@ -113,20 +121,23 @@ struct PaywallSheet: View {
         }
     }
 
-    private func planRow(title: String, price: String, badge: String?, selected: Bool, action: @escaping () -> Void) -> some View {
+    private func planRow(plan: Plan, badge: String?, selected: Bool, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             HStack {
                 VStack(alignment: .leading, spacing: 2) {
                     HStack(spacing: 6) {
-                        Text(title).font(Typography.serif(18)).foregroundStyle(Theme.Colors.ink)
+                        Text(plan.title).font(Typography.serif(18)).foregroundStyle(Theme.Colors.ink)
                         if let badge {
                             Text(badge).font(.system(size: 11, weight: .semibold))
                                 .padding(.horizontal, 6).padding(.vertical, 2)
-                                .background(Capsule().fill(Theme.Colors.success.opacity(0.25)))
+                                .background(Capsule().fill((plan == .annual ? Theme.Colors.success : Theme.Colors.powderBlue).opacity(0.3)))
                                 .foregroundStyle(Theme.Colors.ink)
                         }
                     }
-                    Text(price).font(Typography.caption).foregroundStyle(Theme.Colors.sandDeep)
+                    Text("\(entitlements.priceText(for: plan)) / \(plan.per)").font(Typography.caption).foregroundStyle(Theme.Colors.sandDeep)
+                    if let intro = entitlements.introText(for: plan) {
+                        Text(intro).font(Typography.caption).foregroundStyle(Theme.Colors.powderBlueDk)
+                    }
                 }
                 Spacer()
                 Image(systemName: selected ? "checkmark.circle.fill" : "circle")

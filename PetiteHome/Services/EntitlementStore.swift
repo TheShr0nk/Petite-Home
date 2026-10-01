@@ -28,10 +28,33 @@ enum PremiumGate: String {
 /// subscriptions in one group; RevenueCat wraps them in an offering with an
 /// annual and a monthly package, and grants the "premium" entitlement.
 enum ProductID {
+    static let weekly = "co.petitehome.premium.weekly"
     static let monthly = "co.petitehome.premium.monthly"
     static let annual = "co.petitehome.premium.annual"
-    static let all = [monthly, annual]
+    static let all = [weekly, monthly, annual]
     static let entitlement = "premium"
+}
+
+/// The three plans on the paywall.
+enum Plan: String, CaseIterable, Identifiable {
+    case annual, monthly, weekly
+    var id: String { rawValue }
+    var title: String { rawValue.capitalized }
+    var per: String {
+        switch self {
+        case .annual: return "year"
+        case .monthly: return "month"
+        case .weekly: return "week"
+        }
+    }
+    /// List prices shown before the store answers.
+    var fallbackPrice: String {
+        switch self {
+        case .annual: return "$39.00"
+        case .monthly: return "$4.99"
+        case .weekly: return "$2.99"
+        }
+    }
 }
 
 /// Subscriptions through RevenueCat. The public surface stays small so the
@@ -47,10 +70,11 @@ final class EntitlementStore {
 
     private(set) var annual: Package?
     private(set) var monthly: Package?
+    private(set) var weekly: Package?
     private(set) var hasActiveSubscription = false
     private(set) var isInTrial = false
     private(set) var foundingUnlockExpiresAt: Date?
-    /// TestFlight trial: premium granted on this phone without a store, while RevenueCat has no key.
+    /// TestFlight unlock: premium granted on this phone without a store, while RevenueCat has no key.
     private(set) var localTrialExpiresAt: Date?
     static let localTrialDays = 30
     private(set) var purchaseInProgress = false
@@ -70,6 +94,68 @@ final class EntitlementStore {
     /// "$39.00" and "$4.99", from the store when it has answered, else the list prices.
     var annualPriceText: String { annual?.storeProduct.localizedPriceString ?? "$39.00" }
     var monthlyPriceText: String { monthly?.storeProduct.localizedPriceString ?? "$4.99" }
+    var weeklyPriceText: String { weekly?.storeProduct.localizedPriceString ?? "$2.99" }
+
+    func package(for plan: Plan) -> Package? {
+        switch plan {
+        case .annual: return annual
+        case .monthly: return monthly
+        case .weekly: return weekly
+        }
+    }
+
+    func priceText(for plan: Plan) -> String {
+        package(for: plan)?.storeProduct.localizedPriceString ?? plan.fallbackPrice
+    }
+
+    /// The introductory offer a plan carries, in words: "7 days free" or "$0.99 for the first week".
+    /// Comes from the store, so the shape can change in App Store Connect without a code change.
+    /// Before the store answers, the list configuration is assumed: $0.99 for the first week on every plan.
+    func introText(for plan: Plan) -> String? {
+        guard let discount = package(for: plan)?.storeProduct.introductoryDiscount else {
+            if package(for: plan) != nil { return nil }
+            return "$0.99 for the first week"
+        }
+        let period = Self.describe(discount.subscriptionPeriod, count: discount.numberOfPeriods)
+        switch discount.paymentMode {
+        case .freeTrial: return "\(period) free"
+        case .payUpFront: return "\(discount.localizedPriceString) for the first \(period)"
+        case .payAsYouGo: return "\(discount.localizedPriceString) a \(Self.describe(discount.subscriptionPeriod, count: 1)) for \(period)"
+        @unknown default: return nil
+        }
+    }
+
+    /// True when starting this plan costs nothing today.
+    func startsFree(_ plan: Plan) -> Bool {
+        guard let discount = package(for: plan)?.storeProduct.introductoryDiscount else { return false }
+        return discount.paymentMode == .freeTrial
+    }
+
+    /// What the button should say for a plan.
+    func callToAction(for plan: Plan) -> String {
+        guard let discount = package(for: plan)?.storeProduct.introductoryDiscount else {
+            if package(for: plan) == nil { return "Start for $0.99" }
+            return "Subscribe"
+        }
+        switch discount.paymentMode {
+        case .freeTrial: return "Start free trial"
+        default: return "Start for \(discount.localizedPriceString)"
+        }
+    }
+
+    private static func describe(_ period: SubscriptionPeriod, count: Int) -> String {
+        let n = period.value * max(count, 1)
+        let unit: String
+        switch period.unit {
+        case .day: unit = "day"
+        case .week: unit = "week"
+        case .month: unit = "month"
+        case .year: unit = "year"
+        @unknown default: unit = "period"
+        }
+        if n == 7, period.unit == .day { return "7 days" }
+        return n == 1 ? unit : "\(n) \(unit)s"
+    }
 
     /// "Save 35%", from real prices when RevenueCat has them.
     var savingsText: String? {
@@ -117,7 +203,8 @@ final class EntitlementStore {
             let offerings = try await Purchases.shared.offerings()
             annual = offerings.current?.annual
             monthly = offerings.current?.monthly
-            if annual == nil, monthly == nil { lastError = "Prices aren't loading. Check your connection." }
+            weekly = offerings.current?.weekly
+            if annual == nil, monthly == nil, weekly == nil { lastError = "Prices aren't loading. Check your connection." }
         } catch {
             lastError = "Couldn't load prices. Check your connection."
         }

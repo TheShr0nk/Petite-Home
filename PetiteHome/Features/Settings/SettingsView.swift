@@ -91,7 +91,7 @@ struct SettingsView: View {
                     HStack { Text("Premium"); Spacer(); Text(premiumStatus).font(Typography.caption).foregroundStyle(Theme.Colors.sandDeep) }
                     Button("Manage subscription") { showManageSubscription = true }
                 } else {
-                    Button("Start free trial") { appState.showPaywall(.onboarding) }
+                    Button("Go premium") { appState.showPaywall(.onboarding) }
                     Button("Restore purchases") { Task { await entitlements.restore() } }
                 }
             } header: { Text("Premium") } footer: { Text("Reminders, the vault, household tasks and trusted-person sharing.") }
