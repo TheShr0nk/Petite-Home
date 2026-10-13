@@ -76,9 +76,8 @@ struct Chip: View {
             .foregroundStyle(Theme.Colors.ink)
             .padding(.horizontal, 14)
             .padding(.vertical, 9)
-            .background(
-                Capsule().fill(isSelected ? Theme.Colors.powderBlue : Theme.Colors.creamDeep)
-            )
+            .glassFill(isSelected ? Theme.Colors.powderBlue : nil, in: Capsule(),
+                       fallback: isSelected ? Theme.Colors.powderBlue : Theme.Colors.creamDeep)
             .scaleEffect(isSelected ? 1 : 0.98)
             // The capsule stays 36pt; the tappable area is 44pt (HIG minimum).
             .frame(minHeight: 44)
@@ -146,7 +145,7 @@ struct AvatarView: View {
             Circle().fill(kind == .child ? Theme.Colors.sand : Theme.Colors.powderBlue)
             Text(initial.prefix(1).uppercased())
                 .font(Typography.serif(size * 0.45))
-                .foregroundStyle(kind == .child ? Theme.Colors.cream : Theme.Colors.ink)
+                .foregroundStyle(kind == .child ? Theme.Colors.Fixed.cream : Theme.Colors.ink)
         }
         .frame(width: size, height: size)
     }

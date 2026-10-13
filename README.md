@@ -207,9 +207,25 @@ buttons 52, secondary 44, text fields 48, chips and selectable rows 44, icon
 buttons 44x44 with accessibility labels. Screen gutter is 20pt (the site's
 grid; Apple's default is 16). Navigation, tab bar, sheets, lists and alerts
 are the system components, so they pick up iOS 26's Liquid Glass on their own.
-Chips and selectable rows give selection haptics. Known gap: the app is
-light-only by design (`preferredColorScheme(.light)`), so dark mode is a v2
-item.
+Chips and selectable rows give selection haptics.
+
+**Dark mode.** Every token in `Theme.Colors` is a light/dark pair
+(`Color(light:dark:)`), so no view branches on the scheme. The dark side is the
+same warm family: near-black cream, lighter sand for secondary text, a deeper
+powder blue that white text still reads on. The dark "moment" screens and the
+paywall's ink card use `Theme.Colors.Fixed` so they look the same in both.
+Settings has an Appearance picker (match the phone, light, dark). All text
+pairs meet WCAG AA in both modes; the one near-miss is powder blue used as
+accent text in the dark (4.1:1 at label sizes).
+
+**Liquid Glass (iOS 26).** `Design/Glass.swift` wraps the iOS 26 APIs behind
+availability checks, so the iOS 17 build keeps the flat look: primary buttons
+are tinted interactive glass, outline and secondary buttons clear glass, chips
+glass capsules, the onboarding action bar floats over the scrolling content in
+a `GlassEffectContainer`, scroll edges fade under the bars, and the tab bar
+minimises on scroll. Cards, lists and text stay on the cream ground, as Apple
+asks. Still to do on the Mac: a layered app icon from Icon Composer, which the
+placeholder icon cannot be.
 
 ## Copy rules
 

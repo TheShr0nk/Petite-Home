@@ -110,18 +110,18 @@ struct PaywallSheet: View {
             .padding(Theme.Spacing.xl)
             Text("PH")
                 .font(Typography.serif(44))
-                .foregroundStyle(Theme.Colors.powderBlue.opacity(0.12))
+                .foregroundStyle(Theme.Colors.Fixed.powderBlue.opacity(0.12))
                 .padding(Theme.Spacing.md)
                 .accessibilityHidden(true)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(RoundedRectangle(cornerRadius: 20, style: .continuous).fill(Theme.Colors.ink))
+        .background(RoundedRectangle(cornerRadius: 20, style: .continuous).fill(Theme.Colors.Fixed.ink))
     }
 
     private func bullet(_ icon: String, _ text: String) -> some View {
         HStack(alignment: .top, spacing: Theme.Spacing.md) {
-            Image(systemName: icon).font(.system(size: 18, weight: .regular)).foregroundStyle(Theme.Colors.powderBlue).frame(width: 24)
-            Text(text).font(Typography.body).lineSpacing(3).foregroundStyle(Theme.Colors.cream).fixedSize(horizontal: false, vertical: true)
+            Image(systemName: icon).font(.system(size: 18, weight: .regular)).foregroundStyle(Theme.Colors.Fixed.powderBlue).frame(width: 24)
+            Text(text).font(Typography.body).lineSpacing(3).foregroundStyle(Theme.Colors.Fixed.cream).fixedSize(horizontal: false, vertical: true)
         }
     }
 

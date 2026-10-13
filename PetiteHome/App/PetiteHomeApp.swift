@@ -19,7 +19,7 @@ struct PetiteHomeApp: App {
             RootView()
                 .environment(appState)
                 .environment(entitlements)
-                .preferredColorScheme(.light)   // the brand is light; no dark mode in v1
+                .preferredColorScheme(appState.appearance.colorScheme)
                 .tint(Theme.Colors.powderBlueDk)
                 .onOpenURL { appState.handle(url: $0) }
                 .onAppear { appDelegate.appState = appState }

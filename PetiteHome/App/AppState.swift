@@ -21,6 +21,7 @@ final class AppState {
         static let onboardingCompletedAt = "app.onboardingCompletedAt"
         static let currentAdult = "app.currentAdultID"
         static let partnerWelcome = "app.partnerWelcomePending"
+        static let appearance = "app.appearance"
     }
 
     var hasCompletedOnboarding: Bool {
@@ -45,6 +46,10 @@ final class AppState {
     var partnerWelcomePending: Bool {
         didSet { defaults.set(partnerWelcomePending, forKey: Keys.partnerWelcome) }
     }
+    /// System, light or dark. Chosen in Settings; system by default.
+    var appearance: Appearance {
+        didSet { defaults.set(appearance.rawValue, forKey: Keys.appearance) }
+    }
     var lifeSyncSegment: LifeSyncSegment = .week
 
     var selectedTab: AppTab = .home
@@ -59,6 +64,7 @@ final class AppState {
         premiumOfferSeenInOnboarding = defaults.bool(forKey: Keys.premiumOfferSeen)
         currentAdultID = defaults.string(forKey: Keys.currentAdult).flatMap(UUID.init(uuidString:))
         partnerWelcomePending = defaults.bool(forKey: Keys.partnerWelcome)
+        appearance = Appearance(rawValue: defaults.string(forKey: Keys.appearance) ?? "") ?? .system
     }
 
     /// The adult using this phone: the explicit choice, else the owner if this iCloud account created the household, else the partner.
@@ -112,6 +118,25 @@ enum LifeSyncSegment: String, CaseIterable, Identifiable {
         case .plans: return "Plans"
         case .meals: return "Meals"
         case .tasks: return "Tasks"
+        }
+    }
+}
+
+enum Appearance: String, CaseIterable, Identifiable {
+    case system, light, dark
+    var id: String { rawValue }
+    var label: String {
+        switch self {
+        case .system: return "Match the phone"
+        case .light: return "Light"
+        case .dark: return "Dark"
+        }
+    }
+    var colorScheme: ColorScheme? {
+        switch self {
+        case .system: return nil
+        case .light: return .light
+        case .dark: return .dark
         }
     }
 }

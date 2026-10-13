@@ -1,18 +1,18 @@
 import SwiftUI
 
-/// Primary: powderBlueDk fill, white text, 52pt tall, full width, sentence case.
+/// Primary: powderBlueDk, white text, 52pt tall, full width, sentence case.
+/// On iOS 26 the fill is tinted interactive glass; before that a flat fill.
 /// Presses scale to 0.98; the disabled state fades in and out.
 struct PrimaryButtonStyle: ButtonStyle {
     var isEnabled: Bool = true
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .font(Typography.button)
-            .foregroundStyle(Theme.Colors.white)
+            .foregroundStyle(Color(hex: 0xFFFFFF))
             .frame(maxWidth: .infinity, minHeight: Theme.Metrics.primaryButtonHeight)
-            .background(
-                RoundedRectangle(cornerRadius: Theme.Radius.control, style: .continuous)
-                    .fill(Theme.Colors.powderBlueDk)
-            )
+            .glassFill(Theme.Colors.powderBlueDk,
+                       in: RoundedRectangle(cornerRadius: Theme.Radius.control, style: .continuous),
+                       fallback: Theme.Colors.powderBlueDk)
             .opacity(isEnabled ? 1 : 0.45)
             .scaleEffect(configuration.isPressed ? 0.98 : 1)
             .animation(.easeOut(duration: 0.2), value: isEnabled)
@@ -21,14 +21,17 @@ struct PrimaryButtonStyle: ButtonStyle {
     }
 }
 
-/// Secondary / skip: no fill, sandDeep text, underlined the way Seek Faith's skip links are.
+/// Secondary / skip: sandDeep text. Before iOS 26 it is underlined the way Seek
+/// Faith's skip links are; on iOS 26 it floats on clear glass, since the action
+/// bar sits over scrolling content there.
 struct SecondaryButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .font(Typography.callout)
-            .underline()
+            .underline(!Glass26.available)
             .foregroundStyle(Theme.Colors.sandDeep)
             .frame(maxWidth: .infinity, minHeight: 44)
+            .glassFill(nil, in: Capsule(), fallback: .clear)
             .opacity(configuration.isPressed ? 0.6 : 1)
             .contentShape(Rectangle())
     }
@@ -41,9 +44,10 @@ struct OutlineButtonStyle: ButtonStyle {
             .font(Typography.button)
             .foregroundStyle(Theme.Colors.ink)
             .frame(maxWidth: .infinity, minHeight: Theme.Metrics.primaryButtonHeight)
-            .background(
+            .glassFill(nil, in: RoundedRectangle(cornerRadius: Theme.Radius.control, style: .continuous), fallback: .clear)
+            .overlay(
                 RoundedRectangle(cornerRadius: Theme.Radius.control, style: .continuous)
-                    .stroke(Theme.Colors.sand, lineWidth: 1)
+                    .stroke(Theme.Colors.sand, lineWidth: Glass26.available ? 0 : 1)
             )
             .scaleEffect(configuration.isPressed ? 0.98 : 1)
             .opacity(configuration.isPressed ? 0.7 : 1)
@@ -57,11 +61,11 @@ struct MomentButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .font(Typography.button)
-            .foregroundStyle(Theme.Colors.powderBlue)
+            .foregroundStyle(Theme.Colors.Fixed.powderBlue)
             .frame(maxWidth: .infinity, minHeight: Theme.Metrics.primaryButtonHeight)
             .background(
                 RoundedRectangle(cornerRadius: Theme.Radius.control, style: .continuous)
-                    .stroke(Theme.Colors.powderBlue.opacity(0.5), lineWidth: 1.5)
+                    .stroke(Theme.Colors.Fixed.powderBlue.opacity(0.5), lineWidth: 1.5)
             )
             .opacity(configuration.isPressed ? 0.7 : 1)
             .contentShape(Rectangle())

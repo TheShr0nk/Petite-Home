@@ -133,7 +133,6 @@ struct OnboardingScreen<Content: View, Actions: View>: View {
     @ViewBuilder var actions: () -> Actions
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
             ScrollView {
                 VStack(alignment: .leading, spacing: Theme.Spacing.xl) {
                     VStack(alignment: .leading, spacing: Theme.Spacing.md) {
@@ -163,13 +162,21 @@ struct OnboardingScreen<Content: View, Actions: View>: View {
                 .padding(.bottom, Theme.Spacing.xl)
             }
             .scrollDismissesKeyboard(.interactively)
-            VStack(spacing: Theme.Spacing.sm) {
-                actions()
+            .glassScrollEdge(.bottom)
+            // The action bar floats over the content: glass buttons on iOS 26,
+            // a cream bar before that.
+            .safeAreaInset(edge: .bottom) {
+                GlassGroup {
+                    VStack(spacing: Theme.Spacing.sm) {
+                        actions()
+                    }
+                }
+                .reveal(4)
+                .padding(.horizontal, Theme.Spacing.gutter)
+                .padding(.top, Theme.Spacing.sm)
+                .padding(.bottom, Theme.Spacing.lg)
+                .background(Glass26.available ? Color.clear : Theme.Colors.cream)
             }
-            .reveal(4)
-            .padding(.horizontal, Theme.Spacing.gutter)
-            .padding(.bottom, Theme.Spacing.lg)
-        }
     }
 }
 
@@ -198,17 +205,17 @@ struct SavedMomentScreen: View {
                 Text("PETITE HOME CO.")
                     .font(Typography.wordmark)
                     .kerning(Theme.Tracking.wordmark * 20)
-                    .foregroundStyle(Theme.Colors.powderBlue)
+                    .foregroundStyle(Theme.Colors.Fixed.powderBlue)
                     .scaleEffect(markScale)
                     .opacity(markOpacity)
                 VStack(spacing: Theme.Spacing.md) {
                     Text("Saved.")
                         .font(Typography.serif(40))
-                        .foregroundStyle(Theme.Colors.cream)
+                        .foregroundStyle(Theme.Colors.Fixed.cream)
                     Text("Your \(AppCopy.binderLower) is \(percent) percent there. The rest comes a minute at a time, and we'll nudge you when it's time.")
                         .font(Typography.body)
                         .lineSpacing(5)
-                        .foregroundStyle(Theme.Colors.cream.opacity(0.7))
+                        .foregroundStyle(Theme.Colors.Fixed.cream.opacity(0.7))
                         .multilineTextAlignment(.center)
                 }
                 .opacity(textOpacity)
@@ -217,14 +224,14 @@ struct SavedMomentScreen: View {
                     if askNotifications {
                         Text("We can nudge you when something expires or a chore comes due. Nothing else.")
                             .font(Typography.caption)
-                            .foregroundStyle(Theme.Colors.cream.opacity(0.7))
+                            .foregroundStyle(Theme.Colors.Fixed.cream.opacity(0.7))
                             .multilineTextAlignment(.center)
                         Button("Turn on reminders") {
                             Task { _ = await NotificationService.shared.requestPermission(); onDone() }
                         }
                         .buttonStyle(.moment)
                         Button { onDone() } label: {
-                            Text("Not now").font(Typography.body).foregroundStyle(Theme.Colors.cream.opacity(0.7))
+                            Text("Not now").font(Typography.body).foregroundStyle(Theme.Colors.Fixed.cream.opacity(0.7))
                                 .frame(maxWidth: .infinity, minHeight: 44)
                         }
                         .buttonStyle(.plain)

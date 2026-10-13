@@ -137,7 +137,7 @@ struct MomentScreen<Content: View>: View {
     @ViewBuilder var content: () -> Content
     var body: some View {
         ZStack {
-            Theme.Colors.ink.ignoresSafeArea()
+            Theme.Colors.Fixed.ink.ignoresSafeArea()
             content()
         }
     }

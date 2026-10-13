@@ -113,6 +113,12 @@ struct SettingsView: View {
             .listRowBackground(Theme.Colors.creamDeep)
 
             Section {
+                Picker("Appearance", selection: Binding(get: { appState.appearance }, set: { appState.appearance = $0 })) {
+                    ForEach(Appearance.allCases) { Text($0.label).tag($0) }
+                }
+                .pickerStyle(.segmented)
+            } header: { Text("Appearance") }
+            Section {
                 PhoneSyncToggles(household: household)
             } header: { Text("On this phone") } footer: {
                 Text("Tasks land in a Petite Home list in Reminders, due at their hour. Plans, meals and expirations land in a Petite Home calendar. Check a task off in either place and the other follows. Each phone keeps its own copies.")

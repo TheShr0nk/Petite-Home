@@ -24,6 +24,8 @@ struct MainTabView: View {
                 .tabItem { Label("Vault", systemImage: "lock.doc") }
                 .tag(AppTab.vault)
         }
+        .glassTabBar()
+        .glassScrollEdge(.all)
         .sheet(item: $appState.paywallGate) { gate in
             PaywallSheet(gate: gate)
         }
