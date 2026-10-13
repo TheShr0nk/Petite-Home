@@ -123,9 +123,18 @@ final class CloudSharingService: NSObject {
 
     /// Called from the app delegate when the partner opens the invite link.
     func accept(_ metadata: CKShare.Metadata) {
-        guard let container, let sharedStore else { return }
+        guard let container, let sharedStore else {
+            NotificationCenter.default.post(name: .partnerShareFailed, object: nil, userInfo: ["message": "iCloud isn't available on this phone."])
+            return
+        }
+        NotificationCenter.default.post(name: .partnerShareAccepting, object: nil)
         container.acceptShareInvitations(from: [metadata], into: sharedStore) { _, error in
-            if let error { print("[sharing] accept failed: \(error)") }
+            if let error {
+                print("[sharing] accept failed: \(error)")
+                DispatchQueue.main.async {
+                    NotificationCenter.default.post(name: .partnerShareFailed, object: nil, userInfo: ["message": error.localizedDescription])
+                }
+            }
         }
     }
 
@@ -163,4 +172,11 @@ enum PartnerHouseholdBridge {
             return obj.value(forKey: "id") as? UUID
         }
     }
+}
+
+extension Notification.Name {
+    /// The partner opened the invite link; the household is on its way from iCloud.
+    static let partnerShareAccepting = Notification.Name("co.petitehome.partnerShareAccepting")
+    /// Accepting the invite failed; userInfo["message"] says why.
+    static let partnerShareFailed = Notification.Name("co.petitehome.partnerShareFailed")
 }

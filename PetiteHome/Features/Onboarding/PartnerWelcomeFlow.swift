@@ -167,3 +167,40 @@ struct PartnerWelcomeFlow: View {
         withAnimation(Motion.crossfade) { appState.partnerWelcomePending = false }
     }
 }
+
+/// The loading state between tapping a partner's invite and the household
+/// landing from iCloud. Says what is happening, what to do if it stalls, and
+/// always offers a way out.
+struct SharedHouseholdSyncScreen: View {
+    var error: String?
+    let onGiveUp: () -> Void
+    @State private var slow = false
+
+    var body: some View {
+        OnboardingScreen(eyebrow: "Your partner's invite",
+                         hook: error == nil ? "Getting the \(AppCopy.binderLower) from your partner's phone." : "That invite didn't open.",
+                         subline: error ?? (slow ? "This is taking longer than usual. Check that iCloud is on for Petite Home in Settings, and that your partner's phone is online."
+                                                 : "A few seconds on a good connection. Nothing to do yet.")) {
+            if error == nil {
+                HStack { Spacer(); PulsingDots(); Spacer() }.padding(.top, Theme.Spacing.xl)
+            }
+        } actions: {
+            if error == nil && !slow {
+                Text("Waiting on iCloud").font(Typography.caption).foregroundStyle(Theme.Colors.sandDeep)
+            } else {
+                if error == nil {
+                    Button("Keep waiting") { slow = false; arm() }.buttonStyle(.primary)
+                }
+                Button("Set up my own instead") { onGiveUp() }.buttonStyle(error == nil ? .secondary : .secondary)
+            }
+        }
+        .onAppear(perform: arm)
+    }
+
+    private func arm() {
+        Task {
+            try? await Task.sleep(for: .seconds(20))
+            if !Task.isCancelled { slow = true }
+        }
+    }
+}

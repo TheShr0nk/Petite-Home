@@ -2,11 +2,10 @@ import SwiftUI
 import SwiftData
 
 enum OnboardingStep: Int, CaseIterable {
-    case intro, hook, household, firstContact, pediatrician, insurance, guardian, reveal, partnerInvite, lifeSync, premium
+    case hook, household, firstContact, pediatrician, insurance, guardian, reveal, partnerInvite, lifeSync, premium
 
     var analyticsName: String {
         switch self {
-        case .intro: return "intro"
         case .hook: return "hook"
         case .household: return "household"
         case .firstContact: return "first_contact"
@@ -22,12 +21,13 @@ enum OnboardingStep: Int, CaseIterable {
 }
 
 /// Every screen does one thing. Progress bar at top, back button everywhere.
-/// The hook can't be skipped; everything after it can.
+/// The app opens straight on the hook, no intro carousel: the value is shown by
+/// doing, and the first real entry is two taps away. Everything after the hook can be skipped.
 struct OnboardingFlow: View {
     @Environment(AppState.self) private var appState
     @Environment(\.modelContext) private var context
     @State private var draft = OnboardingDraft()
-    @State private var step: OnboardingStep = .intro
+    @State private var step: OnboardingStep = .hook
     @State private var savedHousehold: Household?
     @State private var showSavedMoment = false
 
@@ -53,7 +53,6 @@ struct OnboardingFlow: View {
         ZStack {
             Group {
                 switch step {
-                case .intro: IntroScreen { advance() }
                 case .hook: HookScreen { advance() }
                 case .household: HouseholdScreen(draft: draft) { advance() }
                 case .firstContact: FirstContactScreen(draft: draft) { advance() }
@@ -78,9 +77,6 @@ struct OnboardingFlow: View {
 
     private var header: some View {
         HStack(spacing: Theme.Spacing.md) {
-            if step == .intro {
-                Color.clear.frame(height: 40)
-            } else {
             Button {
                 back()
             } label: {
@@ -92,11 +88,9 @@ struct OnboardingFlow: View {
             .accessibilityLabel("Back")
             .opacity(step == .hook || step.rawValue > OnboardingStep.reveal.rawValue ? 0 : 1)
             .disabled(step == .hook || step.rawValue > OnboardingStep.reveal.rawValue)
-            // The intro doesn't count: the hook is 1 of 10.
-            ProgressBar(progress: Double(step.rawValue) / Double(OnboardingStep.allCases.count - 1),
-                        current: step.rawValue, total: OnboardingStep.allCases.count - 1)
+            ProgressBar(progress: Double(step.rawValue + 1) / Double(OnboardingStep.allCases.count),
+                        current: step.rawValue + 1, total: OnboardingStep.allCases.count)
             Color.clear.frame(width: 44, height: 44)
-            }
         }
         .padding(.horizontal, Theme.Spacing.md)
         .padding(.top, Theme.Spacing.sm)
@@ -107,7 +101,7 @@ struct OnboardingFlow: View {
     }
 
     private func back() {
-        if let prev = OnboardingStep(rawValue: step.rawValue - 1), prev != .intro { step = prev }
+        if let prev = OnboardingStep(rawValue: step.rawValue - 1) { step = prev }
     }
 
     /// The premium screen is the last step; a short dark "saved" moment plays before Home.

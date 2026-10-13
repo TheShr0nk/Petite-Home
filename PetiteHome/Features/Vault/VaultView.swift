@@ -6,6 +6,7 @@ import LocalAuthentication
 
 /// The vault (premium). Free users see three greyed sample cards and the paywall on tap.
 struct VaultView: View {
+    @Environment(\.modelContext) private var context
     @Environment(AppState.self) private var appState
     @Environment(EntitlementStore.self) private var entitlements
     @Bindable var household: Household
@@ -40,6 +41,10 @@ struct VaultView: View {
                     }
                     ForEach(documents, id: \.uuid) { doc in
                         NavigationLink(value: doc) { DocumentCard(doc: doc) }.buttonStyle(.plain)
+                            .swipeToDelete {
+                                NotificationService.shared.cancelExpiration(id: doc.uuid)
+                                context.delete(doc); try? context.save()
+                            }
                     }
                 }
             }

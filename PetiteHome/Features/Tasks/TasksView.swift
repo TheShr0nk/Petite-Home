@@ -73,6 +73,7 @@ struct TasksView: View {
                 VStack(spacing: 0) {
                     ForEach(items, id: \.uuid) { task in
                         TaskRow(task: task, onComplete: { complete(task) }, onTap: { editingTask = task })
+                            .swipeToDelete(cornerRadius: 0) { delete(task) }
                         if task.uuid != items.last?.uuid { SandDivider().padding(.leading, Theme.Spacing.lg + 36) }
                     }
                 }
@@ -133,6 +134,12 @@ struct TasksView: View {
             guard !tasks.contains(where: { $0.templateKey == t.key }) else { continue }
             household.tasks?.append(t.makeTask(due: TaskTemplate.firstDue(for: t, child: child)))
         }
+        save()
+    }
+
+    private func delete(_ task: HouseholdTask) {
+        NotificationService.shared.cancelTaskDue(id: task.uuid)
+        context.delete(task)
         save()
     }
 

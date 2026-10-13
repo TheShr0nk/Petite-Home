@@ -5,6 +5,7 @@ struct RootView: View {
     @Environment(AppState.self) private var appState
     @Environment(\.modelContext) private var context
     @Query private var households: [Household]
+    @State private var shareError: String?
 
     var body: some View {
         Group {
@@ -14,6 +15,11 @@ struct RootView: View {
                 } else {
                     MainTabView(household: household)
                 }
+            } else if appState.awaitingSharedHousehold {
+                SharedHouseholdSyncScreen(error: shareError) {
+                    shareError = nil
+                    appState.awaitingSharedHousehold = false
+                }
             } else {
                 OnboardingFlow()
             }
@@ -21,6 +27,13 @@ struct RootView: View {
         .screenBackground()
         .onAppear(perform: repairHouseholdSelection)
         .onChange(of: households.count) { _, _ in repairHouseholdSelection() }
+        .onReceive(NotificationCenter.default.publisher(for: .partnerShareAccepting)) { _ in
+            shareError = nil
+            if households.isEmpty { appState.awaitingSharedHousehold = true }
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .partnerShareFailed)) { note in
+            shareError = note.userInfo?["message"] as? String ?? "The invite couldn't be opened."
+        }
     }
 
     private var currentHousehold: Household? {
@@ -34,6 +47,7 @@ struct RootView: View {
     private func repairHouseholdSelection() {
         if appState.currentHouseholdID == nil, let first = households.first {
             appState.currentHouseholdID = first.uuid
+            appState.awaitingSharedHousehold = false
             if first.ownerUserID != nil {
                 if !appState.hasCompletedOnboarding, first.ownerUserID != CloudIdentity.cachedUserID {
                     appState.partnerWelcomePending = true

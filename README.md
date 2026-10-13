@@ -95,6 +95,17 @@ offers the phone's own Reminders and Calendar apps (`PhoneExportRows`); those
 choices ride along in `LifeSyncPending` too. The Tasks tab lives inside Life
 Sync as its second segment.
 
+**Onboarding opens on the hook.** There is no intro carousel (the base44 and
+HIG guidance both argue against swipe-through intros): the first screen is
+"If something happened to you tonight", the first real entry is two taps away,
+and there is no sign-up at all. Permissions are asked where they make sense,
+each with a one-line reason.
+
+**Swipe to delete.** Tasks, documents, plans, sitters and recipes are cards in
+scroll views, so `Design/Components/Swipe.swift` gives them the platform's
+swipe-to-delete (reveal on a short swipe, commit on a long one), a long-press
+menu with the same action, and a VoiceOver custom action.
+
 **The partner's first open.** A household that arrives through someone else's
 share (its `ownerUserID` is not this iCloud user) skips onboarding and gets
 `PartnerWelcomeFlow` instead: which adult they are, their own calendars and

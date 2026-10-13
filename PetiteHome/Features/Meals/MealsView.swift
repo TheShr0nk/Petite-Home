@@ -142,6 +142,7 @@ struct MealsView: View {
             } else {
                 ForEach(recipes, id: \.uuid) { recipe in
                     NavigationLink(value: recipe) { RecipeRow(recipe: recipe) }.buttonStyle(.plain)
+                        .swipeToDelete("Remove") { context.delete(recipe); try? context.save() }
                 }
             }
         }

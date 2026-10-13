@@ -50,7 +50,13 @@ struct PlansView: View {
         if upcoming.isEmpty {
             Card { Text("Nothing planned yet. Pick a date night above, or add an outing.").font(Typography.body).foregroundStyle(Theme.Colors.sandDeep) }
         } else {
-            ForEach(upcoming, id: \.uuid) { plan in PlanCard(plan: plan, household: household) { editing = plan } }
+            ForEach(upcoming, id: \.uuid) { plan in
+                PlanCard(plan: plan, household: household) { editing = plan }
+                    .swipeToDelete("Cancel") {
+                        NotificationService.shared.cancelTaskDue(id: plan.uuid)
+                        context.delete(plan); try? context.save()
+                    }
+            }
         }
         BrandDivider()
         HStack {
@@ -371,6 +377,7 @@ struct SitterRosterSheet: View {
                             LabeledField(label: "Notes", text: $s.notes, placeholder: "Great with Theo, doesn't drive", autocapitalization: .sentences)
                         }
                     }
+                    .swipeToDelete("Remove") { household.sitters.removeAll { $0.id == s.id } }
                 }
                 if adding {
                     Card(background: Theme.Colors.powderBlueMist) {

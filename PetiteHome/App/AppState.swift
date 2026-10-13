@@ -22,6 +22,7 @@ final class AppState {
         static let currentAdult = "app.currentAdultID"
         static let partnerWelcome = "app.partnerWelcomePending"
         static let appearance = "app.appearance"
+        static let awaitingShare = "app.awaitingSharedHousehold"
     }
 
     var hasCompletedOnboarding: Bool {
@@ -46,6 +47,10 @@ final class AppState {
     var partnerWelcomePending: Bool {
         didSet { defaults.set(partnerWelcomePending, forKey: Keys.partnerWelcome) }
     }
+    /// True between accepting a partner's invite and the household arriving from iCloud.
+    var awaitingSharedHousehold: Bool {
+        didSet { defaults.set(awaitingSharedHousehold, forKey: Keys.awaitingShare) }
+    }
     /// System, light or dark. Chosen in Settings; system by default.
     var appearance: Appearance {
         didSet { defaults.set(appearance.rawValue, forKey: Keys.appearance) }
@@ -65,6 +70,7 @@ final class AppState {
         currentAdultID = defaults.string(forKey: Keys.currentAdult).flatMap(UUID.init(uuidString:))
         partnerWelcomePending = defaults.bool(forKey: Keys.partnerWelcome)
         appearance = Appearance(rawValue: defaults.string(forKey: Keys.appearance) ?? "") ?? .system
+        awaitingSharedHousehold = defaults.bool(forKey: Keys.awaitingShare)
     }
 
     /// The adult using this phone: the explicit choice, else the owner if this iCloud account created the household, else the partner.
