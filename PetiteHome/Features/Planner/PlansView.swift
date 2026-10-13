@@ -23,7 +23,7 @@ struct PlansView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: Theme.Spacing.xl) {
-                if entitlements.isPremium { content } else { LockedPreview(onTap: { appState.showPaywall(.lifeSync) }) { sample } }
+                if entitlements.isPremium { content } else { LockedPreview(gate: .lifeSync, onTap: { appState.showPaywall(.lifeSync) }) { sample } }
             }
             .padding(.horizontal, Theme.Spacing.gutter)
             .padding(.bottom, Theme.Spacing.xl)

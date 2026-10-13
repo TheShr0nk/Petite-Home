@@ -7,6 +7,23 @@ import Observation
 enum PremiumGate: String {
     case vault, vaultSave, expirationReminder, tasks, lifeSync, mealPlan, trustedSharing, cleanExport, sizeHistory, multipleHouseholds, onboarding
 
+    /// One sentence on what premium does here. Shown under the headline on every locked area.
+    var valueLine: String {
+        switch self {
+        case .vault: return "Photos of the papers you can't lose, encrypted on your phone before they sync. Only you can open them."
+        case .vaultSave: return "Keep the scan, encrypted, next to the rest of the documents."
+        case .expirationReminder: return "A heads-up 60, 30 and 7 days before passports, car seats and insurance run out."
+        case .tasks: return "The chores on a rhythm, in your Reminders app too, for either of you to check off."
+        case .lifeSync: return "Both of your calendars, the chores, dinner and plans on one week you can both see."
+        case .mealPlan: return "Plan the week with your partner, save the recipes you make, and get the list written for you."
+        case .trustedSharing: return "A read-only copy for a grandparent or the guardian, from a link that expires when you say."
+        case .cleanExport: return "The printable file without the numbers that shouldn't travel."
+        case .sizeHistory: return "Every size you've logged, so you know what fits before you order."
+        case .multipleHouseholds: return "A second file for a second home, or for the kids' other house."
+        case .onboarding: return "Reminders, the vault and the Planner, kept for you."
+        }
+    }
+
     var headline: String {
         switch self {
         case .vault: return "Keep every document safe"

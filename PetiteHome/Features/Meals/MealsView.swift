@@ -105,7 +105,7 @@ struct MealsView: View {
             SectionHeader(title: "This week")
             Text("Plan the week once, together. Whoever's cooking sees it, the shopping list writes itself, and dinner shows up on the week.")
                 .font(Typography.body).foregroundStyle(Theme.Colors.sandDeep)
-            LockedPreview(onTap: { appState.showPaywall(.mealPlan) }) {
+            LockedPreview(gate: .mealPlan, onTap: { appState.showPaywall(.mealPlan) }) {
                 Card(padding: 0) {
                     VStack(spacing: 0) {
                         ForEach(Array(zip(week.prefix(4), ["Sheet-pan chicken", "Leftovers", "Taco night", "Decide dinner"])), id: \.0) { day, title in

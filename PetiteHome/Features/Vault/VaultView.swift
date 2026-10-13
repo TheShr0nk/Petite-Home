@@ -21,7 +21,7 @@ struct VaultView: View {
                 if !entitlements.isPremium {
                     Text("Birth certificates, Social Security cards, passports. Encrypted on your phone before they sync, so only you can open them.")
                         .font(Typography.body).foregroundStyle(Theme.Colors.sandDeep)
-                    LockedPreview(onTap: { appState.showPaywall(.vault) }) {
+                    LockedPreview(gate: .vault, onTap: { appState.showPaywall(.vault) }) {
                         VStack(spacing: Theme.Spacing.md) {
                             sampleCard("Theo's birth certificate", .birthCert)
                             sampleCard("Social Security card", .ssnCard)

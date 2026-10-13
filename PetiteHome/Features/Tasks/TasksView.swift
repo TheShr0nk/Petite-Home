@@ -26,7 +26,7 @@ struct TasksView: View {
                 if entitlements.isPremium {
                     premiumContent
                 } else {
-                    LockedPreview(onTap: { appState.showPaywall(.tasks) }) { templateList(greyed: true) }
+                    LockedPreview(gate: .tasks, onTap: { appState.showPaywall(.tasks) }) { templateList(greyed: true) }
                 }
             }
             .padding(.horizontal, Theme.Spacing.gutter)

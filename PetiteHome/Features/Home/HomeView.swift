@@ -199,14 +199,14 @@ struct HomeView: View {
                             SandDivider().padding(.leading, Theme.Spacing.lg)
                         }
                     } else {
-                        LockedPreview(onTap: { appState.showPaywall(.expirationReminder) }) {
-                            UpcomingRow(title: "Passport expires", date: Calendar.current.date(byAdding: .day, value: 45, to: Date())!, tone: .warn, icon: "calendar.badge.exclamationmark")
-                                .padding(.horizontal, Theme.Spacing.lg)
-                        }
-                        SandDivider().padding(.leading, Theme.Spacing.lg)
-                        LockedPreview(onTap: { appState.showPaywall(.tasks) }) {
-                            UpcomingRow(title: "Change the furnace filter", date: Calendar.current.date(byAdding: .day, value: 12, to: Date())!, tone: .normal, icon: "house")
-                                .padding(.horizontal, Theme.Spacing.lg)
+                        LockedPreview(gate: .expirationReminder, onTap: { appState.showPaywall(.expirationReminder) }, bannerFirst: false) {
+                            VStack(spacing: 0) {
+                                UpcomingRow(title: "Passport expires", date: Calendar.current.date(byAdding: .day, value: 45, to: Date())!, tone: .warn, icon: "calendar.badge.exclamationmark")
+                                    .padding(.horizontal, Theme.Spacing.lg)
+                                SandDivider().padding(.leading, Theme.Spacing.lg)
+                                UpcomingRow(title: "Change the furnace filter", date: Calendar.current.date(byAdding: .day, value: 12, to: Date())!, tone: .normal, icon: "house")
+                                    .padding(.horizontal, Theme.Spacing.lg)
+                            }
                         }
                     }
                 }

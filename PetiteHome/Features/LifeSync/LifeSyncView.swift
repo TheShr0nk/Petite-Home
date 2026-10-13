@@ -55,7 +55,7 @@ struct LifeSyncView: View {
             VStack(alignment: .leading, spacing: Theme.Spacing.lg) {
                 Text("Both calendars and the house tasks on the same days, so neither of you has to ask.")
                     .font(Typography.body).foregroundStyle(Theme.Colors.sandDeep)
-                LockedPreview(onTap: { appState.showPaywall(.lifeSync) }) {
+                LockedPreview(gate: .lifeSync, onTap: { appState.showPaywall(.lifeSync) }) {
                     VStack(alignment: .leading, spacing: Theme.Spacing.lg) {
                         let days = LifeSyncAgenda.build(events: SampleWeek.events(me: me, partner: partner), tasks: [], from: Date(), days: 7)
                         dayStrip(days, interactive: false)

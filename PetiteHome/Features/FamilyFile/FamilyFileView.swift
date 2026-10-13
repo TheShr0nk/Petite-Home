@@ -88,9 +88,12 @@ struct FamilyFileView: View {
                     VStack(spacing: Theme.Spacing.sm) {
                         Button { showExport = true } label: { Label("Export as PDF", systemImage: "arrow.up.doc") }.buttonStyle(.outline)
                         Button { showTrusted = true } label: {
-                            Label("Share with someone I trust", systemImage: "person.badge.key")
-                                .frame(maxWidth: .infinity)
-                                .overlay(alignment: .trailing) { PremiumLockIfNeeded() }
+                            HStack(spacing: Theme.Spacing.sm) {
+                                Spacer()
+                                Label("Share with someone I trust", systemImage: "person.badge.key")
+                                PremiumLockIfNeeded()
+                                Spacer()
+                            }
                         }.buttonStyle(.outline)
                     }
                 }
@@ -124,10 +127,16 @@ struct SettingsToolbarItem: ToolbarContent {
     }
 }
 
+/// A small lock beside a label when the action is premium. Never a pill over text.
 struct PremiumLockIfNeeded: View {
     @Environment(EntitlementStore.self) private var entitlements
     var body: some View {
-        if !entitlements.isPremium { PremiumPill() }
+        if !entitlements.isPremium {
+            Image(systemName: "lock.fill")
+                .font(.system(size: 12, weight: .semibold))
+                .foregroundStyle(Theme.Colors.accentText)
+                .accessibilityLabel("Premium")
+        }
     }
 }
 

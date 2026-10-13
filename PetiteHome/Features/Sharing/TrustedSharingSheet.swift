@@ -20,7 +20,7 @@ struct TrustedSharingSheet: View {
         NavigationStack {
             EditorScroll(title: "Share with someone I trust") {
                 if !entitlements.isPremium {
-                    LockedPreview(onTap: { appState.showPaywall(.trustedSharing) }) { form }
+                    LockedPreview(gate: .trustedSharing, onTap: { appState.showPaywall(.trustedSharing) }) { form }
                 } else {
                     form
                 }

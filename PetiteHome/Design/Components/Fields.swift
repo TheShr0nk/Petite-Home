@@ -117,20 +117,53 @@ struct SectionHeader: View {
 
 /// The paywall-gated feature preview: content greyed with the pill on top.
 struct LockedPreview<Content: View>: View {
+    var gate: PremiumGate
     var onTap: () -> Void
+    /// Banner above the preview (default) or below it, for previews that sit inside a card.
+    var bannerFirst: Bool = true
     @ViewBuilder var content: () -> Content
 
     var body: some View {
-        Button(action: onTap) {
-            ZStack(alignment: .topTrailing) {
+        VStack(alignment: .leading, spacing: Theme.Spacing.md) {
+            if bannerFirst { PremiumGateBanner(gate: gate, onTap: onTap) }
+            Button(action: onTap) {
                 content()
-                    .opacity(0.45)
+                    .opacity(0.5)
                     .allowsHitTesting(false)
-                PremiumPill()
-                    .padding(Theme.Spacing.md)
+                    .contentShape(Rectangle())
             }
-            .contentShape(Rectangle())
+            .buttonStyle(.plain)
+            .accessibilityLabel("Preview of \(gate.headline). Premium feature.")
+            if !bannerFirst { PremiumGateBanner(gate: gate, onTap: onTap).padding(Theme.Spacing.md) }
         }
-        .buttonStyle(.plain)
+    }
+}
+
+/// The premium gate as its own card: the lock, the headline, one sentence of
+/// value, a button. It never overlaps content; the preview sits next to it, dimmed.
+struct PremiumGateBanner: View {
+    @Environment(EntitlementStore.self) private var entitlements
+    let gate: PremiumGate
+    let onTap: () -> Void
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
+            HStack(spacing: Theme.Spacing.xs) {
+                Image(systemName: "lock.fill").font(.system(size: 11, weight: .semibold)).foregroundStyle(Theme.Colors.accentText)
+                Text("Premium keeps this for you").capsLabel()
+            }
+            Text(gate.headline).font(Typography.sectionTitle).foregroundStyle(Theme.Colors.ink)
+            Text(gate.valueLine).font(Typography.body).foregroundStyle(Theme.Colors.sandDeep).fixedSize(horizontal: false, vertical: true)
+            Button(entitlements.usesLocalTrial ? "Unlock while we're testing" : "See plans", action: onTap)
+                .buttonStyle(.primary)
+                .padding(.top, Theme.Spacing.xs)
+            Text(entitlements.usesLocalTrial
+                 ? "Free for \(EntitlementStore.localTrialDays) days while we're in testing."
+                 : "$0.99 for your first week, then weekly, monthly or yearly. Cancel anytime.")
+                .font(Typography.caption).foregroundStyle(Theme.Colors.sandDeep)
+        }
+        .padding(Theme.Spacing.lg)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(RoundedRectangle(cornerRadius: Theme.Radius.card, style: .continuous).fill(Theme.Colors.powderBlueMist))
     }
 }
