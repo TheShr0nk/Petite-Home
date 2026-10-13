@@ -75,6 +75,7 @@ struct FamilyFileSectionView: View {
         file.updatedAt = Date()
         try? context.save()
         ExpirationScheduler.sync(household: household, isPremium: EntitlementStore.shared.isPremium)
+        StandingLinkRefresher.scheduleAfterEdit(household: household, context: context)
     }
 
     private func value(for field: FamilyFileField) -> String? {

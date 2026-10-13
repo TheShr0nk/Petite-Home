@@ -112,6 +112,15 @@ phone export, and the notification prompt. Three screens, nothing to re-enter.
 The owner is asked about notifications on the "Saved." moment after the
 premium step; before that the app never prompts.
 
+**Standing links and paper.** A trusted-person link can be standing: no
+expiry, and `StandingLinkRefresher` re-renders and re-uploads the PDF behind
+the same link whenever the Family File has changed (on launch, on foreground,
+and a minute after an edit). The sharing sheet starts on the guardian and
+defaults to standing. The paper sheet offers AirPrint and a printed binder
+ordered through the website; see `docs/print-binder.md` for the routes the
+site needs and why checkout is on the web (Apple bars in-app purchase for
+physical goods).
+
 **Family Sharing.** Premium is per Apple ID. Both products are marked
 family-shareable, so the partner is covered only when the buyer has Apple
 Family Sharing on; the paywall, Settings and the partner welcome say so. A

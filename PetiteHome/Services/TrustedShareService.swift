@@ -66,6 +66,29 @@ final class TrustedShareService {
         return (url, record.recordID.recordName)
     }
 
+    /// Replaces the PDF behind an existing link. The share and its URL are untouched,
+    /// so whoever holds the link sees the new copy next time they open it.
+    func refresh(recordName: String, pdf: Data) async throws {
+        let db = container.privateCloudDatabase
+        let record = try await db.record(for: CKRecord.ID(recordName: recordName, zoneID: zoneID))
+        let tmp = FileManager.default.temporaryDirectory.appending(path: "\(UUID().uuidString).pdf")
+        try pdf.write(to: tmp, options: .completeFileProtection)
+        defer { try? FileManager.default.removeItem(at: tmp) }
+        record["file"] = CKAsset(fileURL: tmp)
+        record["updatedAt"] = Date()
+        let op = CKModifyRecordsOperation(recordsToSave: [record], recordIDsToDelete: nil)
+        op.savePolicy = .changedKeys
+        try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
+            op.modifyRecordsResultBlock = { result in
+                switch result {
+                case .success: continuation.resume()
+                case .failure(let error): continuation.resume(throwing: error)
+                }
+            }
+            db.add(op)
+        }
+    }
+
     /// Deletes the root record, which takes the share and the link with it.
     func revoke(recordName: String) async {
         let id = CKRecord.ID(recordName: recordName, zoneID: zoneID)

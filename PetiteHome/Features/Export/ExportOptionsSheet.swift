@@ -10,12 +10,29 @@ struct ExportOptionsSheet: View {
     let household: Household
     @State private var rendered: PDFFile?
     @State private var rendering = false
+    @State private var showBinder = false
 
     var body: some View {
         NavigationStack {
+            ScrollView {
             VStack(alignment: .leading, spacing: Theme.Spacing.lg) {
-                Text("A printable copy for the fridge, the safe, or whoever's holding the fort.")
+                Text("Paper for the drawer, the guardian, or whoever's holding the fort. It never expires and never needs a phone.")
                     .font(Typography.body).foregroundStyle(Theme.Colors.sandDeep)
+                Card(background: Theme.Colors.powderBlueMist) {
+                    VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
+                        Text("A printed binder, mailed").font(Typography.sectionTitle).foregroundStyle(Theme.Colors.ink)
+                        Text("The sealed copy, bound with tabs, printed and shipped to you or straight to the guardian. Paid on petitehome.co.")
+                            .font(Typography.caption).foregroundStyle(Theme.Colors.sandDeep)
+                        Button { showBinder = true } label: { Label("Order a binder", systemImage: "shippingbox") }.buttonStyle(.primary)
+                    }
+                }
+                Card {
+                    VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
+                        Text("Print at home").font(Typography.sectionTitle).foregroundStyle(Theme.Colors.ink)
+                        Text("The sealed copy to any AirPrint printer.").font(Typography.caption).foregroundStyle(Theme.Colors.sandDeep)
+                        Button { printSealed() } label: { Label("Print", systemImage: "printer") }.buttonStyle(.outline).disabled(rendering)
+                    }
+                }
                 Card {
                     VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
                         Text(AppCopy.printableTitle).font(Typography.sectionTitle).foregroundStyle(Theme.Colors.ink)
@@ -33,11 +50,12 @@ struct ExportOptionsSheet: View {
                     }
                 }
                 if rendering { HStack { Spacer(); PulsingDots(); Spacer() } }
-                Spacer()
             }
             .padding(Theme.Spacing.gutter)
+            }
             .screenBackground()
-            .navigationTitle("Export")
+            .navigationTitle("Paper copy")
+            .sheet(isPresented: $showBinder) { PrintBinderSheet(household: household) }
             .navigationBarTitleDisplayMode(.inline)
             .toolbar { DoneToolbarItem() }
             .sheet(item: $rendered) { file in
@@ -45,6 +63,20 @@ struct ExportOptionsSheet: View {
             }
         }
         .presentationBackground(Theme.Colors.cream)
+    }
+
+    /// AirPrint the sealed copy. The vault appendix is left out of paper by default.
+    private func printSealed() {
+        guard let file = household.familyFile else { return }
+        let data = PDFExporter(household: household, file: file, tier: .clean, attachments: []).render()
+        let controller = UIPrintInteractionController.shared
+        let info = UIPrintInfo(dictionary: nil)
+        info.jobName = AppCopy.printableTitle
+        info.outputType = .general
+        info.duplex = .longEdge
+        controller.printInfo = info
+        controller.printingItem = data
+        controller.present(animated: true)
     }
 
     private func render(_ tier: PDFExporter.Tier) {

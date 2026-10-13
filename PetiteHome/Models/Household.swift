@@ -284,6 +284,9 @@ final class TrustedContact {
     var shareRecordName: String? = nil
     var expiresAt: Date? = nil
     var createdAt: Date = Date()
+    /// A standing link never expires and the copy behind it is re-uploaded whenever the file changes.
+    var isStanding: Bool = false
+    var lastRefreshedAt: Date? = nil
 
     var household: Household? = nil
 

@@ -86,7 +86,7 @@ struct FamilyFileView: View {
                     KidsRow(household: household)
                     SectionHeader(title: "Share it")
                     VStack(spacing: Theme.Spacing.sm) {
-                        Button { showExport = true } label: { Label("Export as PDF", systemImage: "arrow.up.doc") }.buttonStyle(.outline)
+                        Button { showExport = true } label: { Label("Paper copy, PDF or a printed binder", systemImage: "printer") }.buttonStyle(.outline)
                         Button { showTrusted = true } label: {
                             HStack(spacing: Theme.Spacing.sm) {
                                 Spacer()

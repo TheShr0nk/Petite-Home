@@ -34,7 +34,10 @@ struct MainTabView: View {
         }
         .onAppear(perform: onLaunch)
         .onChange(of: scenePhase) { _, phase in
-            if phase == .active { PhoneSyncService.shared.syncIfEnabled(household: household, context: context, isPremium: entitlements.isPremium) }
+            if phase == .active {
+                PhoneSyncService.shared.syncIfEnabled(household: household, context: context, isPremium: entitlements.isPremium)
+                Task { await StandingLinkRefresher.refreshIfNeeded(household: household, context: context) }
+            }
         }
         .onReceive(NotificationCenter.default.publisher(for: .didReceiveSharedFile)) { note in
             if let title = note.userInfo?["title"] as? String, let pdf = note.userInfo?["pdf"] as? Data {
@@ -58,6 +61,7 @@ struct MainTabView: View {
             }
         }
         expireTrustedShares()
+        Task { await StandingLinkRefresher.refreshIfNeeded(household: household, context: context) }
         PhoneSyncService.shared.syncIfEnabled(household: household, context: context, isPremium: entitlements.isPremium)
         UITabBar.appearance().unselectedItemTintColor = UIColor(hex: 0x6E6259)
     }
