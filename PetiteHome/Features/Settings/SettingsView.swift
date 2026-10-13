@@ -123,7 +123,7 @@ struct SettingsView: View {
                 Button("Delete this household and everything in it", role: .destructive) { confirmDelete = true }
                 if let dangerError { Text(dangerError).font(Typography.caption).foregroundStyle(Theme.Colors.danger) }
             } header: { Text("Your data") } footer: {
-                Text("Deleting removes the \(AppCopy.binderLower), the vault, plans, meals and tasks from this phone and from iCloud. Export a PDF first if you want a copy. This can't be undone.")
+                Text("Deleting removes the \(AppCopy.binderLower), the document vault, plans, meals and tasks from this phone and from iCloud. Export a PDF first if you want a copy. This can't be undone.")
             }
             .listRowBackground(Theme.Colors.creamDeep)
 

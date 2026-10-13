@@ -1,10 +1,12 @@
 # Petite Home — iOS
 
 The household operating system for families with young kids. Three areas plus
-Home: the **Binder** (free; the printable export is still titled "The Family
+Home: **The Family Vault** (free; the printable export is still titled "The Family
 File", as the website promises), the **Planner** (premium: both calendars,
 tasks, meals, and family plans with sitters), and the **Vault** (premium).
-Names live in `AppCopy` so a rename is one line.
+Names live in `AppCopy` so a rename is one line. The encrypted document area
+is still the **Vault** tab; it needs its own name now that the file area is
+called the Family Vault.
 
 Brand: Petite Home Co. · "Less to question. More to trust."
 
@@ -113,7 +115,7 @@ cadences.
 visitors, with who's going and a sitter state (kids come along / need a
 sitter / asked / confirmed). `FreeEveningFinder` proposes evenings with
 nothing on either synced calendar, weekends first. `SitterSheet` builds the
-text sent to a sitter from the Binder: kids' allergies, meds, notes, who to
+text sent to a sitter from the Family Vault: kids' allergies, meds, notes, who to
 call, the address. It never includes codes or account details. The sitter
 roster is a value list on the household, so both partners share it.
 

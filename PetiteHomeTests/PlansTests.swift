@@ -40,7 +40,7 @@ final class PlansTests: XCTestCase {
         XCTAssertEqual(FamilyPlan(title: "", kind: .outing, startDate: Date()).sitterStatus, .notNeeded)
     }
 
-    func testSitterSheetPullsFromTheBinderButNeverCodes() {
+    func testSitterSheetPullsFromTheFamilyVaultButNeverCodes() {
         let h = Household()
         container.mainContext.insert(h)
         let me = Adult(firstName: "Casey", isAccountOwner: true); me.phone = "555-0100"
