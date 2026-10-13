@@ -202,7 +202,7 @@ struct SavedMomentScreen: View {
                     Text("Saved.")
                         .font(Typography.serif(40))
                         .foregroundStyle(Theme.Colors.cream)
-                    Text("Your \(AppCopy.binderLower) is \(percent) percent there. The rest takes a minute at a time, and the app will remind you.")
+                    Text("Your \(AppCopy.binderLower) is \(percent) percent there. The rest comes a minute at a time, and we'll nudge you when it's time.")
                         .font(Typography.body)
                         .lineSpacing(5)
                         .foregroundStyle(Theme.Colors.cream.opacity(0.7))

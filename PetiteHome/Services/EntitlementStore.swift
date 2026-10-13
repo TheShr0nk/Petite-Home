@@ -19,7 +19,7 @@ enum PremiumGate: String {
         case .cleanExport: return "Export a sealed copy"
         case .sizeHistory: return "Keep track of how fast they grow"
         case .multipleHouseholds: return "Keep more than one file"
-        case .onboarding: return "Now let the app remember for you."
+        case .onboarding: return "Now let us do the remembering."
         }
     }
 }

@@ -9,10 +9,10 @@ struct IntroScreen: View {
 
     private struct Beat { let icon: String; let line: String }
     private let beats: [Beat] = [
-        Beat(icon: "book.closed", line: "Everything a family needs to know, in one place."),
-        Beat(icon: "calendar", line: "Both calendars, the house, and dinner on one week."),
-        Beat(icon: "lock.doc", line: "The documents, locked. Only you can open them."),
-        Beat(icon: "person.2", line: "Shared with the one person who needs it."),
+        Beat(icon: "book.closed", line: "The things your family needs to know, all in one place."),
+        Beat(icon: "calendar", line: "Your week, their week, and what's for dinner. One screen."),
+        Beat(icon: "lock.doc", line: "The important papers, locked up. Only you can open them."),
+        Beat(icon: "person.2", line: "Share it with the one person who'd need it."),
     ]
     private var isLast: Bool { beat == beats.count - 1 }
 
@@ -81,8 +81,8 @@ struct HookScreen: View {
             RevealLines(lines: [
                 "If something happened to you tonight,",
                 "would anyone know where to find your kids' insurance,",
-                "their doctor,",
-                "or who's supposed to take them?",
+                "who their doctor is,",
+                "or who's supposed to take care of them?",
             ]) {
                 withAnimation(.easeIn(duration: 1.0)) { showButton = true }
             }
@@ -105,7 +105,7 @@ struct HouseholdScreen: View {
     @State private var editingChild: OnboardingDraft.ChildDraft?
 
     var body: some View {
-        OnboardingScreen(eyebrow: "Your household", hook: "Who's in your household?") {
+        OnboardingScreen(eyebrow: "Your family", hook: "Let's start with who's at home.") {
             VStack(alignment: .leading, spacing: Theme.Spacing.lg) {
                 FlowLayout(spacing: Theme.Spacing.sm) {
                     Chip(label: "Me", systemImage: "checkmark", isSelected: true) { }
@@ -195,7 +195,7 @@ struct FirstContactScreen: View {
     let onContinue: () -> Void
 
     var body: some View {
-        OnboardingScreen(eyebrow: "Who to call", hook: "Start with the one thing that matters most. Who should be called first if you can't be?") {
+        OnboardingScreen(eyebrow: "Who to call", hook: "First, the one thing that matters most. If you can't be reached, who gets the call?") {
             ContactEntry(contact: $draft.firstContact, showRelationship: true)
         } actions: {
             Button("Continue", action: onContinue)
@@ -240,7 +240,7 @@ struct InsuranceScreen: View {
     let onContinue: () -> Void
 
     var body: some View {
-        OnboardingScreen(eyebrow: "Insurance", hook: "Grab your insurance card. This takes 20 seconds.") {
+        OnboardingScreen(eyebrow: "Insurance", hook: "Go grab your insurance card. This part takes about 20 seconds.") {
             InsuranceEntry(policy: $draft.healthInsurance, allowVaultSave: false)
         } actions: {
             Button("Continue", action: onContinue).buttonStyle(.primary(enabled: draft.healthInsurance.isFilled)).disabled(!draft.healthInsurance.isFilled)
@@ -256,8 +256,8 @@ struct GuardianScreen: View {
     let onContinue: () -> Void
 
     var body: some View {
-        OnboardingScreen(eyebrow: "If something happens", hook: "If neither of you could care for your kids, who would?",
-                         subline: "This isn't legal paperwork. It's so the people around you know your wishes on the worst day.") {
+        OnboardingScreen(eyebrow: "If something happens", hook: "If you couldn't be there for your kids, who would step in?",
+                         subline: "This isn't legal paperwork. It's so the people who love you know what you'd want, without having to guess.") {
             ContactEntry(contact: $draft.guardian, showRelationship: true)
         } actions: {
             Button("Continue") { draft.guardianUndecided = false; onContinue() }
@@ -278,8 +278,8 @@ struct RevealScreen: View {
 
     var body: some View {
         let report = draft.previewReport()
-        OnboardingScreen(eyebrow: "Your \(AppCopy.binderLower)", hook: "This is your \(AppCopy.binder).",
-                         subline: "It syncs privately to your iCloud. Nothing leaves your Apple account.") {
+        OnboardingScreen(eyebrow: "Your \(AppCopy.binderLower)", hook: "Here's your \(AppCopy.binder).",
+                         subline: "It's saved to your own iCloud, and nowhere else.") {
             VStack(alignment: .leading, spacing: Theme.Spacing.lg) {
                 HStack {
                     Spacer()
@@ -308,8 +308,8 @@ struct RevealScreen: View {
                         .foregroundStyle(Theme.Colors.powderBlueDk)
                 }
                 LabeledField(label: "Your first name", text: $draft.firstName, placeholder: "First name", contentType: .givenName)
-                LabeledField(label: "Email, if you'd like the printable version", text: $draft.email, placeholder: "Optional", keyboard: .emailAddress, contentType: .emailAddress, autocapitalization: .never)
-                Text("We'll send the printable Family File and the occasional note from Casey. Leave it blank and nothing is sent.")
+                LabeledField(label: "Email, if you want the printable version", text: $draft.email, placeholder: "Optional", keyboard: .emailAddress, contentType: .emailAddress, autocapitalization: .never)
+                Text("We'll email you the printable version, plus the occasional note from Casey. Leave it blank and we won't send a thing.")
                     .font(Typography.caption).foregroundStyle(Theme.Colors.sandDeep)
                 Wordmark().padding(.top, Theme.Spacing.sm)
             }
@@ -331,7 +331,7 @@ struct RevealScreen: View {
                 }
             }
             .buttonStyle(.primary(enabled: !saving)).disabled(saving)
-            Text(CloudIdentity.isICloudAvailable ? "Saved to your iCloud. No account, no password." : "iCloud is off on this phone, so this stays on the phone only. Turn on iCloud in Settings to sync and share.")
+            Text(CloudIdentity.isICloudAvailable ? "It saves to your iCloud. No account to make, no password to remember." : "iCloud is off on this phone, so for now this stays right here. Turn it on in Settings whenever you want to sync and share.")
                 .font(Typography.caption)
                 .foregroundStyle(Theme.Colors.sandDeep)
                 .multilineTextAlignment(.center)
@@ -350,8 +350,8 @@ struct PartnerInviteScreen: View {
     @State private var errorText: String?
 
     var body: some View {
-        OnboardingScreen(eyebrow: "Your partner", hook: "Your partner should be able to see this too.",
-                         subline: "They'll get the same \(AppCopy.binderLower) on their phone, and every change syncs both ways.") {
+        OnboardingScreen(eyebrow: "Your partner", hook: "Your partner should have this too.",
+                         subline: "They get the same \(AppCopy.binderLower) on their phone. When one of you changes something, you both see it.") {
             if let errorText {
                 Text(errorText).font(Typography.caption).foregroundStyle(Theme.Colors.danger)
             }
@@ -386,12 +386,12 @@ struct LifeSyncSetupScreen: View {
     private var partnerName: String { draft.includesPartner && !draft.partnerFirstName.isEmpty ? draft.partnerFirstName : "your partner" }
 
     var body: some View {
-        OnboardingScreen(eyebrow: AppCopy.planner, hook: "Put both calendars and the house on the same week.",
-                         subline: "Pick which calendars \(partnerName) can see, and which chores the app should keep track of. Nothing is written to your calendar.") {
+        OnboardingScreen(eyebrow: AppCopy.planner, hook: "Get both of your calendars, and the house, onto one week.",
+                         subline: "Pick which calendars \(partnerName) can see, and which chores you'd like a nudge about. Nothing gets written to your calendar unless you turn that on later.") {
             VStack(alignment: .leading, spacing: Theme.Spacing.xl) {
                 CalendarPickerBlock(granted: $draft.calendarAccessGranted, selected: $draft.selectedCalendarIDs)
                 VStack(alignment: .leading, spacing: Theme.Spacing.md) {
-                    Text("Tasks the app should remember").font(Typography.label).foregroundStyle(Theme.Colors.sandDeep)
+                    Text("Chores you'd like a nudge about").font(Typography.label).foregroundStyle(Theme.Colors.sandDeep)
                     VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
                         ForEach(TaskTemplate.grouped(), id: \.0) { cadence, templates in
                             Eyebrow(text: cadence.label).padding(.top, Theme.Spacing.xs)
@@ -433,9 +433,9 @@ struct PremiumOfferScreen: View {
     @State private var showPlans = false
 
     var body: some View {
-        OnboardingScreen(eyebrow: "Petite Home premium", hook: "Now let the app remember for you.") {
+        OnboardingScreen(eyebrow: "Petite Home premium", hook: "Now let us do the remembering.") {
             PremiumBullets()
-            Text("Weekly, monthly or yearly. $0.99 for the first week on any of them, then the plan's price. Cancel anytime.")
+            Text("Pay weekly, monthly or yearly. Your first week is $0.99 whichever you pick, then the regular price. Cancel whenever you like.")
                 .font(Typography.callout)
                 .foregroundStyle(Theme.Colors.sandDeep)
         } actions: {
@@ -476,9 +476,9 @@ struct PremiumOfferScreen: View {
 struct PremiumBullets: View {
     var body: some View {
         VStack(alignment: .leading, spacing: Theme.Spacing.md) {
-            bullet("bell", "Reminds you when passports, car seats, and insurance expire")
-            bullet("lock.doc", "Keeps birth certificates and SSN cards in an encrypted vault")
-            bullet("calendar", "The \(AppCopy.planner): both calendars, tasks, meals and date nights on one week, shared with your partner")
+            bullet("bell", "A heads-up before passports, car seats, and insurance run out")
+            bullet("lock.doc", "Birth certificates and Social Security cards, locked in your vault")
+            bullet("calendar", "Both of your calendars, the chores, dinner, and date nights on one week you can both see")
         }
     }
     private func bullet(_ icon: String, _ text: String) -> some View {
