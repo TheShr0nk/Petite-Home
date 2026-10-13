@@ -72,7 +72,7 @@ struct HouseholdScreen: View {
             ChildDraftSheet(child: binding(for: child)) {
                 draft.children.removeAll { $0.id == child.id }
             }
-            .presentationDetents([.medium])
+            .presentationDetents([.large])
             .presentationBackground(Theme.Colors.cream)
         }
     }
@@ -93,29 +93,37 @@ struct ChildDraftSheet: View {
     let onRemove: () -> Void
 
     var body: some View {
-        VStack(alignment: .leading, spacing: Theme.Spacing.lg) {
-            Text("About your child")
-                .font(Typography.sectionTitle)
-                .foregroundStyle(Theme.Colors.ink)
-            LabeledField(label: "First name", text: $child.firstName, placeholder: "First name", contentType: .givenName)
-            VStack(alignment: .leading, spacing: Theme.Spacing.xs) {
-                HStack {
-                    Text("Birthdate").font(Typography.label).foregroundStyle(Theme.Colors.sandDeep)
-                    Spacer()
+        ScrollView {
+            VStack(alignment: .leading, spacing: Theme.Spacing.xl) {
+                VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
+                    Text("About your child")
+                        .font(Typography.sectionTitle)
+                        .foregroundStyle(Theme.Colors.ink)
+                    Text("Just a name and a birthdate. Everything else comes later.")
+                        .font(Typography.body).foregroundStyle(Theme.Colors.sandDeep)
+                }
+                .padding(.top, Theme.Spacing.lg)
+                LabeledField(label: "First name", text: $child.firstName, placeholder: "First name", contentType: .givenName)
+                VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
+                    Text("Birthdate, or the due date if they're on the way").font(Typography.label).foregroundStyle(Theme.Colors.sandDeep)
+                    Card {
+                        DatePicker("Birthdate", selection: $child.dateOfBirth, in: ...Calendar.current.date(byAdding: .month, value: 10, to: Date())!, displayedComponents: .date)
+                            .datePickerStyle(.wheel)
+                            .labelsHidden()
+                            .frame(maxWidth: .infinity, maxHeight: 170)
+                    }
                     if !child.firstName.isEmpty {
-                        Chip(label: "\(child.firstName), \(child.ageShort)", isSelected: true)
+                        Chip(label: "\(child.firstName), \(child.ageShort)", systemImage: "checkmark", isSelected: true)
                     }
                 }
-                DatePicker("Birthdate", selection: $child.dateOfBirth, in: ...Calendar.current.date(byAdding: .month, value: 10, to: Date())!, displayedComponents: .date)
-                    .datePickerStyle(.wheel)
-                    .labelsHidden()
-                    .frame(maxHeight: 150)
+                Button(child.firstName.isEmpty ? "Add child" : "Add \(child.firstName)") { dismiss() }
+                    .buttonStyle(.primary(enabled: !child.firstName.isEmpty)).disabled(child.firstName.isEmpty)
+                Button("Remove") { onRemove(); dismiss() }.buttonStyle(.secondary)
             }
-            Spacer()
-            Button("Done") { dismiss() }.buttonStyle(.primary(enabled: !child.firstName.isEmpty)).disabled(child.firstName.isEmpty)
-            Button("Remove") { onRemove(); dismiss() }.buttonStyle(.secondary)
+            .padding(.horizontal, Theme.Spacing.gutter)
+            .padding(.bottom, Theme.Spacing.xl)
         }
-        .padding(Theme.Spacing.gutter)
+        .scrollDismissesKeyboard(.interactively)
         .screenBackground()
     }
 }

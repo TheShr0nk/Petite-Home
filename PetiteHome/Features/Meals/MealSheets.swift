@@ -9,8 +9,12 @@ struct RecipeEditorSheet: View {
     @Environment(\.dismiss) private var dismiss
     let household: Household?
     let recipe: Recipe?
+    /// Filled in by the recipe box's quick add (a link import or a photographed page).
+    var prefill: RecipeImporter.Draft? = nil
+    var prefillPhoto: Data? = nil
 
     @State private var link = ""
+    @State private var showCamera = false
     @State private var importing = false
     @State private var importError: String?
     @State private var title = ""
@@ -56,17 +60,19 @@ struct RecipeEditorSheet: View {
                 LabeledTextEditor(label: "Steps, one per line", text: $stepsText, hint: "Heat the oven to 425.\nToss everything on the pan.")
                 LabeledField(label: "Tags", text: $tagsText, placeholder: "weeknight, kids like it", autocapitalization: .never)
                 LabeledTextEditor(label: "Notes", text: $notes, hint: "Theo eats this without the sauce.")
-                PhotosPicker(selection: $pickedItem, matching: .images) {
-                    HStack {
-                        if let photo, let image = UIImage(data: photo) {
-                            Image(uiImage: image).resizable().scaledToFill().frame(width: 56, height: 56).clipShape(RoundedRectangle(cornerRadius: 8))
-                            Text("Change photo")
-                        } else {
-                            Label("Add a photo", systemImage: "photo")
-                        }
+                if let photo, let image = UIImage(data: photo) {
+                    Image(uiImage: image).resizable().scaledToFill().frame(height: 140).frame(maxWidth: .infinity).clipShape(RoundedRectangle(cornerRadius: Theme.Radius.card, style: .continuous))
+                }
+                HStack(spacing: Theme.Spacing.sm) {
+                    Button { showCamera = true } label: { Label(photo == nil ? "Take a photo" : "Retake", systemImage: "camera") }.buttonStyle(.outline)
+                    PhotosPicker(selection: $pickedItem, matching: .images) { Label(photo == nil ? "From library" : "Change", systemImage: "photo") }.buttonStyle(.outline)
+                }
+                .fullScreenCover(isPresented: $showCamera) {
+                    CameraCapture { image in
+                        showCamera = false
+                        if let image { photo = image.jpegData(compressionQuality: 0.8) }
                     }
                 }
-                .buttonStyle(.outline)
                 .onChange(of: pickedItem) { _, item in
                     Task { if let data = try? await item?.loadTransferable(type: Data.self), let img = UIImage(data: data) { photo = img.jpegData(compressionQuality: 0.8) } }
                 }
@@ -77,6 +83,12 @@ struct RecipeEditorSheet: View {
         }
         .presentationBackground(Theme.Colors.cream)
         .onAppear {
+            if recipe == nil, let prefill {
+                title = prefill.title; ingredientsText = prefill.ingredients.joined(separator: "\n"); stepsText = prefill.steps.joined(separator: "\n")
+                servings = max(prefill.servings, 1); minutes = max(prefill.minutes, 5); sourceURL = prefill.sourceURL
+                photo = prefillPhoto
+                return
+            }
             guard let recipe else { return }
             title = recipe.title; ingredientsText = recipe.ingredients.joined(separator: "\n"); stepsText = recipe.steps.joined(separator: "\n")
             servings = recipe.servings; minutes = recipe.minutes; notes = recipe.notes; tagsText = recipe.tags.joined(separator: ", ")

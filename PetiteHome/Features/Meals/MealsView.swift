@@ -12,6 +12,14 @@ struct MealsView: View {
     @State private var showShopping = false
     @State private var planning: Date?
     @State private var search = ""
+    // Quick add at the top of the recipe box: a pasted link or a photo of the page.
+    @State private var quickLink = ""
+    @State private var importing = false
+    @State private var importError: String?
+    @State private var showCamera = false
+    @State private var prefill: RecipeImporter.Draft?
+    @State private var prefillPhoto: Data?
+    @State private var showPrefilled = false
 
     private var recipes: [Recipe] {
         let all = (household.recipes ?? []).sorted { ($0.isFavorite ? 0 : 1, $0.title) < ($1.isFavorite ? 0 : 1, $1.title) }
@@ -34,6 +42,13 @@ struct MealsView: View {
             .padding(.bottom, Theme.Spacing.xl)
         }
         .sheet(isPresented: $showNewRecipe) { RecipeEditorSheet(household: household, recipe: nil) }
+        .sheet(isPresented: $showPrefilled) { RecipeEditorSheet(household: household, recipe: nil, prefill: prefill, prefillPhoto: prefillPhoto) }
+        .fullScreenCover(isPresented: $showCamera) {
+            CameraCapture { image in
+                showCamera = false
+                if let image { Task { await recognize(image) } }
+            }
+        }
         .sheet(isPresented: $showShopping) { ShoppingListSheet(household: household) }
         .sheet(item: Binding(get: { planning.map { DayBox(date: $0) } }, set: { planning = $0?.date })) { box in
             PlanMealSheet(household: household, date: box.date)
@@ -112,6 +127,68 @@ struct MealsView: View {
         }
     }
 
+    /// Three ways in, all at the top: paste a link, photograph the page, or type it.
+    private var quickAdd: some View {
+        Card(background: Theme.Colors.powderBlueMist) {
+            VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
+                Text("Add a recipe").font(Typography.sectionTitle).foregroundStyle(Theme.Colors.ink)
+                HStack(spacing: Theme.Spacing.sm) {
+                    TextField("Paste a link from a blog, Instagram or TikTok", text: $quickLink)
+                        .font(Typography.body).keyboardType(.URL).textInputAutocapitalization(.never).autocorrectionDisabled()
+                        .padding(.horizontal, 14).frame(minHeight: 48)
+                        .background(RoundedRectangle(cornerRadius: Theme.Radius.control, style: .continuous).fill(Theme.Colors.white))
+                        .submitLabel(.go)
+                        .onSubmit { Task { await importQuick() } }
+                    Button(importing ? "…" : "Import") { Task { await importQuick() } }
+                        .font(Typography.bodyEmphasis).foregroundStyle(Theme.Colors.accentText)
+                        .frame(minHeight: 44).disabled(quickLink.isEmpty || importing)
+                }
+                if importing { PulsingDots() }
+                if let importError { Text(importError).font(Typography.caption).foregroundStyle(Theme.Colors.danger) }
+                HStack(spacing: Theme.Spacing.sm) {
+                    Button { showCamera = true } label: { Label("Take a photo", systemImage: "camera") }.buttonStyle(.outline)
+                    Button { showNewRecipe = true } label: { Label("Type it", systemImage: "square.and.pencil") }.buttonStyle(.outline)
+                }
+                Text("A photo of a cookbook page or a screenshot is read on the phone and turned into ingredients and steps you can fix up.")
+                    .font(Typography.caption).foregroundStyle(Theme.Colors.sandDeep)
+            }
+        }
+    }
+
+    private func importQuick() async {
+        importing = true; importError = nil
+        defer { importing = false }
+        do {
+            var draft = try await RecipeImporter.fetch(quickLink)
+            var photo: Data?
+            if let image = draft.imageURL, let url = URL(string: image), let (data, _) = try? await URLSession.shared.data(from: url), let img = UIImage(data: data) {
+                photo = img.jpegData(compressionQuality: 0.8)
+            }
+            if draft.minutes == 0 { draft.minutes = 30 }
+            prefill = draft; prefillPhoto = photo; showPrefilled = true
+            quickLink = ""
+            Analytics.track(.recipeImported, ["from": "quick"])
+        } catch {
+            importError = "Couldn't read a recipe at that link. You can still type it."
+        }
+    }
+
+    /// On-device text recognition on a photo of the recipe. Lines that look like
+    /// amounts become ingredients, the rest become steps; the user fixes the split.
+    private func recognize(_ image: UIImage) async {
+        let lines = await CardScanner.recognize(image).rawLines.map { $0.trimmingCharacters(in: .whitespaces) }.filter { !$0.isEmpty }
+        var draft = RecipeImporter.Draft()
+        draft.title = lines.first ?? ""
+        let amount = try? NSRegularExpression(pattern: #"(^\s*[\d½¼¾⅓⅔]|\b(cups?|tsp|tbsp|teaspoons?|tablespoons?|oz|ounces?|lbs?|pounds?|g|grams?|ml|cloves?|pinch|cans?|sticks?)\b)"#, options: .caseInsensitive)
+        for line in lines.dropFirst() {
+            let range = NSRange(line.startIndex..., in: line)
+            if let amount, amount.firstMatch(in: line, range: range) != nil, line.count < 80 { draft.ingredients.append(line) }
+            else if line.count > 12 { draft.steps.append(line) }
+        }
+        draft.minutes = 30
+        prefill = draft; prefillPhoto = image.jpegData(compressionQuality: 0.7); showPrefilled = true
+    }
+
     private func mealsOn(_ day: Date) -> [PlannedMeal] {
         (household.meals ?? []).filter { Calendar.current.isDate($0.date, inSameDayAs: day) }.sorted { $0.slot.order < $1.slot.order }
     }
@@ -130,15 +207,10 @@ struct MealsView: View {
                     .font(Typography.body).padding(.horizontal, 14).frame(minHeight: 44)
                     .background(RoundedRectangle(cornerRadius: Theme.Radius.control, style: .continuous).fill(Theme.Colors.white))
             }
+            quickAdd
             if recipes.isEmpty {
-                Card {
-                    VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
-                        Text("Save the ones you actually make.").font(Typography.sectionTitle).foregroundStyle(Theme.Colors.ink)
-                        Text("Paste a link from a blog, Instagram or TikTok and the app pulls the recipe in. Or type it. Then share it as a card with anyone.")
-                            .font(Typography.body).foregroundStyle(Theme.Colors.sandDeep)
-                        Button("Add the first recipe") { showNewRecipe = true }.buttonStyle(.primary)
-                    }
-                }
+                Text("Save the ones you actually make. Then share any of them as a card.")
+                    .font(Typography.body).foregroundStyle(Theme.Colors.sandDeep)
             } else {
                 ForEach(recipes, id: \.uuid) { recipe in
                     NavigationLink(value: recipe) { RecipeRow(recipe: recipe) }.buttonStyle(.plain)

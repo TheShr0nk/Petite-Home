@@ -10,12 +10,21 @@ struct AddChildView: View {
 
     var body: some View {
         EditorScroll(title: "Add a child") {
+            Text("Just a name and a birthdate for now. Their doctor, allergies and sizes come after.")
+                .font(Typography.body).foregroundStyle(Theme.Colors.sandDeep).fixedSize(horizontal: false, vertical: true)
             LabeledField(label: "First name", text: $firstName, placeholder: "First name", contentType: .givenName)
-            VStack(alignment: .leading, spacing: Theme.Spacing.xs) {
-                Text("Birthdate").font(Typography.label).foregroundStyle(Theme.Colors.sandDeep)
-                DatePicker("Birthdate", selection: $dateOfBirth, in: ...Calendar.current.date(byAdding: .month, value: 10, to: Date())!, displayedComponents: .date)
-                    .datePickerStyle(.wheel).labelsHidden().frame(maxHeight: 150)
+                .padding(.top, Theme.Spacing.sm)
+            VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
+                Text("Birthdate, or the due date if they're on the way").font(Typography.label).foregroundStyle(Theme.Colors.sandDeep)
+                Card {
+                    DatePicker("Birthdate", selection: $dateOfBirth, in: ...Calendar.current.date(byAdding: .month, value: 10, to: Date())!, displayedComponents: .date)
+                        .datePickerStyle(.wheel).labelsHidden().frame(maxWidth: .infinity, maxHeight: 170)
+                }
+                if !firstName.isEmpty {
+                    Chip(label: "\(firstName), \(AgeFormatter.short(from: dateOfBirth))", systemImage: "checkmark", isSelected: true)
+                }
             }
+            .padding(.top, Theme.Spacing.sm)
             Button("Add \(firstName.isEmpty ? "child" : firstName)") {
                 let child = Child(firstName: firstName, dateOfBirth: dateOfBirth)
                 household.children?.append(child)

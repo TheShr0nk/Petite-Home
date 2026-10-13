@@ -333,7 +333,7 @@ def if_something_happens():
         d.row("Name", M, 300, 50); d.y -= 28; d.row("Date", M + 320, d.cw - 320, 40)
     d.y += 24
     d.note_box("Now tell the person. A plan nobody knows about isn't a plan.")
-    d.app_line("The app keeps this with the rest of the Family Vault and shares it with the guardian, read-only. petitehome.co")
+    d.app_line("The app keeps this with the rest of the Family File and shares it with the guardian, read-only. petitehome.co")
     return d.save(multi=True)
 
 
@@ -384,7 +384,7 @@ def sitter_cheat_sheet():
     d.y += 58 + 8
     d.text("Never", M, d.y + 9, SANS_SEMI, 9, DANGER)
     d.text("write alarm or gate codes here. Tell the sitter in person.", M + pdfmetrics.stringWidth("Never ", SANS_SEMI, 9), d.y + 9, SANS, 9, SAND_DEEP)
-    d.text("The app fills this in from your Family Vault and texts it to the sitter in one tap. petitehome.co", M, d.y + 24, SANS_IT, 9.5, BLUE_DK)
+    d.text("The app fills this in from your Family File and texts it to the sitter in one tap. petitehome.co", M, d.y + 24, SANS_IT, 9.5, BLUE_DK)
     return d.save()
 
 

@@ -6,9 +6,9 @@ import SwiftData
 /// petitehome.co promises. `binder` is the short form for tabs and buttons,
 /// `binderTitle` the full name for screen titles.
 enum AppCopy {
-    static let binder = "Family Vault"
-    static let binderLower = "family vault"
-    static let binderTitle = "The Family Vault"
+    static let binder = "Family File"
+    static let binderLower = "family file"
+    static let binderTitle = "The Family File"
     static let planner = "Planner"
     static let printableTitle = "The Family File"
 }
@@ -138,7 +138,7 @@ enum FreeEveningFinder {
 }
 
 /// The text that goes to the sitter: when, where the parents are, and the
-/// things from the Family Vault a sitter needs. Never codes, never account details.
+/// things from the Family File a sitter needs. Never codes, never account details.
 enum SitterSheet {
     static func text(plan: FamilyPlan, household: Household, sitterName: String) -> String {
         let file = household.familyFile

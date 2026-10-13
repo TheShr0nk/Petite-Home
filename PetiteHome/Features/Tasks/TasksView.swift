@@ -12,6 +12,10 @@ struct TasksView: View {
     var embedded: Bool = false
     @State private var editingTask: HouseholdTask?
     @State private var showNew = false
+    @State private var quickTitle = ""
+    @State private var remindersOn = PhoneSyncService.shared.tasksToReminders
+    @State private var syncing = false
+    @State private var syncMessage: String?
 
     private var tasks: [HouseholdTask] { (household.tasks ?? []).sorted { $0.nextDue < $1.nextDue } }
     private var templatesEnabled: Bool { tasks.contains { $0.isFromTemplate } }
@@ -43,17 +47,10 @@ struct TasksView: View {
     }
 
     @ViewBuilder private var premiumContent: some View {
+        quickAdd
+        syncRow
         if tasks.isEmpty {
             Text("Add the things the house needs, and the app will ask at the right time.").font(Typography.body).foregroundStyle(Theme.Colors.sandDeep)
-        }
-        if !PhoneSyncService.shared.tasksToReminders, !tasks.isEmpty {
-            Card(background: Theme.Colors.powderBlueMist) {
-                VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
-                    Text("Want these in your Reminders app too?").font(Typography.sectionTitle).foregroundStyle(Theme.Colors.ink)
-                    Text("They show up in a Petite Home list, due at their hour. Check one off in either place.").font(Typography.caption).foregroundStyle(Theme.Colors.sandDeep)
-                    Button("Add to Reminders") { enableReminders() }.buttonStyle(.primary)
-                }
-            }
         }
         if !templatesEnabled {
             templateList(greyed: false)
@@ -64,6 +61,77 @@ struct TasksView: View {
         if !overdue.isEmpty { taskGroup("Overdue", overdue) }
         if !upcoming.isEmpty { taskGroup("Coming up", upcoming) }
         if !done.isEmpty { taskGroup("Done", done) }
+    }
+
+    /// One line and return. Due today, for either of you; tap it after for a repeat or a time.
+    private var quickAdd: some View {
+        VStack(alignment: .leading, spacing: Theme.Spacing.xs) {
+            HStack(spacing: Theme.Spacing.sm) {
+                TextField("Add a task, like \"Order diapers\"", text: $quickTitle)
+                    .font(Typography.body).padding(.horizontal, 14).frame(minHeight: 48)
+                    .background(RoundedRectangle(cornerRadius: Theme.Radius.control, style: .continuous).fill(Theme.Colors.white))
+                    .submitLabel(.done).onSubmit(addQuick)
+                Button(action: addQuick) {
+                    Image(systemName: "plus.circle.fill").font(.system(size: 30)).foregroundStyle(Theme.Colors.accentText).frame(width: 44, height: 44)
+                }
+                .disabled(quickTitle.trimmingCharacters(in: .whitespaces).isEmpty)
+                .accessibilityLabel("Add task")
+            }
+            Text("Due today, for either of you. Tap a task to set a repeat, a time or who.").font(Typography.caption).foregroundStyle(Theme.Colors.sandDeep)
+        }
+    }
+
+    /// Sync with Apple Reminders: one tap turns it on and syncs; after that it syncs now.
+    private var syncRow: some View {
+        VStack(alignment: .leading, spacing: Theme.Spacing.xs) {
+            Button(action: syncReminders) {
+                HStack(spacing: Theme.Spacing.md) {
+                    Image(systemName: remindersOn ? "checkmark.circle.fill" : "arrow.triangle.2.circlepath")
+                        .font(.system(size: 20, weight: .medium)).foregroundStyle(remindersOn ? Theme.Colors.success : Theme.Colors.accentText).frame(width: 28)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(remindersOn ? "Synced with Apple Reminders" : "Sync with Apple Reminders").font(Typography.bodyEmphasis).foregroundStyle(Theme.Colors.ink)
+                        Text(remindersOn ? "Tap to sync now. A Petite Home list, due at each task's hour." : "Puts these in a Petite Home list, due at their hour. Check one off in either place.")
+                            .font(Typography.caption).foregroundStyle(Theme.Colors.sandDeep)
+                    }
+                    Spacer()
+                    if syncing { PulsingDots() } else { Image(systemName: "chevron.right").font(.system(size: 13, weight: .medium)).foregroundStyle(Theme.Colors.sandDeep) }
+                }
+                .padding(Theme.Spacing.lg)
+                .background(RoundedRectangle(cornerRadius: Theme.Radius.card, style: .continuous).fill(Theme.Colors.powderBlueMist))
+            }
+            .buttonStyle(.plain)
+            if let syncMessage { Text(syncMessage).font(Typography.caption).foregroundStyle(Theme.Colors.sandDeep) }
+        }
+    }
+
+    private func addQuick() {
+        let title = quickTitle.trimmingCharacters(in: .whitespaces)
+        guard !title.isEmpty else { return }
+        let task = HouseholdTask(title: title, recurrence: .none, nextDue: Date(), category: .home)
+        household.tasks?.append(task)
+        quickTitle = ""
+        SensoryFeedbackBridge.selection()
+        save()
+    }
+
+    private func syncReminders() {
+        syncing = true; syncMessage = nil
+        Task {
+            if !PhoneSyncService.shared.hasRemindersAccess {
+                let granted = await PhoneSyncService.shared.requestRemindersAccess()
+                if !granted {
+                    syncing = false
+                    syncMessage = "Reminders access is off. Turn it on in Settings → Privacy & Security → Reminders."
+                    return
+                }
+            }
+            PhoneSyncService.shared.tasksToReminders = true
+            remindersOn = true
+            PhoneSyncService.shared.syncTasks(household: household, context: context)
+            syncing = false
+            syncMessage = "Synced \(Date().formatted(date: .omitted, time: .shortened)). Open the Reminders app and look for the Petite Home list."
+            SensoryFeedbackBridge.success()
+        }
     }
 
     private func taskGroup(_ title: String, _ items: [HouseholdTask]) -> some View {
@@ -116,14 +184,6 @@ struct TasksView: View {
         }
     }
 
-    private func enableReminders() {
-        Task {
-            if await PhoneSyncService.shared.requestRemindersAccess() {
-                PhoneSyncService.shared.tasksToReminders = true
-                PhoneSyncService.shared.syncIfEnabled(household: household, context: context, isPremium: true)
-            }
-        }
-    }
 
     private func enableTemplates() {
         for t in TaskTemplate.pack where t.onByDefault && !tasks.contains(where: { $0.templateKey == t.key }) {
@@ -223,6 +283,7 @@ struct TaskEditorSheet: View {
     @State private var category: TaskCategory = .home
     @State private var assigneeID: UUID?
     @State private var hour = 9
+    @State private var showMore = false
     private let hours: [(Int, String)] = [(8, "8 am"), (9, "9 am"), (12, "Noon"), (15, "3 pm"), (17, "5 pm"), (19, "7 pm")]
 
     var body: some View {
@@ -244,32 +305,40 @@ struct TaskEditorSheet: View {
                 }
                 DatePicker("Next due", selection: $nextDue, displayedComponents: .date).font(Typography.body).tint(Theme.Colors.accentText)
                 VStack(alignment: .leading, spacing: Theme.Spacing.xs) {
-                    Text("Remind at").font(Typography.label).foregroundStyle(Theme.Colors.sandDeep)
-                    FlowLayout(spacing: Theme.Spacing.sm) {
-                        ForEach(hours, id: \.0) { h, label in Chip(label: label, isSelected: hour == h) { hour = h } }
-                    }
-                }
-                VStack(alignment: .leading, spacing: Theme.Spacing.xs) {
-                    Text("Category").font(Typography.label).foregroundStyle(Theme.Colors.sandDeep)
-                    FlowLayout(spacing: Theme.Spacing.sm) {
-                        ForEach(TaskCategory.allCases) { c in Chip(label: c.label, systemImage: c.systemImage, isSelected: c == category) { category = c } }
-                    }
-                }
-                VStack(alignment: .leading, spacing: Theme.Spacing.xs) {
                     Text("Who").font(Typography.label).foregroundStyle(Theme.Colors.sandDeep)
                     FlowLayout(spacing: Theme.Spacing.sm) {
                         Chip(label: "Either of us", isSelected: assigneeID == nil) { assigneeID = nil }
                         ForEach(household.adults, id: \.uuid) { adult in Chip(label: adult.displayName, isSelected: assigneeID == adult.uuid) { assigneeID = adult.uuid } }
                     }
                 }
-                LabeledTextEditor(label: "Notes", text: $notes, hint: "Filter size, where the shutoff is, who to call")
+                Button("Save") { save() }.buttonStyle(.primary(enabled: !title.isEmpty)).disabled(title.isEmpty)
+                DisclosureGroup(isExpanded: $showMore) {
+                    VStack(alignment: .leading, spacing: Theme.Spacing.lg) {
+                        VStack(alignment: .leading, spacing: Theme.Spacing.xs) {
+                            Text("Remind at").font(Typography.label).foregroundStyle(Theme.Colors.sandDeep)
+                            FlowLayout(spacing: Theme.Spacing.sm) {
+                                ForEach(hours, id: \.0) { h, label in Chip(label: label, isSelected: hour == h) { hour = h } }
+                            }
+                        }
+                        VStack(alignment: .leading, spacing: Theme.Spacing.xs) {
+                            Text("Category").font(Typography.label).foregroundStyle(Theme.Colors.sandDeep)
+                            FlowLayout(spacing: Theme.Spacing.sm) {
+                                ForEach(TaskCategory.allCases) { c in Chip(label: c.label, systemImage: c.systemImage, isSelected: c == category) { category = c } }
+                            }
+                        }
+                        LabeledTextEditor(label: "Notes", text: $notes, hint: "Filter size, where the shutoff is, who to call")
+                    }
+                    .padding(.top, Theme.Spacing.md)
+                } label: {
+                    Text("Reminder time, category, notes").font(Typography.bodyEmphasis).foregroundStyle(Theme.Colors.accentText)
+                }
+                .tint(Theme.Colors.accentText)
                 if let task, !task.completions.isEmpty {
                     SectionHeader(title: "History")
                     ForEach(task.completions.sorted(by: >), id: \.self) { d in
                         Text(d.formatted(date: .long, time: .omitted)).font(Typography.body).foregroundStyle(Theme.Colors.sandDeep)
                     }
                 }
-                Button("Save") { save() }.buttonStyle(.primary(enabled: !title.isEmpty)).disabled(title.isEmpty)
                 if let task {
                     Button("Delete task", role: .destructive) { context.delete(task); try? context.save(); dismiss() }
                         .font(Typography.button).foregroundStyle(Theme.Colors.danger).frame(maxWidth: .infinity)

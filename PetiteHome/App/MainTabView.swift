@@ -15,7 +15,7 @@ struct MainTabView: View {
                 .tabItem { Label("Home", systemImage: "house") }
                 .tag(AppTab.home)
             FamilyFileView(household: household)
-                .tabItem { Label(AppCopy.binder, systemImage: "archivebox") }
+                .tabItem { Label(AppCopy.binder, systemImage: "folder") }
                 .tag(AppTab.familyFile)
             NavigationStack { LifeSyncView(household: household) }
                 .tabItem { Label(AppCopy.planner, systemImage: "calendar") }

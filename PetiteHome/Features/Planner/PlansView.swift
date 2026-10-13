@@ -22,7 +22,7 @@ struct PlansView: View {
 
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: Theme.Spacing.lg) {
+            VStack(alignment: .leading, spacing: Theme.Spacing.xl) {
                 if entitlements.isPremium { content } else { LockedPreview(onTap: { appState.showPaywall(.lifeSync) }) { sample } }
             }
             .padding(.horizontal, Theme.Spacing.gutter)
@@ -41,21 +41,36 @@ struct PlansView: View {
 
     @ViewBuilder private var content: some View {
         dateNightCard
-        HStack(spacing: Theme.Spacing.sm) {
-            ForEach([PlanKind.outing, .trip, .appointment, .visitors]) { kind in
-                Chip(label: kind.label, systemImage: kind.systemImage) { newKind = kind; newDate = nil; showNew = true }
+        VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
+            Text("Or add").font(Typography.label).foregroundStyle(Theme.Colors.sandDeep)
+            LazyVGrid(columns: [GridItem(.flexible(), spacing: Theme.Spacing.sm), GridItem(.flexible(), spacing: Theme.Spacing.sm)], spacing: Theme.Spacing.sm) {
+                ForEach([PlanKind.outing, .trip, .appointment, .visitors]) { kind in
+                    Button { newKind = kind; newDate = nil; showNew = true } label: {
+                        HStack(spacing: Theme.Spacing.sm) {
+                            BrandIcon(systemName: kind.systemImage, size: 16)
+                            Text(kind.label).font(Typography.body).foregroundStyle(Theme.Colors.ink)
+                            Spacer()
+                        }
+                        .padding(.horizontal, Theme.Spacing.md)
+                        .frame(minHeight: 48)
+                        .background(RoundedRectangle(cornerRadius: Theme.Radius.control, style: .continuous).fill(Theme.Colors.creamDeep))
+                    }
+                    .buttonStyle(.plain)
+                }
             }
         }
-        SectionHeader(title: "Coming up", detail: upcoming.isEmpty ? nil : "\(upcoming.count)")
-        if upcoming.isEmpty {
-            Card { Text("Nothing planned yet. Pick a date night above, or add an outing.").font(Typography.body).foregroundStyle(Theme.Colors.sandDeep) }
-        } else {
-            ForEach(upcoming, id: \.uuid) { plan in
-                PlanCard(plan: plan, household: household) { editing = plan }
-                    .swipeToDelete("Cancel") {
-                        NotificationService.shared.cancelTaskDue(id: plan.uuid)
-                        context.delete(plan); try? context.save()
-                    }
+        VStack(alignment: .leading, spacing: Theme.Spacing.md) {
+            SectionHeader(title: "Coming up", detail: upcoming.isEmpty ? nil : "\(upcoming.count)")
+            if upcoming.isEmpty {
+                Card { Text("Nothing planned yet. Pick a date night above, or add an outing.").font(Typography.body).foregroundStyle(Theme.Colors.sandDeep) }
+            } else {
+                ForEach(upcoming, id: \.uuid) { plan in
+                    PlanCard(plan: plan, household: household) { editing = plan }
+                        .swipeToDelete("Cancel") {
+                            NotificationService.shared.cancelTaskDue(id: plan.uuid)
+                            context.delete(plan); try? context.save()
+                        }
+                }
             }
         }
         BrandDivider()
@@ -179,8 +194,8 @@ struct PlanCard: View {
                         Image(systemName: plan.kind.systemImage).font(.system(size: 15, weight: .regular)).foregroundStyle(Theme.Colors.ink)
                     }
                     .frame(width: 36, height: 36)
-                    VStack(alignment: .leading, spacing: 3) {
-                        Text(plan.displayTitle).font(Typography.body).foregroundStyle(Theme.Colors.ink)
+                    VStack(alignment: .leading, spacing: 5) {
+                        Text(plan.displayTitle).font(Typography.bodyEmphasis).foregroundStyle(Theme.Colors.ink)
                         Text(plan.startDate.formatted(.dateTime.weekday(.abbreviated).month(.abbreviated).day().hour().minute()) + (plan.location.isEmpty ? "" : " · \(plan.location)"))
                             .font(Typography.caption).foregroundStyle(Theme.Colors.sandDeep)
                         HStack(spacing: 6) {

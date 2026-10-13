@@ -7,7 +7,7 @@ final class Household {
     var uuid: UUID = UUID()
     var name: String = ""
     var createdAt: Date = Date()
-    /// The iCloud user record name of whoever created the household. Set when the family vault is first saved.
+    /// The iCloud user record name of whoever created the household. Set when the family file is first saved.
     var ownerUserID: String? = nil
     /// The vault's AES key. CloudKit encrypts this field end to end and hands it to share participants.
     @Attribute(.allowsCloudEncryption) var vaultKey: Data? = nil

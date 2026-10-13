@@ -12,10 +12,25 @@ struct FamilyFileView: View {
 
     var body: some View {
         NavigationStack(path: $path) {
-            if let file = household.familyFile {
-                content(file: file)
-            } else {
-                ProgressView().onAppear { household.familyFile = FamilyFile(); try? context.save() }
+            Group {
+                if let file = household.familyFile {
+                    content(file: file)
+                } else {
+                    ProgressView().onAppear { household.familyFile = FamilyFile(); try? context.save() }
+                }
+            }
+            // Destinations live on the stack's root view, not inside the scroll content:
+            // declared deeper, SwiftUI can fail to find them and taps go nowhere.
+            .navigationDestination(for: FamilyFileSection.self) { section in
+                if let file = household.familyFile {
+                    FamilyFileSectionView(household: household, file: file, section: section)
+                }
+            }
+            .navigationDestination(for: Child.self) { child in ChildProfileView(child: child) }
+            .navigationDestination(for: FamilyFileRoute.self) { route in
+                switch route {
+                case .addChild: AddChildView(household: household)
+                }
             }
         }
     }
@@ -69,7 +84,9 @@ struct FamilyFileView: View {
                     VStack(spacing: Theme.Spacing.sm) {
                         Button { showExport = true } label: { Label("Export as PDF", systemImage: "arrow.up.doc") }.buttonStyle(.outline)
                         Button { showTrusted = true } label: {
-                            HStack { Label("Share with someone I trust", systemImage: "person.badge.key"); Spacer(); PremiumLockIfNeeded() }
+                            Label("Share with someone I trust", systemImage: "person.badge.key")
+                                .frame(maxWidth: .infinity)
+                                .overlay(alignment: .trailing) { PremiumLockIfNeeded() }
                         }.buttonStyle(.outline)
                     }
                 }
@@ -79,10 +96,6 @@ struct FamilyFileView: View {
             .screenBackground()
             .navigationTitle(AppCopy.binderTitle)
             .toolbar { SettingsToolbarItem() }
-            .navigationDestination(for: FamilyFileSection.self) { section in
-                FamilyFileSectionView(household: household, file: file, section: section)
-            }
-            .navigationDestination(for: Child.self) { child in ChildProfileView(child: child) }
             .sheet(isPresented: $showExport) { ExportOptionsSheet(household: household) }
             .sheet(isPresented: $showTrusted) { TrustedSharingSheet(household: household) }
             .onChange(of: appState.pendingField, initial: true) { _, field in
@@ -129,7 +142,7 @@ struct KidsRow: View {
                     }
                     .buttonStyle(.plain)
                 }
-                NavigationLink(value: "addChild") {
+                NavigationLink(value: FamilyFileRoute.addChild) {
                     VStack(spacing: Theme.Spacing.xs) {
                         ZStack {
                             Circle().stroke(Theme.Colors.sand, lineWidth: 1).frame(width: 52, height: 52)
@@ -141,8 +154,8 @@ struct KidsRow: View {
                 .buttonStyle(.plain)
             }
         }
-        .navigationDestination(for: String.self) { key in
-            if key == "addChild" { AddChildView(household: household) }
-        }
     }
 }
+
+/// Routes in the Family File stack that aren't a model object.
+enum FamilyFileRoute: Hashable { case addChild }
