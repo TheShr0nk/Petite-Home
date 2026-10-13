@@ -112,7 +112,7 @@ phone export, and the notification prompt. Three screens, nothing to re-enter.
 The owner is asked about notifications on the "Saved." moment after the
 premium step; before that the app never prompts.
 
-**Family Sharing.** Premium is per Apple ID. All three products are marked
+**Family Sharing.** Premium is per Apple ID. Both products are marked
 family-shareable, so the partner is covered only when the buyer has Apple
 Family Sharing on; the paywall, Settings and the partner welcome say so. A
 partner who still hits the paywall should turn Family Sharing on, then tap
@@ -157,13 +157,13 @@ products. The SDK crashes a Release build that uses a test key, so
 without a store and use the local testing unlock. Swap in the `appl_…`
 production key for real purchases on TestFlight and release. In the RevenueCat dashboard create the two App Store
 products (`co.petitehome.premium.weekly`, `.monthly`, `.annual`) in one
-subscription group. Intro offer on all three: $0.99 pay-up-front for the first week, then the
+subscription group. Intro offer on both: $0.99 pay-up-front for the first week, then the
 plan's price. There are no free trials. Apple allows one intro offer per
 product. The paywall reads each product's intro offer from the
 store and words the button and fine print from it, so the shape can change in
 App Store Connect without a code change. Create an entitlement called
 `premium` and a current offering with `$rc_annual`, `$rc_monthly` and
-`$rc_weekly` packages. Paste the app's public API key into
+packages. Paste the app's public API key into
 Info.plist. For simulator testing, keep `Products.storekit` attached to the
 scheme; RevenueCat reads from it in sandbox mode. The app calls `logIn` with the iCloud user record name so purchases follow
 the person across their devices.
