@@ -142,3 +142,10 @@ struct MomentScreen<Content: View>: View {
         }
     }
 }
+
+
+/// Haptics from imperative code (a tap handler) rather than a view modifier.
+enum SensoryFeedbackBridge {
+    static func success() { UINotificationFeedbackGenerator().notificationOccurred(.success) }
+    static func selection() { UISelectionFeedbackGenerator().selectionChanged() }
+}

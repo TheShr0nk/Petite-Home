@@ -33,7 +33,7 @@ struct LifeSyncView: View {
             } else if appState.lifeSyncSegment == .meals {
                 MealsView(household: household)
             } else if entitlements.isPremium {
-                week
+                week.refreshable { resync() }
             } else {
                 lockedWeek
             }

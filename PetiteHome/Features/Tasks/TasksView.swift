@@ -143,7 +143,12 @@ struct TasksView: View {
 
     private func save() {
         try? context.save()
-        Task { _ = await NotificationService.shared.requestPermission() }
+        Task {
+            // The first task is the moment reminders make sense; after that the system never re-asks anyway.
+            if await NotificationService.shared.authorizationStatus() == .notDetermined {
+                _ = await NotificationService.shared.requestPermission()
+            }
+        }
         ExpirationScheduler.sync(household: household, isPremium: entitlements.isPremium)
         PhoneSyncService.shared.syncIfEnabled(household: household, context: context, isPremium: entitlements.isPremium)
     }
@@ -160,6 +165,7 @@ struct TaskRow: View {
             Button {
                 guard !justDone else { return }
                 withAnimation(Motion.pop) { justDone = true }
+                SensoryFeedbackBridge.success()
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.9) {
                     onComplete()
                     justDone = false
