@@ -155,7 +155,7 @@ RevenueCat's simulated store in debug builds, with no App Store Connect
 products. The SDK crashes a Release build that uses a test key, so
 `EntitlementStore.configure()` skips it outside DEBUG: TestFlight builds run
 without a store and use the local testing unlock. Swap in the `appl_…`
-production key for real purchases on TestFlight and release. In the RevenueCat dashboard create the three App Store
+production key for real purchases on TestFlight and release. In the RevenueCat dashboard create the two App Store
 products (`co.petitehome.premium.weekly`, `.monthly`, `.annual`) in one
 subscription group. Intro offer on all three: $0.99 pay-up-front for the first week, then the
 plan's price. There are no free trials. Apple allows one intro offer per
@@ -188,9 +188,11 @@ moment screen after onboarding. Everything honours Reduce Motion.
 
 - App Store Connect: app record, bundle ID `co.petitehome.app` with iCloud
   (CloudKit) and In-App Purchase capabilities (no Sign in with Apple); Paid
-  Apps agreement signed; the three subscriptions (weekly, monthly, annual) in
-  one group, each with a $0.99 pay-up-front intro offer for the first week and
-  no free trial.
+  Apps agreement signed; the two subscriptions in one group, monthly at
+  $14.00 and annual at $125.00, each with a $0.99 pay-up-front intro offer for
+  the first week and no free trial. The app is subscription-only: after
+  onboarding, `RootView` shows the paywall (no close button, with restore and
+  the Founding 500 code field) until an entitlement is active.
 - CloudKit Dashboard: run the app in Development, then **Deploy Schema
   Changes to Production**. Without that, release builds cannot sync. Both the
   SwiftData store and the parallel Core Data stack in `CloudSharingService`

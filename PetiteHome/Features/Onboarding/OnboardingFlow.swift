@@ -22,7 +22,9 @@ enum OnboardingStep: Int, CaseIterable {
 
 /// Every screen does one thing. Progress bar at top, back button everywhere.
 /// The app opens straight on the hook, no intro carousel: the value is shown by
-/// doing, and the first real entry is two taps away. Everything after the hook can be skipped.
+/// doing, and the first real entry is two taps away. Everything after the hook can be
+/// skipped except the last step: the app is subscription-only, so the premium screen
+/// only moves on once a plan (or a Founding 500 code, or the TestFlight unlock) is active.
 struct OnboardingFlow: View {
     @Environment(AppState.self) private var appState
     @Environment(\.modelContext) private var context

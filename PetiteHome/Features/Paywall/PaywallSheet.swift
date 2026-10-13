@@ -8,11 +8,15 @@ struct PaywallSheet: View {
     @Environment(EntitlementStore.self) private var entitlements
     @Environment(\.dismiss) private var dismiss
     let gate: PremiumGate
+    /// False when this is the wall after onboarding: no close button, a code field instead.
+    var dismissible: Bool = true
     @State private var selected: Plan = .annual
     @State private var lastLocalError: String?
+    @State private var foundingCode = ""
+    @State private var foundingResult: String?
 
     static func priceLine(_ store: EntitlementStore) -> String {
-        "$0.99 for the first week on any plan · then from \(store.weeklyPriceText) a week · cancel anytime"
+        "$0.99 for the first week · then \(store.monthlyPriceText) a month or \(store.annualPriceText) a year · cancel anytime"
     }
 
     private var savings: String? { entitlements.savingsText }
@@ -21,10 +25,14 @@ struct PaywallSheet: View {
         VStack(spacing: 0) {
             HStack {
                 Spacer()
-                Button { dismiss() } label: {
-                    Image(systemName: "xmark").font(.system(size: 15, weight: .medium)).foregroundStyle(Theme.Colors.sandDeep).frame(width: 44, height: 44)
+                if dismissible {
+                    Button { dismiss() } label: {
+                        Image(systemName: "xmark").font(.system(size: 15, weight: .medium)).foregroundStyle(Theme.Colors.sandDeep).frame(width: 44, height: 44)
+                    }
+                    .accessibilityLabel("Close")
+                } else {
+                    Color.clear.frame(height: 44)
                 }
-                .accessibilityLabel("Close")
             }
             .padding(.horizontal, Theme.Spacing.md)
             ScrollView {
@@ -35,7 +43,7 @@ struct PaywallSheet: View {
                     VStack(spacing: Theme.Spacing.sm) {
                         ForEach(Plan.allCases) { plan in
                             planRow(plan: plan,
-                                    badge: plan == .annual ? savings : (plan == .weekly ? "Try it" : nil),
+                                    badge: plan == .annual ? savings : nil,
                                     selected: selected == plan) { selected = plan }
                         }
                     }
@@ -70,6 +78,19 @@ struct PaywallSheet: View {
                 if !entitlements.usesLocalTrial {
                     Text("One subscription covers your partner too, through Apple Family Sharing.")
                         .font(Typography.caption).foregroundStyle(Theme.Colors.sandDeep).multilineTextAlignment(.center)
+                }
+                if !dismissible {
+                    HStack(spacing: Theme.Spacing.sm) {
+                        TextField("Founding 500 code", text: $foundingCode)
+                            .font(Typography.callout).textInputAutocapitalization(.characters).autocorrectionDisabled()
+                            .padding(.horizontal, 12).frame(minHeight: 40)
+                            .background(RoundedRectangle(cornerRadius: Theme.Radius.control, style: .continuous).fill(Theme.Colors.white))
+                        Button("Redeem") {
+                            foundingResult = entitlements.redeemFoundingCode(foundingCode) ? "Premium is on for 12 months. Thank you for being early." : "That code didn't match."
+                        }
+                        .font(Typography.bodyEmphasis).foregroundStyle(Theme.Colors.accentText).disabled(foundingCode.isEmpty)
+                    }
+                    if let foundingResult { Text(foundingResult).font(Typography.caption).foregroundStyle(Theme.Colors.sandDeep) }
                 }
                 HStack(spacing: Theme.Spacing.lg) {
                     Button("Restore purchases") { Task { await entitlements.restore(); if entitlements.isPremium { dismiss() } } }

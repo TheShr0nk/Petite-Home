@@ -159,7 +159,7 @@ struct PremiumGateBanner: View {
                 .padding(.top, Theme.Spacing.xs)
             Text(entitlements.usesLocalTrial
                  ? "Free for \(EntitlementStore.localTrialDays) days while we're in testing."
-                 : "$0.99 for your first week, then weekly, monthly or yearly. Cancel anytime.")
+                 : "$0.99 for your first week, then monthly or yearly. Cancel anytime.")
                 .font(Typography.caption).foregroundStyle(Theme.Colors.sandDeep)
         }
         .padding(Theme.Spacing.lg)

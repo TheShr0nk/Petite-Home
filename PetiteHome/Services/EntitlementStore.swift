@@ -45,31 +45,28 @@ enum PremiumGate: String {
 /// subscriptions in one group; RevenueCat wraps them in an offering with an
 /// annual and a monthly package, and grants the "premium" entitlement.
 enum ProductID {
-    static let weekly = "co.petitehome.premium.weekly"
     static let monthly = "co.petitehome.premium.monthly"
     static let annual = "co.petitehome.premium.annual"
-    static let all = [weekly, monthly, annual]
+    static let all = [monthly, annual]
     static let entitlement = "premium"
 }
 
-/// The three plans on the paywall.
+/// The two plans on the paywall. The app is subscription-only: no free tier.
 enum Plan: String, CaseIterable, Identifiable {
-    case annual, monthly, weekly
+    case annual, monthly
     var id: String { rawValue }
     var title: String { rawValue.capitalized }
     var per: String {
         switch self {
         case .annual: return "year"
         case .monthly: return "month"
-        case .weekly: return "week"
         }
     }
     /// List prices shown before the store answers.
     var fallbackPrice: String {
         switch self {
-        case .annual: return "$39.00"
-        case .monthly: return "$4.99"
-        case .weekly: return "$2.99"
+        case .annual: return "$125.00"
+        case .monthly: return "$14.00"
         }
     }
 }
@@ -87,7 +84,6 @@ final class EntitlementStore {
 
     private(set) var annual: Package?
     private(set) var monthly: Package?
-    private(set) var weekly: Package?
     private(set) var hasActiveSubscription = false
     private(set) var isInTrial = false
     private(set) var foundingUnlockExpiresAt: Date?
@@ -108,16 +104,14 @@ final class EntitlementStore {
     /// True while the app runs without a RevenueCat key: trials are granted locally.
     var usesLocalTrial: Bool { !Purchases.isConfigured }
 
-    /// "$39.00" and "$4.99", from the store when it has answered, else the list prices.
-    var annualPriceText: String { annual?.storeProduct.localizedPriceString ?? "$39.00" }
-    var monthlyPriceText: String { monthly?.storeProduct.localizedPriceString ?? "$4.99" }
-    var weeklyPriceText: String { weekly?.storeProduct.localizedPriceString ?? "$2.99" }
+    /// "$125.00" and "$14.00", from the store when it has answered, else the list prices.
+    var annualPriceText: String { annual?.storeProduct.localizedPriceString ?? "$125.00" }
+    var monthlyPriceText: String { monthly?.storeProduct.localizedPriceString ?? "$14.00" }
 
     func package(for plan: Plan) -> Package? {
         switch plan {
         case .annual: return annual
         case .monthly: return monthly
-        case .weekly: return weekly
         }
     }
 
@@ -174,9 +168,9 @@ final class EntitlementStore {
         return n == 1 ? unit : "\(n) \(unit)s"
     }
 
-    /// "Save 35%", from real prices when RevenueCat has them.
+    /// "Save 26%", from real prices when RevenueCat has them.
     var savingsText: String? {
-        guard let a = annual?.storeProduct.price, let m = monthly?.storeProduct.price, m > 0 else { return "Save 35%" }
+        guard let a = annual?.storeProduct.price, let m = monthly?.storeProduct.price, m > 0 else { return "Save 26%" }
         let yearOfMonthly = m * 12
         guard yearOfMonthly > a else { return nil }
         let fraction = NSDecimalNumber(decimal: (yearOfMonthly - a) / yearOfMonthly).doubleValue
@@ -228,8 +222,7 @@ final class EntitlementStore {
             let offerings = try await Purchases.shared.offerings()
             annual = offerings.current?.annual
             monthly = offerings.current?.monthly
-            weekly = offerings.current?.weekly
-            if annual == nil, monthly == nil, weekly == nil { lastError = "Prices aren't loading. Check your connection." }
+            if annual == nil, monthly == nil { lastError = "Prices aren't loading. Check your connection." }
         } catch {
             lastError = "Couldn't load prices. Check your connection."
         }

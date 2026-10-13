@@ -352,7 +352,6 @@ struct LifeSyncSetupScreen: View {
                     Text("Shared with \(partnerName). Either of you can check one off.").font(Typography.caption).foregroundStyle(Theme.Colors.sandDeep)
                 }
                 PhoneExportRows(reminders: $draft.wantsRemindersExport, calendar: $draft.wantsCalendarExport)
-                HStack { Spacer(); PremiumPill(); Spacer() }
             }
         } actions: {
             Button("Continue") { draft.lifeSyncSkipped = false; onContinue() }.buttonStyle(.primary)
@@ -376,7 +375,7 @@ struct PremiumOfferScreen: View {
     var body: some View {
         OnboardingScreen(eyebrow: "Petite Home premium", hook: "Now let us do the remembering.") {
             PremiumBullets()
-            Text("Pay weekly, monthly or yearly. Your first week is $0.99 whichever you pick, then the regular price. Cancel whenever you like.")
+            Text("Monthly or yearly. Your first week is $0.99 either way, then the regular price. Cancel whenever you like.")
                 .font(Typography.callout)
                 .foregroundStyle(Theme.Colors.sandDeep)
         } actions: {
@@ -389,11 +388,13 @@ struct PremiumOfferScreen: View {
                 }
             }
             .buttonStyle(.primary)
-            Button("Not now") { finish() }.buttonStyle(.secondary)
+            Text("Petite Home is a subscription. Everything you've entered is saved on your phone and in your iCloud either way.")
+                .font(Typography.caption).foregroundStyle(Theme.Colors.sandDeep).multilineTextAlignment(.center)
         }
         .sheet(isPresented: $showPlans, onDismiss: { if entitlements.isPremium { finish() } }) {
             PaywallSheet(gate: .onboarding)
         }
+        .onChange(of: entitlements.isPremium) { _, on in if on { finish() } }
     }
 
     /// Stashes the Planner choices, applies them if premium is on, and moves to Home.

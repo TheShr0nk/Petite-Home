@@ -83,7 +83,7 @@ struct SettingsView: View {
                     Button("Leave this household", role: .destructive) { confirmLeave = true }
                 }
                 if let shareError { Text(shareError).font(Typography.caption).foregroundStyle(Theme.Colors.danger) }
-            } header: { Text("Partner sharing") } footer: { Text("Your partner sees the same \(AppCopy.binder), and changes sync both ways. Free, always.") }
+            } header: { Text("Partner sharing") } footer: { Text("Your partner sees the same \(AppCopy.binder), and changes sync both ways. One subscription covers you both through Apple Family Sharing.") }
             .listRowBackground(Theme.Colors.creamDeep)
 
             Section {
