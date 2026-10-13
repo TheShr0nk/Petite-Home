@@ -20,7 +20,7 @@ struct PetiteHomeApp: App {
                 .environment(appState)
                 .environment(entitlements)
                 .preferredColorScheme(appState.appearance.colorScheme)
-                .tint(Theme.Colors.powderBlueDk)
+                .tint(Theme.Colors.accentText)
                 .onOpenURL { appState.handle(url: $0) }
                 .onAppear { appDelegate.appState = appState }
         }

@@ -59,7 +59,7 @@ struct MealsView: View {
                                 .frame(width: 40)
                                 VStack(alignment: .leading, spacing: 2) {
                                     if meals.isEmpty {
-                                        Text("Decide dinner").font(Typography.body).foregroundStyle(Theme.Colors.powderBlueDk)
+                                        Text("Decide dinner").font(Typography.body).foregroundStyle(Theme.Colors.accentText)
                                     } else {
                                         ForEach(meals, id: \.uuid) { m in
                                             HStack(spacing: Theme.Spacing.xs) {
@@ -100,7 +100,7 @@ struct MealsView: View {
                                     Text(day.formatted(.dateTime.day())).font(Typography.serif(20)).foregroundStyle(Theme.Colors.ink)
                                 }
                                 .frame(width: 40)
-                                Text(title).font(Typography.body).foregroundStyle(title == "Decide dinner" ? Theme.Colors.powderBlueDk : Theme.Colors.ink)
+                                Text(title).font(Typography.body).foregroundStyle(title == "Decide dinner" ? Theme.Colors.accentText : Theme.Colors.ink)
                                 Spacer()
                             }
                             .padding(.horizontal, Theme.Spacing.lg).padding(.vertical, Theme.Spacing.md)
@@ -122,7 +122,7 @@ struct MealsView: View {
         VStack(alignment: .leading, spacing: Theme.Spacing.md) {
             HStack {
                 SectionHeader(title: "Recipe box", detail: recipes.isEmpty ? nil : "\(recipes.count)")
-                Button { showNewRecipe = true } label: { Image(systemName: "plus").font(.system(size: 17, weight: .medium)).foregroundStyle(Theme.Colors.powderBlueDk).frame(width: 44, height: 44) }
+                Button { showNewRecipe = true } label: { Image(systemName: "plus").font(.system(size: 17, weight: .medium)).foregroundStyle(Theme.Colors.accentText).frame(width: 44, height: 44) }
                     .accessibilityLabel("Add a recipe")
             }
             if (household.recipes ?? []).count > 5 {
@@ -203,7 +203,7 @@ struct RecipeDetailView: View {
                     Eyebrow(text: recipe.summary.isEmpty ? "Recipe" : recipe.summary)
                     Text(recipe.title).font(Typography.title).foregroundStyle(Theme.Colors.ink)
                     if !recipe.sourceURL.isEmpty, let url = URL(string: recipe.sourceURL) {
-                        Link(url.host ?? "Source", destination: url).font(Typography.caption).foregroundStyle(Theme.Colors.powderBlueDk)
+                        Link(url.host ?? "Source", destination: url).font(Typography.caption).foregroundStyle(Theme.Colors.accentText)
                     }
                 }
                 HStack(spacing: Theme.Spacing.sm) {
@@ -279,7 +279,7 @@ struct RecipeDetailView: View {
                         Image(systemName: recipe.isFavorite ? "heart.fill" : "heart").foregroundStyle(recipe.isFavorite ? Theme.Colors.danger : Theme.Colors.sandDeep)
                             .contentTransition(.symbolEffect(.replace))
                     }
-                    Button("Edit") { showEdit = true }.foregroundStyle(Theme.Colors.powderBlueDk)
+                    Button("Edit") { showEdit = true }.foregroundStyle(Theme.Colors.accentText)
                 }
             }
         }

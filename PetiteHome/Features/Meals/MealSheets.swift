@@ -40,7 +40,7 @@ struct RecipeEditorSheet: View {
                                     .background(RoundedRectangle(cornerRadius: Theme.Radius.control, style: .continuous).fill(Theme.Colors.white))
                                     .onSubmit { Task { await importLink() } }
                                 Button(importing ? "…" : "Import") { Task { await importLink() } }
-                                    .font(Typography.bodyEmphasis).foregroundStyle(Theme.Colors.powderBlueDk).disabled(link.isEmpty || importing)
+                                    .font(Typography.bodyEmphasis).foregroundStyle(Theme.Colors.accentText).disabled(link.isEmpty || importing)
                             }
                             if importing { PulsingDots() }
                             if let importError { Text(importError).font(Typography.caption).foregroundStyle(Theme.Colors.danger) }
@@ -141,7 +141,7 @@ struct PlanMealSheet: View {
         NavigationStack {
             EditorScroll(title: date.formatted(.dateTime.weekday(.wide).month(.abbreviated).day())) {
                 if preselected != nil {
-                    DatePicker("Day", selection: $date, in: Calendar.current.startOfDay(for: Date())..., displayedComponents: .date).font(Typography.body).tint(Theme.Colors.powderBlueDk)
+                    DatePicker("Day", selection: $date, in: Calendar.current.startOfDay(for: Date())..., displayedComponents: .date).font(Typography.body).tint(Theme.Colors.accentText)
                 }
                 if !existing.isEmpty {
                     SectionHeader(title: "Already planned")

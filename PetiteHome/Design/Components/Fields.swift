@@ -81,7 +81,7 @@ struct FieldRow: View {
                 HStack {
                     Text(value?.isEmpty == false ? value! : instruction)
                         .font(Typography.body)
-                        .foregroundStyle(value?.isEmpty == false ? Theme.Colors.ink : Theme.Colors.powderBlueDk)
+                        .foregroundStyle(value?.isEmpty == false ? Theme.Colors.ink : Theme.Colors.accentText)
                         .multilineTextAlignment(.leading)
                     Spacer()
                     Image(systemName: "chevron.right")

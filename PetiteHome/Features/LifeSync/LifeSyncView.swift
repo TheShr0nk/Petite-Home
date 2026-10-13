@@ -107,7 +107,7 @@ struct LifeSyncView: View {
                                 .font(Typography.caption).foregroundStyle(Theme.Colors.sandDeep)
                         }
                         Spacer()
-                        Button("Calendars") { showSetup = true }.font(Typography.caption).foregroundStyle(Theme.Colors.powderBlueDk)
+                        Button("Calendars") { showSetup = true }.font(Typography.caption).foregroundStyle(Theme.Colors.accentText)
                     }
                     if let partner {
                         SandDivider()
@@ -163,7 +163,7 @@ struct LifeSyncView: View {
     /// Up to three dots: mine, theirs, tasks.
     private func dots(for day: LifeSyncAgenda.Day) -> [Color] {
         var out: [Color] = []
-        if day.items.contains(where: { $0.kind == .event && $0.ownerAdultID == me?.uuid }) { out.append(Theme.Colors.powderBlueDk) }
+        if day.items.contains(where: { $0.kind == .event && $0.ownerAdultID == me?.uuid }) { out.append(Theme.Colors.accentText) }
         if day.items.contains(where: { $0.kind == .event && $0.ownerAdultID != me?.uuid }) { out.append(Theme.Colors.sand) }
         if day.items.contains(where: { $0.kind == .task || $0.kind == .meal || $0.kind == .plan }) { out.append(Theme.Colors.success) }
         return out
@@ -326,7 +326,7 @@ struct CalendarPickerBlock: View {
                                     }
                                 }
                             }
-                            .tint(Theme.Colors.powderBlueDk)
+                            .tint(Theme.Colors.accentText)
                             .padding(.horizontal, Theme.Spacing.lg).padding(.vertical, Theme.Spacing.md)
                             if cal.calendarIdentifier != calendars.last?.calendarIdentifier { SandDivider().padding(.leading, Theme.Spacing.lg) }
                         }

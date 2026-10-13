@@ -89,7 +89,7 @@ struct RevealLines: View {
 
 /// Three dots breathing in sequence, for anything that takes a moment.
 struct PulsingDots: View {
-    var color: Color = Theme.Colors.powderBlueDk
+    var color: Color = Theme.Colors.accentText
     @State private var on = false
     var body: some View {
         HStack(spacing: 6) {
@@ -108,7 +108,7 @@ struct PulsingDots: View {
 /// A short eyebrow above a headline: 11pt, tracked, uppercase, accent.
 struct Eyebrow: View {
     let text: String
-    var color: Color = Theme.Colors.powderBlueDk
+    var color: Color = Theme.Colors.accentText
     var body: some View {
         Text(text)
             .font(.system(size: 11, weight: .semibold))

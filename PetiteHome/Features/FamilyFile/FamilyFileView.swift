@@ -34,7 +34,7 @@ struct FamilyFileView: View {
                             if let next = report.nextToAdd.first {
                                 Button(next.nudge) { appState.open(next) }
                                     .font(Typography.bodyEmphasis)
-                                    .foregroundStyle(Theme.Colors.powderBlueDk)
+                                    .foregroundStyle(Theme.Colors.accentText)
                             } else {
                                 Text("Everything's here.")
                                     .font(Typography.body)

@@ -61,7 +61,7 @@ struct PlansView: View {
         BrandDivider()
         HStack {
             SectionHeader(title: "Sitters", detail: household.sitters.isEmpty ? nil : "\(household.sitters.count)")
-            Button("Manage") { showSitters = true }.font(Typography.bodyEmphasis).foregroundStyle(Theme.Colors.powderBlueDk)
+            Button("Manage") { showSitters = true }.font(Typography.bodyEmphasis).foregroundStyle(Theme.Colors.accentText)
         }
         if household.sitters.isEmpty {
             EmptyStateRow(instruction: "Add the people who've watched the kids", systemImage: "person.badge.plus") { showSitters = true }
@@ -242,9 +242,9 @@ struct PlanEditorSheet: View {
                     }
                 }
                 LabeledField(label: "What", text: $title, placeholder: kind == .dateNight ? "e.g. Dinner at Lucia's" : "e.g. Zoo with the cousins", autocapitalization: .sentences)
-                DatePicker("Starts", selection: $date).font(Typography.body).tint(Theme.Colors.powderBlueDk)
-                Toggle("Ends", isOn: $hasEnd).font(Typography.body).tint(Theme.Colors.powderBlueDk)
-                if hasEnd { DatePicker("Back by", selection: $end, in: date...).font(Typography.body).tint(Theme.Colors.powderBlueDk) }
+                DatePicker("Starts", selection: $date).font(Typography.body).tint(Theme.Colors.accentText)
+                Toggle("Ends", isOn: $hasEnd).font(Typography.body).tint(Theme.Colors.accentText)
+                if hasEnd { DatePicker("Back by", selection: $end, in: date...).font(Typography.body).tint(Theme.Colors.accentText) }
                 LabeledField(label: "Where", text: $location, placeholder: "Place or address", contentType: .location, autocapitalization: .words)
 
                 VStack(alignment: .leading, spacing: Theme.Spacing.xs) {
@@ -292,7 +292,7 @@ struct PlanEditorSheet: View {
                     }
                 }
                 LabeledTextEditor(label: "Notes", text: $notes, hint: "Reservation at 7:30. Bring the stroller.")
-                Toggle("Remind us the day before", isOn: $reminder).font(Typography.body).tint(Theme.Colors.powderBlueDk)
+                Toggle("Remind us the day before", isOn: $reminder).font(Typography.body).tint(Theme.Colors.accentText)
                 Button(plan == nil ? "Add to the \(AppCopy.planner.lowercased())" : "Save") { save() }.buttonStyle(.primary)
                 if plan != nil {
                     Button("Cancel this plan", role: .destructive) { confirmDelete = true }.font(Typography.button).foregroundStyle(Theme.Colors.danger).frame(maxWidth: .infinity)

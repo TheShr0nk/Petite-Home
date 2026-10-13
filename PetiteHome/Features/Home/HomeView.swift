@@ -120,7 +120,7 @@ struct HomeView: View {
             VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
                 Text("Still deciding who'd care for the kids?").font(Typography.sectionTitle).foregroundStyle(Theme.Colors.ink)
                 Text("Most people pick someone imperfect and move on. You can change it any time.").font(Typography.body).foregroundStyle(Theme.Colors.sandDeep)
-                Button("Name someone") { appState.open(.designatedGuardian) }.font(Typography.bodyEmphasis).foregroundStyle(Theme.Colors.powderBlueDk)
+                Button("Name someone") { appState.open(.designatedGuardian) }.font(Typography.bodyEmphasis).foregroundStyle(Theme.Colors.accentText)
             }
         }
     }
@@ -131,7 +131,7 @@ struct HomeView: View {
                 Text("See the week you and \(partnerName) actually have").font(Typography.sectionTitle).foregroundStyle(Theme.Colors.ink)
                 Text("The \(AppCopy.planner) puts both calendars, the house tasks, meals and date nights on the same days.").font(Typography.body).foregroundStyle(Theme.Colors.sandDeep)
                 if !entitlements.isPremium { PremiumPill() }
-                Button("Sync my calendar") { if entitlements.isPremium { appState.selectedTab = .lifeSync } else { appState.showPaywall(.lifeSync) } }.font(Typography.bodyEmphasis).foregroundStyle(Theme.Colors.powderBlueDk)
+                Button("Sync my calendar") { if entitlements.isPremium { appState.selectedTab = .lifeSync } else { appState.showPaywall(.lifeSync) } }.font(Typography.bodyEmphasis).foregroundStyle(Theme.Colors.accentText)
             }
         }
     }

@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// Primary: powderBlueDk, white text, 52pt tall, full width, sentence case.
+/// Primary: powderBlueDk, ink text, 52pt tall, full width, sentence case.
 /// On iOS 26 the fill is tinted interactive glass; before that a flat fill.
 /// Presses scale to 0.98; the disabled state fades in and out.
 struct PrimaryButtonStyle: ButtonStyle {
@@ -8,7 +8,7 @@ struct PrimaryButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .font(Typography.button)
-            .foregroundStyle(Color(hex: 0xFFFFFF))
+            .foregroundStyle(Theme.Colors.ink)
             .frame(maxWidth: .infinity, minHeight: Theme.Metrics.primaryButtonHeight)
             .glassFill(Theme.Colors.powderBlueDk,
                        in: RoundedRectangle(cornerRadius: Theme.Radius.control, style: .continuous),

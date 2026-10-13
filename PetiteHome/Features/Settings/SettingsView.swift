@@ -249,11 +249,11 @@ struct PhoneSyncToggles: View {
         Toggle(isOn: Binding(get: { tasksOn }, set: { on in set(tasks: on) })) {
             Label("Tasks in Reminders", systemImage: "checklist")
         }
-        .tint(Theme.Colors.powderBlueDk)
+        .tint(Theme.Colors.accentText)
         Toggle(isOn: Binding(get: { calendarOn }, set: { on in set(calendar: on) })) {
             Label("Plans and meals in Calendar", systemImage: "calendar.badge.plus")
         }
-        .tint(Theme.Colors.powderBlueDk)
+        .tint(Theme.Colors.accentText)
         if !entitlements.isPremium {
             HStack { Text("Part of the \(AppCopy.planner).").font(Typography.caption).foregroundStyle(Theme.Colors.sandDeep); Spacer(); PremiumPill() }
         }

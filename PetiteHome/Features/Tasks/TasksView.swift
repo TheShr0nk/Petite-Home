@@ -34,7 +34,7 @@ struct TasksView: View {
             if !embedded { SettingsToolbarItem() }
             if entitlements.isPremium {
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button { showNew = true } label: { Image(systemName: "plus").foregroundStyle(Theme.Colors.powderBlueDk) }.accessibilityLabel("New task")
+                    Button { showNew = true } label: { Image(systemName: "plus").foregroundStyle(Theme.Colors.accentText) }.accessibilityLabel("New task")
                 }
             }
         }
@@ -242,7 +242,7 @@ struct TaskEditorSheet: View {
                             .font(Typography.body)
                     }
                 }
-                DatePicker("Next due", selection: $nextDue, displayedComponents: .date).font(Typography.body).tint(Theme.Colors.powderBlueDk)
+                DatePicker("Next due", selection: $nextDue, displayedComponents: .date).font(Typography.body).tint(Theme.Colors.accentText)
                 VStack(alignment: .leading, spacing: Theme.Spacing.xs) {
                     Text("Remind at").font(Typography.label).foregroundStyle(Theme.Colors.sandDeep)
                     FlowLayout(spacing: Theme.Spacing.sm) {

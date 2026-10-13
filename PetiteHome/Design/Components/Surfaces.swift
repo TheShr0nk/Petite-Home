@@ -111,7 +111,7 @@ struct SelectableRow: View {
                 if isSelected {
                     Image(systemName: "checkmark")
                         .font(.system(size: 15, weight: .semibold))
-                        .foregroundStyle(Theme.Colors.powderBlueDk)
+                        .foregroundStyle(Theme.Colors.accentText)
                         .transition(.scale.combined(with: .opacity))
                 }
             }
@@ -171,7 +171,7 @@ struct BrandIcon: View {
     var body: some View {
         Image(systemName: systemName)
             .font(.system(size: size, weight: .regular))
-            .foregroundStyle(isActive ? Theme.Colors.powderBlueDk : Theme.Colors.sandDeep)
+            .foregroundStyle(isActive ? Theme.Colors.accentText : Theme.Colors.sandDeep)
     }
 }
 

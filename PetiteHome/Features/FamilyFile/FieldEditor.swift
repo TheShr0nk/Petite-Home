@@ -78,7 +78,7 @@ struct DoneToolbarItem: ToolbarContent {
     @Environment(\.dismiss) private var dismiss
     var body: some ToolbarContent {
         ToolbarItem(placement: .topBarTrailing) {
-            Button("Done") { dismiss() }.foregroundStyle(Theme.Colors.powderBlueDk)
+            Button("Done") { dismiss() }.foregroundStyle(Theme.Colors.accentText)
         }
     }
 }
@@ -149,7 +149,7 @@ struct EmergencyContactsEditor: View {
                 .onDelete { contacts.remove(atOffsets: $0) }
                 Button { contacts.append(Contact()); editingIndex = contacts.count - 1 } label: {
                     Label(contacts.isEmpty ? "Add the person who'd be called first" : "Add another person to call", systemImage: "plus")
-                        .foregroundStyle(Theme.Colors.powderBlueDk)
+                        .foregroundStyle(Theme.Colors.accentText)
                 }
             } header: {
                 Text("In the order they should be called")
@@ -303,12 +303,12 @@ struct RenewalRow: View {
             Toggle(isOn: Binding(get: { date != nil }, set: { on in date = on ? Calendar.current.date(byAdding: .year, value: 1, to: Date()) : nil })) {
                 Text(label).font(Typography.body).foregroundStyle(Theme.Colors.ink)
             }
-            .tint(Theme.Colors.powderBlueDk)
+            .tint(Theme.Colors.accentText)
             if let current = date {
                 DatePicker("Date", selection: Binding(get: { current }, set: { date = $0 }), displayedComponents: .date)
                     .datePickerStyle(.compact)
                     .font(Typography.body)
-                    .tint(Theme.Colors.powderBlueDk)
+                    .tint(Theme.Colors.accentText)
                 HStack {
                     Toggle(isOn: Binding(get: { entitlements.isPremium && remindersEnabled }, set: { on in
                         if entitlements.isPremium {
@@ -320,7 +320,7 @@ struct RenewalRow: View {
                     })) {
                         Text("Remind me").font(Typography.body).foregroundStyle(Theme.Colors.ink)
                     }
-                    .tint(Theme.Colors.powderBlueDk)
+                    .tint(Theme.Colors.accentText)
                     if !entitlements.isPremium { PremiumPill() }
                 }
                 Text("Reminders 60, 30 and 7 days out.").font(Typography.caption).foregroundStyle(Theme.Colors.sandDeep)

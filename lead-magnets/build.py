@@ -20,9 +20,9 @@ OUT = os.path.join(HERE, "pdf")
 FONTS = os.path.join(HERE, "fonts")
 
 # ---------- tokens ----------
-CREAM, CREAM_DEEP, CREAM_TINT = HexColor("#FCF8F2"), HexColor("#F2E7D8"), HexColor("#F8EFE4")
-BLUE, BLUE_DK, BLUE_MIST = HexColor("#A9CBDD"), HexColor("#3F6379"), HexColor("#E7EFF4")
-SAND, SAND_DEEP, RULE, INK = HexColor("#C9B69A"), HexColor("#6E6259"), HexColor("#E6DBCC"), HexColor("#2B2420")
+CREAM, CREAM_DEEP, CREAM_TINT = HexColor("#FCF8F2"), HexColor("#F4EDE2"), HexColor("#F8EFE4")
+BLUE, BLUE_DK, BLUE_MIST = HexColor("#C9DCE8"), HexColor("#4A6A7E"), HexColor("#E4EEF4")
+SAND, SAND_DEEP, RULE, INK = HexColor("#C9B69A"), HexColor("#7E6A55"), HexColor("#E6DBCC"), HexColor("#2F2A26")
 DANGER, WHITE = HexColor("#A8584A"), HexColor("#FFFFFF")
 
 SERIF, SERIF_TEXT, SERIF_SEMI = "Fraunces-Display", "Fraunces-Text", "Fraunces-Semi"

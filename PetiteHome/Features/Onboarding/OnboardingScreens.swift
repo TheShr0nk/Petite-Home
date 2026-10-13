@@ -155,7 +155,7 @@ struct PediatricianScreen: View {
                 if draft.children.count > 1 {
                     Toggle("Same doctor for everyone", isOn: $draft.pediatricianForAll)
                         .font(Typography.body)
-                        .tint(Theme.Colors.powderBlueDk)
+                        .tint(Theme.Colors.accentText)
                 }
             }
         } actions: {
@@ -237,7 +237,7 @@ struct RevealScreen: View {
                 if let next = report.nextToAdd.first {
                     Text(next.nudge)
                         .font(Typography.bodyEmphasis)
-                        .foregroundStyle(Theme.Colors.powderBlueDk)
+                        .foregroundStyle(Theme.Colors.accentText)
                 }
                 LabeledField(label: "Your first name", text: $draft.firstName, placeholder: "First name", contentType: .givenName)
                 LabeledField(label: "Email, if you want the printable version", text: $draft.email, placeholder: "Optional", keyboard: .emailAddress, contentType: .emailAddress, autocapitalization: .never)

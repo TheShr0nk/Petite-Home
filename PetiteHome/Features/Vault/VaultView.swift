@@ -57,7 +57,7 @@ struct VaultView: View {
             SettingsToolbarItem()
             if entitlements.isPremium && unlocked {
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button { showAdd = true } label: { Image(systemName: "plus").foregroundStyle(Theme.Colors.powderBlueDk) }.accessibilityLabel("Add a document")
+                    Button { showAdd = true } label: { Image(systemName: "plus").foregroundStyle(Theme.Colors.accentText) }.accessibilityLabel("Add a document")
                 }
             }
         }

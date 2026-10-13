@@ -76,7 +76,7 @@ struct PaywallSheet: View {
                     Link("Privacy", destination: URL(string: "https://petitehome.co/privacy")!)
                     Link("Terms", destination: URL(string: "https://petitehome.co/terms")!)
                 }
-                .font(Typography.caption).foregroundStyle(Theme.Colors.powderBlueDk)
+                .font(Typography.caption).foregroundStyle(Theme.Colors.accentText)
             }
             .padding(.horizontal, Theme.Spacing.gutter)
             .padding(.top, Theme.Spacing.md)
@@ -140,13 +140,13 @@ struct PaywallSheet: View {
                     }
                     Text("\(entitlements.priceText(for: plan)) / \(plan.per)").font(Typography.caption).foregroundStyle(Theme.Colors.sandDeep)
                     if let intro = entitlements.introText(for: plan) {
-                        Text(intro).font(Typography.caption).foregroundStyle(Theme.Colors.powderBlueDk)
+                        Text(intro).font(Typography.caption).foregroundStyle(Theme.Colors.accentText)
                     }
                 }
                 Spacer()
                 Image(systemName: selected ? "checkmark.circle.fill" : "circle")
                     .font(.title3)
-                    .foregroundStyle(selected ? Theme.Colors.powderBlueDk : Theme.Colors.sand)
+                    .foregroundStyle(selected ? Theme.Colors.accentText : Theme.Colors.sand)
                     .contentTransition(.symbolEffect(.replace))
             }
             .padding(Theme.Spacing.lg)

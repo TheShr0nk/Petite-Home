@@ -83,12 +83,12 @@ struct ChildProfileView: View {
                             Text(nudge).font(Typography.caption).foregroundStyle(Theme.Colors.warn)
                         }
                         HStack {
-                            Button("Update sizes") { editingSizes = true }.font(Typography.bodyEmphasis).foregroundStyle(Theme.Colors.powderBlueDk)
+                            Button("Update sizes") { editingSizes = true }.font(Typography.bodyEmphasis).foregroundStyle(Theme.Colors.accentText)
                             Spacer()
                             Button {
                                 if entitlements.isPremium { showHistory = true } else { appState.showPaywall(.sizeHistory) }
                             } label: {
-                                HStack(spacing: Theme.Spacing.sm) { Text("History").font(Typography.bodyEmphasis).foregroundStyle(Theme.Colors.powderBlueDk); if !entitlements.isPremium { PremiumPill() } }
+                                HStack(spacing: Theme.Spacing.sm) { Text("History").font(Typography.bodyEmphasis).foregroundStyle(Theme.Colors.accentText); if !entitlements.isPremium { PremiumPill() } }
                             }
                         }
                     }
@@ -110,7 +110,7 @@ struct ChildProfileView: View {
                                 .font(Typography.body).padding(.horizontal, 14).frame(minHeight: 44)
                                 .background(RoundedRectangle(cornerRadius: Theme.Radius.control, style: .continuous).fill(Theme.Colors.white))
                                 .onSubmit(addAllergy)
-                            Button("Add", action: addAllergy).font(Typography.bodyEmphasis).foregroundStyle(Theme.Colors.powderBlueDk).disabled(newAllergy.isEmpty)
+                            Button("Add", action: addAllergy).font(Typography.bodyEmphasis).foregroundStyle(Theme.Colors.accentText).disabled(newAllergy.isEmpty)
                         }
                     }
                 }

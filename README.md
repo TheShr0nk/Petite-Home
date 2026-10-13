@@ -47,14 +47,15 @@ PetiteHomeTests/  completeness, age segments, recurrence, crypto, founding codes
 
 ## Design tokens
 
-`Design/Theme.swift` copies the live site's tokens from
-`petite-powder/02-web/src/app/globals.css` (cream, kraft, ink, muted, rule,
-radius 14/10) and the powder blue from `00-brand/color/tokens.css`. Where the
-site has no token for a role (sand, success, warn, danger) the brief's target
-palette is used. Each token is annotated with its source.
-
-The site's display face is Fraunces (loaded from Google Fonts by `next/font`),
-so the same variable TTF is bundled under the OFL. Body text is SF Pro.
+The site's tokens, confirmed October 2026: cream `#FCF8F2`, creamDeep
+`#F4EDE2`, powderBlue `#C9DCE8`, powderBlueDk `#9DBBD0`, sand `#C9B69A`,
+sandDeep `#A8927A`, ink `#2F2A26`. Two of them fail WCAG when used as text, so
+`Theme.Colors` keeps the exact values for fills and adds a darker cut of the
+same hue for text: `accentText` `#4A6A7E` (links, tints, active icons; the
+deep blue is 1.9:1 on cream) and `sandDeep` is `#7E6A55` for captions (the
+site's brown is 2.8:1), with the site's exact brown available as `sandMid` for
+dividers and placeholders. Primary buttons are the deep blue with ink text,
+like the icon. Every token is a light/dark pair; see `Theme.swift`.
 
 ## Things to know before TestFlight
 
@@ -204,8 +205,10 @@ moment screen after onboarding. Everything honours Reduce Motion.
 - There is no sign-in. Identity is the iCloud user record (`CloudIdentity`),
   so there is no account to delete; Settings offers "Delete this household"
   which removes everything from the phone and iCloud.
-- App icon: a placeholder (the site's powder-blue mark with a serif P) is in
-  `Assets.xcassets/AppIcon`. Replace it with final artwork before release.
+- App icon: the wordmark on powder blue, rendered at 1024 from the brand's
+  Fraunces by matching the supplied artwork's layout (`docs/app-icon-1024.png`
+  is the same file). For iOS 26's layered glass icon, open it in Icon Composer
+  on the Mac and export a `.icon` bundle.
 - Export compliance: the vault uses CryptoKit AES-GCM, which is standard
   encryption; `ITSAppUsesNonExemptEncryption` is false. Confirm the annual
   self-classification with your counsel if selling outside the US.
