@@ -409,8 +409,9 @@ struct LifeSyncSetupScreen: View {
                                           isSelected: draft.wantsWellChildVisits) { draft.wantsWellChildVisits.toggle() }
                         }
                     }
-                    Text("Shared with \(partnerName). Either of you can check one off. They can also go into your phone's Reminders and Calendar, in a list called Petite Home, from Settings.").font(Typography.caption).foregroundStyle(Theme.Colors.sandDeep)
+                    Text("Shared with \(partnerName). Either of you can check one off.").font(Typography.caption).foregroundStyle(Theme.Colors.sandDeep)
                 }
+                PhoneExportRows(reminders: $draft.wantsRemindersExport, calendar: $draft.wantsCalendarExport)
                 HStack { Spacer(); PremiumPill(); Spacer() }
             }
         } actions: {
@@ -469,7 +470,9 @@ struct PremiumOfferScreen: View {
         guard !draft.lifeSyncSkipped else { return }
         LifeSyncPending.save(calendarIDs: draft.calendarAccessGranted ? draft.selectedCalendarIDs : [],
                              templateKeys: draft.selectedTemplateKeys,
-                             wellChild: draft.wantsWellChildVisits)
+                             wellChild: draft.wantsWellChildVisits,
+                             remindersExport: draft.wantsRemindersExport,
+                             calendarExport: draft.wantsCalendarExport)
     }
 }
 
@@ -621,6 +624,41 @@ struct FlowLayout: Layout {
             view.place(at: CGPoint(x: x, y: y), proposal: ProposedViewSize(size))
             x += size.width + spacing
             rowHeight = max(rowHeight, size.height)
+        }
+    }
+}
+
+// MARK: Phone export rows (shared by the owner's Planner step and the partner welcome)
+
+/// Two opt-in rows for this phone's own Reminders and Calendar apps. The permission
+/// is asked the moment a row is turned on, so the system prompt has context.
+struct PhoneExportRows: View {
+    @Binding var reminders: Bool
+    @Binding var calendar: Bool
+    @State private var denied: String?
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: Theme.Spacing.md) {
+            Text("Also on this phone").font(Typography.label).foregroundStyle(Theme.Colors.sandDeep)
+            VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
+                SelectableRow(title: "Chores in my Reminders app", detail: "A list called Petite Home", systemImage: "checklist", isSelected: reminders) {
+                    if reminders { reminders = false; return }
+                    Task {
+                        if await PhoneSyncService.shared.requestRemindersAccess() { reminders = true; denied = nil }
+                        else { denied = "Reminders access is off. You can turn it on later in Settings → Privacy & Security → Reminders." }
+                    }
+                }
+                SelectableRow(title: "Plans and meals in my Calendar app", detail: "A calendar called Petite Home", systemImage: "calendar.badge.plus", isSelected: calendar) {
+                    if calendar { calendar = false; return }
+                    Task {
+                        if await PhoneSyncService.shared.requestCalendarAccess() { calendar = true; denied = nil }
+                        else { denied = "Calendar access is off. You can turn it on later in Settings → Privacy & Security → Calendars." }
+                    }
+                }
+            }
+            Text(denied ?? "Both say they came from Petite Home. Check a chore off there and the app knows.")
+                .font(Typography.caption)
+                .foregroundStyle(denied == nil ? Theme.Colors.sandDeep : Theme.Colors.danger)
         }
     }
 }

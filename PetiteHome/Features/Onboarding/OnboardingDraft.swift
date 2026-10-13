@@ -33,6 +33,9 @@ final class OnboardingDraft {
     var selectedTemplateKeys: Set<String> = Set(TaskTemplate.pack.filter(\.onByDefault).map(\.key))
     var wantsWellChildVisits = true
     var lifeSyncSkipped = false
+    // Also put the chores and plans into this phone's own Reminders and Calendar apps.
+    var wantsRemindersExport = false
+    var wantsCalendarExport = false
 
     /// Optional. Only used to send the printable Family File and join the list; never required.
     var email = ""

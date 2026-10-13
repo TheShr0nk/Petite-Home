@@ -182,6 +182,8 @@ struct SavedMomentScreen: View {
     @State private var markOpacity: Double = 0
     @State private var textOpacity: Double = 0
     @State private var ringOpacity: Double = 0
+    /// True when the system has never been asked: the moment then offers reminders instead of timing out.
+    @State private var askNotifications = false
 
     private var percent: Int {
         guard let household else { return 0 }
@@ -210,23 +212,45 @@ struct SavedMomentScreen: View {
                 }
                 .opacity(textOpacity)
                 Spacer()
-                Button("Go to Home") { onDone() }
-                    .buttonStyle(.moment)
-                    .opacity(ringOpacity)
+                VStack(spacing: Theme.Spacing.md) {
+                    if askNotifications {
+                        Text("We can nudge you when something expires or a chore comes due. Nothing else.")
+                            .font(Typography.caption)
+                            .foregroundStyle(Theme.Colors.cream.opacity(0.7))
+                            .multilineTextAlignment(.center)
+                        Button("Turn on reminders") {
+                            Task { _ = await NotificationService.shared.requestPermission(); onDone() }
+                        }
+                        .buttonStyle(.moment)
+                        Button { onDone() } label: {
+                            Text("Not now").font(Typography.body).foregroundStyle(Theme.Colors.cream.opacity(0.7))
+                        }
+                        .buttonStyle(.plain)
+                    } else {
+                        Button("Go to Home") { onDone() }
+                            .buttonStyle(.moment)
+                    }
+                }
+                .opacity(ringOpacity)
             }
             .padding(.horizontal, Theme.Spacing.xxl)
             .padding(.bottom, Theme.Spacing.xl)
         }
-        .onAppear {
+        .task {
+            askNotifications = await NotificationService.shared.authorizationStatus() == .notDetermined
             if reduceMotion {
                 markScale = 1; markOpacity = 1; textOpacity = 1; ringOpacity = 1
-                return
+            } else {
+                withAnimation(Motion.entrance.delay(0.2)) { markScale = 1 }
+                withAnimation(.easeIn(duration: 1.0).delay(0.2)) { markOpacity = 1 }
+                withAnimation(.easeIn(duration: 1.0).delay(0.9)) { textOpacity = 1 }
+                withAnimation(.easeIn(duration: 0.8).delay(1.7)) { ringOpacity = 1 }
             }
-            withAnimation(Motion.entrance.delay(0.2)) { markScale = 1 }
-            withAnimation(.easeIn(duration: 1.0).delay(0.2)) { markOpacity = 1 }
-            withAnimation(.easeIn(duration: 1.0).delay(0.9)) { textOpacity = 1 }
-            withAnimation(.easeIn(duration: 0.8).delay(1.7)) { ringOpacity = 1 }
-            DispatchQueue.main.asyncAfter(deadline: .now() + 4.0) { onDone() }
+            // With the reminders question on screen the moment waits for an answer.
+            if !askNotifications {
+                try? await Task.sleep(for: .seconds(reduceMotion ? 2.5 : 4.0))
+                onDone()
+            }
         }
     }
 }

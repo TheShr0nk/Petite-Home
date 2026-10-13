@@ -67,6 +67,10 @@ struct PaywallSheet: View {
                      ? "Free for \(EntitlementStore.localTrialDays) days while we're in testing. Nothing to cancel."
                      : finePrint)
                     .font(Typography.caption).foregroundStyle(Theme.Colors.sandDeep).multilineTextAlignment(.center)
+                if !entitlements.usesLocalTrial {
+                    Text("One subscription covers your partner too, through Apple Family Sharing.")
+                        .font(Typography.caption).foregroundStyle(Theme.Colors.sandDeep).multilineTextAlignment(.center)
+                }
                 HStack(spacing: Theme.Spacing.lg) {
                     Button("Restore purchases") { Task { await entitlements.restore(); if entitlements.isPremium { dismiss() } } }
                     Link("Privacy", destination: URL(string: "https://petitehome.co/privacy")!)

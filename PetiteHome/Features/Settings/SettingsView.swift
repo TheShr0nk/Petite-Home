@@ -94,7 +94,7 @@ struct SettingsView: View {
                     Button("Go premium") { appState.showPaywall(.onboarding) }
                     Button("Restore purchases") { Task { await entitlements.restore() } }
                 }
-            } header: { Text("Premium") } footer: { Text("Reminders, the vault, household tasks and trusted-person sharing.") }
+            } header: { Text("Premium") } footer: { Text("Reminders, the vault, the Planner and trusted-person sharing. One subscription covers your partner through Apple Family Sharing.") }
             .listRowBackground(Theme.Colors.creamDeep)
 
             Section {

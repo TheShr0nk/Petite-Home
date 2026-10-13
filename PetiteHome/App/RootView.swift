@@ -8,8 +8,12 @@ struct RootView: View {
 
     var body: some View {
         Group {
-            if appState.hasCompletedOnboarding, currentHousehold != nil {
-                MainTabView(household: currentHousehold!)
+            if appState.hasCompletedOnboarding, let household = currentHousehold {
+                if appState.partnerWelcomePending {
+                    PartnerWelcomeFlow(household: household)
+                } else {
+                    MainTabView(household: household)
+                }
             } else {
                 OnboardingFlow()
             }
@@ -25,10 +29,17 @@ struct RootView: View {
     }
 
     /// Onboarding done on another device, or the household arrived via sync: pick it up.
+    /// A household someone else created means this phone belongs to the partner, so
+    /// they get the short welcome (which one are you, your calendar, reminders).
     private func repairHouseholdSelection() {
         if appState.currentHouseholdID == nil, let first = households.first {
             appState.currentHouseholdID = first.uuid
-            if first.ownerUserID != nil { appState.hasCompletedOnboarding = true }
+            if first.ownerUserID != nil {
+                if !appState.hasCompletedOnboarding, first.ownerUserID != CloudIdentity.cachedUserID {
+                    appState.partnerWelcomePending = true
+                }
+                appState.hasCompletedOnboarding = true
+            }
         }
     }
 }

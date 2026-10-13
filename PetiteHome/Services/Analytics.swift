@@ -11,6 +11,7 @@ enum AnalyticsEvent: String {
     case subscriptionConverted = "subscription_converted"
     case pdfExported = "pdf_exported"
     case partnerInvited = "partner_invited"
+    case partnerJoined = "partner_joined"
     case foundingCodeRedeemed = "founding_code_redeemed"
     case lifeSyncEnabled = "life_sync_enabled"
     case recipeShared = "recipe_shared"

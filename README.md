@@ -90,8 +90,23 @@ in `02-web/src/app/api/subscribe/route.ts` or it records as `unknown`.
 through EventKit into `CalendarEvent` rows on the household, so the partner
 sees them via the household share. Read-only; nothing is written back to the
 calendar. Calendar and task choices made during onboarding are held in
-`LifeSyncPending` until the trial starts, then applied once. The Tasks tab
-lives inside Life Sync as its second segment.
+`LifeSyncPending` until the trial starts, then applied once. The same step
+offers the phone's own Reminders and Calendar apps (`PhoneExportRows`); those
+choices ride along in `LifeSyncPending` too. The Tasks tab lives inside Life
+Sync as its second segment.
+
+**The partner's first open.** A household that arrives through someone else's
+share (its `ownerUserID` is not this iCloud user) skips onboarding and gets
+`PartnerWelcomeFlow` instead: which adult they are, their own calendars and
+phone export, and the notification prompt. Three screens, nothing to re-enter.
+The owner is asked about notifications on the "Saved." moment after the
+premium step; before that the app never prompts.
+
+**Family Sharing.** Premium is per Apple ID. All three products are marked
+family-shareable, so the partner is covered only when the buyer has Apple
+Family Sharing on; the paywall, Settings and the partner welcome say so. A
+partner who still hits the paywall should turn Family Sharing on, then tap
+Restore purchases.
 
 **Meals.** The Meals segment of Life Sync holds a recipe box (free) and the
 week's plan (premium). Recipes import from any page carrying schema.org

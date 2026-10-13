@@ -20,6 +20,7 @@ final class AppState {
         static let premiumOfferSeen = "app.premiumOfferSeenInOnboarding"
         static let onboardingCompletedAt = "app.onboardingCompletedAt"
         static let currentAdult = "app.currentAdultID"
+        static let partnerWelcome = "app.partnerWelcomePending"
     }
 
     var hasCompletedOnboarding: Bool {
@@ -40,6 +41,10 @@ final class AppState {
     var currentAdultID: UUID? {
         didSet { defaults.set(currentAdultID?.uuidString, forKey: Keys.currentAdult) }
     }
+    /// Set when a household arrives through a partner's invite: the short partner welcome runs before the tabs.
+    var partnerWelcomePending: Bool {
+        didSet { defaults.set(partnerWelcomePending, forKey: Keys.partnerWelcome) }
+    }
     var lifeSyncSegment: LifeSyncSegment = .week
 
     var selectedTab: AppTab = .home
@@ -53,6 +58,7 @@ final class AppState {
         currentHouseholdID = defaults.string(forKey: Keys.currentHousehold).flatMap(UUID.init(uuidString:))
         premiumOfferSeenInOnboarding = defaults.bool(forKey: Keys.premiumOfferSeen)
         currentAdultID = defaults.string(forKey: Keys.currentAdult).flatMap(UUID.init(uuidString:))
+        partnerWelcomePending = defaults.bool(forKey: Keys.partnerWelcome)
     }
 
     /// The adult using this phone: the explicit choice, else the owner if this iCloud account created the household, else the partner.

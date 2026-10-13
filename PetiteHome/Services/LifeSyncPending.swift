@@ -7,12 +7,17 @@ enum LifeSyncPending {
     private static let calendarsKey = "lifeSync.pending.calendarIDs"
     private static let templatesKey = "lifeSync.pending.templateKeys"
     private static let wellChildKey = "lifeSync.pending.wellChild"
+    private static let remindersKey = "lifeSync.pending.remindersExport"
+    private static let phoneCalendarKey = "lifeSync.pending.calendarExport"
 
-    static func save(calendarIDs: Set<String>, templateKeys: Set<String>, wellChild: Bool) {
+    static func save(calendarIDs: Set<String>, templateKeys: Set<String>, wellChild: Bool,
+                     remindersExport: Bool = false, calendarExport: Bool = false) {
         let d = UserDefaults.standard
         d.set(Array(calendarIDs), forKey: calendarsKey)
         d.set(Array(templateKeys), forKey: templatesKey)
         d.set(wellChild, forKey: wellChildKey)
+        d.set(remindersExport, forKey: remindersKey)
+        d.set(calendarExport, forKey: phoneCalendarKey)
     }
 
     static var exists: Bool {
@@ -22,7 +27,7 @@ enum LifeSyncPending {
 
     static func clear() {
         let d = UserDefaults.standard
-        [calendarsKey, templatesKey, wellChildKey].forEach { d.removeObject(forKey: $0) }
+        [calendarsKey, templatesKey, wellChildKey, remindersKey, phoneCalendarKey].forEach { d.removeObject(forKey: $0) }
     }
 
     /// Turns the saved choices into real state: mirrored calendars and template tasks. Premium only.
@@ -33,6 +38,8 @@ enum LifeSyncPending {
         let calendarIDs = Set(d.stringArray(forKey: calendarsKey) ?? [])
         let templateKeys = Set(d.stringArray(forKey: templatesKey) ?? [])
         let wellChild = d.bool(forKey: wellChildKey)
+        let remindersExport = d.bool(forKey: remindersKey)
+        let calendarExport = d.bool(forKey: phoneCalendarKey)
 
         let existing = (household.tasks ?? []).compactMap(\.templateKey)
         for t in TaskTemplate.pack where templateKeys.contains(t.key) && !existing.contains(t.key) {
@@ -52,6 +59,11 @@ enum LifeSyncPending {
             Analytics.track(.lifeSyncEnabled, ["calendars": calendarIDs.count, "from": "onboarding"])
         }
         try? context.save()
+        // Phone export: only what was asked for and already allowed. A denied permission just stays off.
+        let phone = PhoneSyncService.shared
+        if remindersExport, phone.hasRemindersAccess { phone.tasksToReminders = true }
+        if calendarExport, phone.hasCalendarAccess { phone.plansToCalendar = true }
+        phone.syncIfEnabled(household: household, context: context, isPremium: true)
         ExpirationScheduler.sync(household: household, isPremium: true)
         clear()
     }
