@@ -188,8 +188,10 @@ moment screen after onboarding. Everything honours Reduce Motion.
 ## Before TestFlight: Apple platform checklist
 
 - App Store Connect: app record, bundle ID `co.petitehome.app` with iCloud
-  (CloudKit), Sign in with Apple and In-App Purchase capabilities; Paid Apps
-  agreement signed; the two subscriptions in one group with a 7-day intro offer.
+  (CloudKit) and In-App Purchase capabilities (no Sign in with Apple); Paid
+  Apps agreement signed; the three subscriptions (weekly, monthly, annual) in
+  one group, each with a $0.99 pay-up-front intro offer for the first week and
+  no free trial.
 - CloudKit Dashboard: run the app in Development, then **Deploy Schema
   Changes to Production**. Without that, release builds cannot sync. Both the
   SwiftData store and the parallel Core Data stack in `CloudSharingService`
