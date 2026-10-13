@@ -19,8 +19,9 @@ struct FamilyFileView: View {
                     ProgressView().onAppear { household.familyFile = FamilyFile(); try? context.save() }
                 }
             }
-            // Destinations live on the stack's root view, not inside the scroll content:
-            // declared deeper, SwiftUI can fail to find them and taps go nowhere.
+            // The rows carry their own destinations, so a tap never depends on these
+            // lookups. These registrations serve programmatic pushes (deep links and
+            // the "next to add" nudge, which append to `path`).
             .navigationDestination(for: FamilyFileSection.self) { section in
                 if let file = household.familyFile {
                     FamilyFileSectionView(household: household, file: file, section: section)
@@ -61,7 +62,9 @@ struct FamilyFileView: View {
                         VStack(spacing: 0) {
                             ForEach(FamilyFileSection.allCases) { section in
                                 let counts = report.counts(for: section)
-                                NavigationLink(value: section) {
+                                NavigationLink {
+                                    FamilyFileSectionView(household: household, file: file, section: section)
+                                } label: {
                                     HStack(spacing: Theme.Spacing.md) {
                                         BrandIcon(systemName: section.systemImage, isActive: counts.filled == counts.total)
                                         VStack(alignment: .leading, spacing: 2) {
@@ -72,6 +75,7 @@ struct FamilyFileView: View {
                                         Image(systemName: "chevron.right").font(.system(size: 13, weight: .medium)).foregroundStyle(Theme.Colors.sandDeep)
                                     }
                                     .padding(Theme.Spacing.lg)
+                                    .contentShape(Rectangle())
                                 }
                                 .buttonStyle(.plain)
                                 if section != FamilyFileSection.allCases.last { SandDivider().padding(.leading, Theme.Spacing.lg + 30) }
@@ -133,7 +137,7 @@ struct KidsRow: View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: Theme.Spacing.md) {
                 ForEach(household.kids, id: \.uuid) { child in
-                    NavigationLink(value: child) {
+                    NavigationLink { ChildProfileView(child: child) } label: {
                         VStack(spacing: Theme.Spacing.xs) {
                             AvatarView(initial: child.initial, kind: .child, size: 52)
                             Text(child.displayName).font(Typography.caption).foregroundStyle(Theme.Colors.ink)
@@ -142,7 +146,7 @@ struct KidsRow: View {
                     }
                     .buttonStyle(.plain)
                 }
-                NavigationLink(value: FamilyFileRoute.addChild) {
+                NavigationLink { AddChildView(household: household) } label: {
                     VStack(spacing: Theme.Spacing.xs) {
                         ZStack {
                             Circle().stroke(Theme.Colors.sand, lineWidth: 1).frame(width: 52, height: 52)
