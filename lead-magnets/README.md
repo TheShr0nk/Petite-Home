@@ -1,6 +1,6 @@
 # Lead-magnet PDFs
 
-The twelve downloadable PDFs for the Klaviyo flow, specified in
+The eight downloadable PDFs for the Klaviyo flow, specified in
 `docs/lead-magnets.md`. `build.py` draws them with reportlab from the brand
 tokens; the finished files are committed in `pdf/` so they can be uploaded or
 copied to the website as they are.

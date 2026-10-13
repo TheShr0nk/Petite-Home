@@ -285,97 +285,6 @@ def family_file():
     return d.save(multi=True)
 
 
-# ---------- 2. The sealed envelope ----------
-def sealed_envelope():
-    d = Doc("sealed-envelope", "Sealed envelope", "For the person who'd step in. Open when you need to.")
-    d.cover("Sealed envelope", "For the person who'd step in. Open when you need to.",
-            "Keep this with the person you named. It has what they'd need, and nothing they shouldn't carry.",
-            date_line="Prepared by ______________________ on")
-    d.page(); d.title("Who to call, where to go", 30)
-    d.heading("Call first"); d.rows(["Name", "Relationship", "Phone"])
-    d.heading("Then"); d.rows(["Name", "Relationship", "Phone"])
-    d.heading("Home"); d.rows(["Address", "", "Preferred hospital"])
-    d.heading("Where things are in the house"); d.rows(["Water shutoff", "Breaker panel", "Spare key", "Important papers"])
-    d.page(); d.title("The kids", 30)
-    (lx, lw), (rx, rw) = d.two_col()
-    y0 = d.y
-    for i, x in enumerate([lx, rx]):
-        d.y = y0; d.label(f"Child {i + 1}", x, d.y); d.y += 18
-        for lab in ["Name", "Birthdate", "Pediatrician", "Doctor's phone", "Allergies", "Medications", "", "Bedtime and what works", "", ""]:
-            d.row(lab, x, lw, 96 if lab else 0, h=26)
-        end = d.y
-    d.y = end + 10
-    d.caption("Insurance member numbers, account details and codes stay in the Family File at home. This copy travels without them.")
-    d.page(); d.title("If something happens to us", 30)
-    d.intro("This isn't legal paperwork. It's so the people who love you know what you'd want, without having to guess.")
-    d.heading("Guardian"); d.rows(["Name", "Relationship", "Phone"])
-    d.heading("Backup guardian"); d.rows(["Name", "Relationship", "Phone"])
-    d.heading("What we'd want for the kids"); d.lines(5)
-    d.y += 6; d.row("Where the will is", M, d.cw, 120)
-    d.app_line("The app prints this version for you, without the numbers that shouldn't travel. petitehome.co")
-    return d.save(multi=True)
-
-
-# ---------- 3. The sitter sheet ----------
-def sitter_sheet():
-    d = Doc("sitter-sheet", "Tonight", "One page to leave on the counter for the sitter.")
-    d.page(); d.title("Tonight")
-    d.para("We'll be out from ____________ to ____________, at ______________________________.", size=12); d.y += 10
-    (lx, lw), (rx, rw) = d.two_col()
-    bw = (d.cw - 2 * 12) / 3
-    y0 = d.y; bh = 168
-    for i in range(3):
-        x = M + i * (bw + 12)
-        d.box(x, y0, bw, bh)
-        d.y = y0 + 12
-        d.label(f"Child {i + 1}", x + 12, d.y); d.y += 16
-        for lab in ["Name, age", "Bedtime", "Allergies", "Meds, when", "What works"]:
-            d.row(lab, x + 12, bw - 24, 62, h=26)
-    d.y = y0 + bh + 16
-    d.label("House notes", M, d.y); d.y += 16
-    d.caption("Where the snacks are, screen rules, the dog, anything a stranger to the house should know.")
-    d.lines(4)
-    d.y += 6
-    d.heading("If you can't reach us")
-    y0 = d.y
-    d.y = y0
-    for lab in ["Our phones", "", "A neighbor or relative", "Pediatrician"]: d.row(lab, lx, lw, 110, h=26)
-    end = d.y; d.y = y0
-    for lab in ["Hospital", "Our address", "", ""]: d.row(lab, rx, rw, 80, h=26)
-    d.y = max(end, d.y) + 12
-    d.note_box("Never put alarm or gate codes on this sheet. Tell the sitter in person.", strong="Never")
-    d.app_line("The app fills this in from your Family Vault and texts it to the sitter. petitehome.co")
-    return d.save()
-
-
-# ---------- 4. The recipe card ----------
-def recipe_card():
-    d = Doc("recipe-card", "Recipe card", "A blank card to write a family recipe on.")
-    d.page(cover=True)
-    card_w, card_h = 4 * 72, 5 * 72
-    gap = 22
-    total = 2 * card_h + gap
-    top = (d.h - total) / 2
-    for i in range(2):
-        x = (d.w - card_w) / 2; y = top + i * (card_h + gap)
-        d.box(x, y, card_w, card_h, CREAM_TINT, 14, stroke=RULE)
-        d.wordmark(x + 18, y + 16, 9)
-        d.label("Recipe", x + 18, y + 40)
-        d.y = y + 60; d.row("", x + 18, card_w - 36, 0, h=30)
-        d.c.setStrokeColor(SAND); d.c.setLineWidth(0.6)
-        d.text("Serves ______  ·  ______ minutes", x + 18, y + 108, SANS, 10, SAND_DEEP)
-        d.label("Ingredients", x + 18, y + 128); d.label("Steps", x + 18 + 140, y + 128)
-        d.y = y + 146
-        for _ in range(10): d.row("", x + 18, 124, 0, h=18)
-        d.y = y + 146
-        for n in range(1, 7):
-            d.text(f"{n}.", x + 158, d.y + 14, SANS, 9.5, SAND_DEEP); d.row("", x + 170, card_w - 36 - 152, 0, h=30)
-        d.text("From the kitchen of ______________________", x + 18, y + card_h - 20, SANS_IT, 10, SAND_DEEP)
-        if i == 0:
-            d.c.setStrokeColor(SAND); d.c.setDash(2, 4); d.c.line(M, d.Y(y + card_h + gap / 2), d.w - M, d.Y(y + card_h + gap / 2)); d.c.setDash()
-    return d.save()
-
-
 # ---------- 5. Who to call first ----------
 def who_to_call_first():
     d = Doc("who-to-call-first", "Who to call first", "The fridge card: who to call, the doctor, insurance, the guardian.")
@@ -404,84 +313,6 @@ def who_to_call_first():
     return d.save()
 
 
-# ---------- 6. The expiration tracker ----------
-def expiration_tracker():
-    d = Doc("expiration-tracker", "What expires", "Everything that quietly expires, with the 60, 30, 7 day reminder rule.")
-    d.page(); d.title("What expires")
-    d.intro("Three reminders is the rule: 60 days out, 30, then 7. Write the dates, then set the reminders, or let the app do it.")
-    cols = [("Item", 0), ("Expires on", 230), ("60 days", 340), ("30 days", 410), ("7 days", 470)]
-    for name, off in cols: d.label(name, M + off, d.y)
-    d.y += 16; d.hr(); d.y += 2
-    items = ["Passport:", "Passport:", "Passport:", "Car seat (date is on the seat)", "Car registration:", "Car registration:",
-             "Driver's license:", "Driver's license:", "Health insurance renewal", "Home or renter's insurance", "Life insurance premium",
-             "EpiPen or inhaler", "Smoke detector batteries", "", ""]
-    for item in items:
-        rh = 30
-        d.text(item, M, d.y + 19, SANS, 10.5, SAND_DEEP if item else INK)
-        if item.endswith(":"):
-            w0 = pdfmetrics.stringWidth(item, SANS, 10.5) + 6
-            d.c.setStrokeColor(SAND_DEEP); d.c.setLineWidth(0.8); d.c.line(M + w0, d.Y(d.y + 22), M + 210, d.Y(d.y + 22))
-        elif not item:
-            d.c.setStrokeColor(SAND_DEEP); d.c.setLineWidth(0.8); d.c.line(M, d.Y(d.y + 22), M + 210, d.Y(d.y + 22))
-        d.c.setStrokeColor(SAND_DEEP); d.c.setLineWidth(0.8); d.c.line(M + 230, d.Y(d.y + 22), M + 320, d.Y(d.y + 22))
-        for off in (340, 410, 470): d.checkbox(M + off + 12, d.y + 9)
-        d.c.setStrokeColor(RULE); d.c.setLineWidth(0.5); d.c.line(M, d.Y(d.y + rh), M + d.cw, d.Y(d.y + rh))
-        d.y += rh
-    d.y += 12
-    d.caption("Car seats expire. The date is on a sticker on the seat, usually 6 to 10 years from manufacture.")
-    d.app_line("The app sets all three reminders the moment you type the date, and puts them in your phone's Calendar. petitehome.co")
-    return d.save()
-
-
-# ---------- 7. The household cadence ----------
-CADENCE = [
-    ("Every day", [("Plan dinner", "Ten seconds at 3 pm beats the 6 pm scramble."), ("Ten-minute tidy", "A timer, the whole family, one room.")]),
-    ("Every week", [("Plan the week together", "Sunday evening. Calendars open, five minutes."), ("Grocery run", "Saturday. From the list, not from memory.")]),
-    ("Every month", [("Look at what's coming due", "Passports, registrations, renewals."), ("Check car seat straps and fit", "Kids grow. Straps at or below the shoulders rear-facing, at or above forward-facing.")]),
-    ("A few times a year", [("Change the furnace filter", "Every 3 months."), ("Replace smoke detector batteries", "Every 6 months."), ("Flush the water heater", "Every 6 months.")]),
-    ("Every year", [("Renew car registration", None), ("Review insurance coverage", "Life, home, auto, health. One sitting."), ("Each child's well-child visit", "Around the birthday.")]),
-]
-
-
-def household_cadence():
-    d = Doc("household-cadence", "The house, on a rhythm", "The things a house needs, by rhythm, with room for your own.")
-    d.page(); d.title("The house, on a rhythm", 34)
-    d.intro("Pick the ones that fit. Either of you can check one off.")
-    (lx, lw), (rx, rw) = d.two_col()
-    col = [lx, rx]; ci = 0; ystart = d.y; maxy = d.y
-    for gi, (group, items) in enumerate(CADENCE):
-        if gi == 3: ci = 1; d.y = ystart
-        x = col[ci]; w = lw
-        d.text(group, x, d.y + 16, SERIF, 17, INK); d.y += 24
-        for t, n in items: d.check_item(t, n, x, w, h=4)
-        for _ in range(3): d.row("", x + 20, w - 20, 0, h=22)
-        d.y += 10
-        maxy = max(maxy, d.y)
-    d.y = maxy
-    # page 2: month grid
-    d.page(); d.title("This month", 34)
-    d.intro("Print one each month. Weekly items get a 'who' and a tick.")
-    days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
-    gx, gy = M, d.y; cw = d.cw / 7; rh = 78
-    for i, dname in enumerate(days): d.label(dname, gx + i * cw + 6, gy)
-    gy += 16
-    d.c.setStrokeColor(RULE); d.c.setLineWidth(0.6)
-    for r in range(6): d.c.line(gx, d.Y(gy + r * rh), gx + d.cw, d.Y(gy + r * rh))
-    for i in range(8): d.c.line(gx + i * cw, d.Y(gy), gx + i * cw, d.Y(gy + 5 * rh))
-    for r in range(5):
-        for i in range(7):
-            x = gx + i * cw + 6; y = gy + r * rh + 8
-            d.text("Who", x, y + 9, SANS, 7.5, SAND_DEEP); d.checkbox(x + cw - 24, y - 2)
-            d.text("Dinner", x, y + 24, SANS, 7.5, SAND_DEEP); d.checkbox(x + cw - 24, y + 13)
-            d.text("Tidy", x, y + 39, SANS, 7.5, SAND_DEEP); d.checkbox(x + cw - 24, y + 28)
-    d.y = gy + 5 * rh + 16
-    d.text("This week", M, d.y + 14, SERIF, 16, INK); d.y += 22
-    for t in ["Plan the week together", "Grocery run", "Look at what's coming due (monthly)"]:
-        d.checkbox(M, d.y, t); d.row("Who", M + 260, d.cw - 260, 40, h=20); d.y += 2
-    d.app_line("The app keeps the rhythm for you, reminds whoever's turn it is, and puts the chores in your phone's Reminders. petitehome.co")
-    return d.save(multi=True)
-
-
 # ---------- 8. If something happens to us ----------
 def if_something_happens():
     d = Doc("if-something-happens", "If something happens to us", "The guardian wishes worksheet.")
@@ -506,138 +337,269 @@ def if_something_happens():
     return d.save(multi=True)
 
 
-# ---------- 9. The week on one page ----------
-def week_on_one_page():
-    d = Doc("week-on-one-page", "This week", "The Planner's week on paper, for two adults.")
-    d.page(landscape=True)
-    d.text("This week", M, d.y + 26, SERIF, 30, INK)
-    d.text("Week of ______________", d.w - M - 100, d.y + 20, SANS, 11, SAND_DEEP, right=True)
-    d.y += 34
-    d.text("________________  and  ________________", M, d.y + 12, SANS, 11, SAND_DEEP)
-    d.text("your names, one per row", M + 300, d.y + 12, SANS_IT, 9, SAND_DEEP)
-    d.y += 26
-    strip = 96; gap = 16
-    gw = d.cw - strip - gap; cw = gw / 7
-    days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
-    gy = d.y
-    bands = [("Row 1", 92), ("Row 2", 92), ("Kids", 78), ("Dinner", 44), ("Bedtime", 32), ("Sitter?", 26)]
-    total_h = sum(h for _, h in bands)
-    for i, dname in enumerate(days):
-        x = M + i * cw
-        if i >= 5: d.box(x, gy, cw, 16 + total_h, BLUE_MIST, 0)
-        d.label(dname, x + 6, gy + 2)
-    gy += 16
-    d.c.setStrokeColor(RULE); d.c.setLineWidth(0.6)
-    yy = gy
-    for name, h in bands:
-        d.c.line(M, d.Y(yy), M + gw, d.Y(yy))
-        d.text(name, M + 4, yy + 9, SANS, 7, SAND_DEEP)
-        if name == "Sitter?":
-            for i in range(7): d.checkbox(M + i * cw + cw - 20, yy + 5)
-        yy += h
-    d.c.line(M, d.Y(yy), M + gw, d.Y(yy))
-    for i in range(8): d.c.line(M + i * cw, d.Y(gy), M + i * cw, d.Y(yy))
-    # right strip
-    sx = M + gw + gap
-    d.y = gy - 16
-    d.text("This week's three", sx, d.y + 12, SERIF, 13, INK); d.y += 20
-    for _ in range(3): d.checkbox(sx, d.y); d.row("", sx + 20, strip - 20, 0, h=24)
-    d.y += 8
-    d.text("Date night", sx, d.y + 12, SERIF, 13, INK); d.y += 18; d.row("", sx, strip, 0, h=24)
-    d.y += 8
-    d.text("Next week, already", sx, d.y + 12, SERIF, 13, INK); d.y += 18; d.lines(2, sx, strip, h=24)
-    d.y = yy + 12
-    d.app_line("The app merges both of your calendars, the chores and dinner onto one week you can both see. petitehome.co")
-    return d.save()
 
-
-# ---------- 10. The meal week and shopping list ----------
-def meal_week():
-    d = Doc("meal-week", "Dinner this week", "Seven dinners and a grouped shopping list.")
-    d.page(); d.title("Dinner this week", 32)
-    lw = d.cw * 0.55 - 12; rx = M + d.cw * 0.55 + 12; rw = d.cw * 0.45 - 12
+# ---------- 4. The sitter cheat-sheet ----------
+def sitter_cheat_sheet():
+    d = Doc("sitter-cheat-sheet", "Sitter cheat-sheet", "Everything a sitter needs for tonight, on one page.")
+    d.page(); d.title("Sitter cheat-sheet", 30, gap=8)
+    d.para("We'll be out from ________ to ________, at ______________________. Back by ________.", size=11); d.y += 6
+    (lx, lw), (rx, rw) = d.two_col()
     y0 = d.y
-    d.label("Day", M, d.y); d.label("What", M + 70, d.y); d.label("Who cooks", M + lw - 92, d.y); d.label("Left", M + lw - 22, d.y, size=7)
-    d.y += 16
-    for day in ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]:
-        d.text(day, M, d.y + 19, SANS, 10.5, SAND_DEEP)
-        d.c.setStrokeColor(SAND_DEEP); d.c.setLineWidth(0.8)
-        d.c.line(M + 70, d.Y(d.y + 22), M + lw - 100, d.Y(d.y + 22)); d.c.line(M + lw - 92, d.Y(d.y + 22), M + lw - 30, d.Y(d.y + 22))
-        d.checkbox(M + lw - 12, d.y + 9)
-        d.c.setStrokeColor(RULE); d.c.setLineWidth(0.5); d.c.line(M, d.Y(d.y + 34), M + lw, d.Y(d.y + 34))
-        d.y += 34
-    d.y += 20
-    d.text("Three dinners you always come back to", M, d.y + 14, SERIF, 15, INK); d.y += 22
-    d.lines(3, M, lw, h=24)
-    left_end = d.y
-    d.y = y0 - 10
-    d.text("The list", rx, d.y + 14, SERIF, 18, INK); d.y += 30
-    for group in ["Produce", "Meat and fish", "Dairy and eggs", "Pantry", "Frozen", "Household"]:
-        d.label(group, rx, d.y); d.y += 14
-        for _ in range(4): d.checkbox(rx, d.y); d.row("", rx + 20, rw - 20, 0, h=17)
-        d.y += 4
-    d.y = max(d.y, left_end) + 6
-    d.app_line("The app plans the week with your partner, saves the recipes, and writes the list for you. petitehome.co")
-    return d.save()
-
-
-# ---------- 11. What to keep in the vault ----------
-def what_to_keep():
-    d = Doc("what-to-keep-in-the-vault", "What to keep", "The documents worth photographing, and where the originals live.")
-    d.page(); d.title("What to keep", 34)
-    d.intro("A photo of a birth certificate is a good start. Here's the rest.")
-    cols = [("Identity", ["Birth certificates", "Social Security cards", "Passports", "Marriage certificate"]),
-            ("Medical", ["Insurance cards, front and back", "Vaccination records", "Prescriptions", "Allergy plans"]),
-            ("Home and money", ["Deed or lease", "Vehicle titles", "Insurance policies", "The will", "Tax returns", "Warranties"])]
-    gap = 16; cw = (d.cw - 2 * gap) / 3
-    y0 = d.y; maxy = y0
-    for i, (name, items) in enumerate(cols):
-        x = M + i * (cw + gap); d.y = y0
-        d.text(name, x, d.y + 16, SERIF, 17, INK); d.y += 26
-        for it in items:
-            used = d.checkbox(x, d.y, it, w=cw - 20); d.y += used + 2
-            d.label("Original is", x + 20, d.y + 2, size=7); d.row("", x + 72, cw - 72, 0, h=18); d.y += 8
-        maxy = max(maxy, d.y)
-    d.y = maxy + 16
-    d.note_box("Never keep these as plain photos in your camera roll. The app encrypts them on your phone and in your iCloud, and only you can open them.", strong="Never")
-    d.app_line("Photograph each one into the Vault once, and the app reminds you before any of them expire. petitehome.co")
-    return d.save()
-
-
-# ---------- 12. Date night, found ----------
-def date_night_found():
-    d = Doc("date-night-found", "Find the evening", "Two weeks of evenings. Cross out what's taken, circle two.")
-    d.page(); d.title("Find the evening", 34)
-    d.intro("Two weeks of evenings. Cross out what's taken, circle two, then ask the sitter before you talk yourselves out of it.")
-    days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
-    gap = 8; bw = (d.cw - 6 * gap) / 7; bh = 92
-    for r in range(2):
-        for i, dname in enumerate(days):
-            x = M + i * (bw + gap); y = d.y
-            d.box(x, y, bw, bh, BLUE_MIST if i >= 5 else CREAM_DEEP, 10)
-            d.text(dname, x + 8, y + 18, SERIF, 13, INK)
-            d.c.setStrokeColor(SAND); d.c.setLineWidth(1); d.c.circle(x + bw - 14, y + 14, 7, stroke=1, fill=0)
-            d.label("Taken by", x + 8, y + 36, size=6.5)
-            d.c.setStrokeColor(SAND_DEEP); d.c.setLineWidth(0.8); d.c.line(x + 8, d.Y(y + 62), x + bw - 8, d.Y(y + 62))
-            d.c.line(x + 8, d.Y(y + 80), x + bw - 8, d.Y(y + 80))
-        d.y += bh + gap
-    d.y += 10
-    d.para("Two we circled: ______________________ and ______________________", size=12); d.y += 12
-    d.heading("Sitter")
-    d.label("Name", M, d.y); d.label("Phone", M + 170, d.y); d.label("Asked on", M + 310, d.y); d.label("Confirmed", M + 420, d.y); d.y += 16
+    d.box(M, y0, d.cw, 66, BLUE_MIST)
+    d.label("Reach us", M + 14, y0 + 8)
+    d.y = y0 + 22
+    d.row("Parent 1", M + 14, lw - 14, 60, h=20); d.row("Parent 2", M + 14, lw - 14, 60, h=20)
+    d.y = y0 + 22
+    d.row("Backup (neighbor, relative)", rx, rw - 14, 150, h=20); d.row("Our address", rx, rw - 14, 80, h=20)
+    d.y = y0 + 66 + 8
+    d.heading("The kids", 16)
+    cols = [("Name, age", 0), ("Bedtime", 92), ("Allergies", 160), ("Meds and when", 262), ("What calms them", 384)]
+    for name, off in cols: d.label(name, M + off, d.y, size=7.5)
+    d.y += 12
     for _ in range(3):
-        d.c.setStrokeColor(SAND_DEEP); d.c.setLineWidth(0.8)
-        for a, b in [(0, 160), (170, 300), (310, 400)]: d.c.line(M + a, d.Y(d.y + 20), M + b, d.Y(d.y + 20))
-        d.checkbox(M + 440, d.y + 7); d.y += 28
-    d.y += 10
-    d.text("The ask, ready to text", M, d.y + 14, SERIF, 15, INK); d.y += 24
-    d.note_box("Hi ________, are you free on ________ from ______ to ______? The kids would love to see you.", fill=CREAM_DEEP)
-    d.app_line("The app finds the free evenings on both calendars, keeps the sitter list, and sends the ask for you. petitehome.co")
+        d.c.setStrokeColor(RULE); d.c.setLineWidth(0.5); d.c.line(M, d.Y(d.y + 26), M + d.cw, d.Y(d.y + 26))
+        for a, b in [(0, 84), (92, 152), (160, 254), (262, 376), (384, 500)]:
+            d.c.setStrokeColor(SAND_DEEP); d.c.setLineWidth(0.7); d.c.line(M + a, d.Y(d.y + 19), M + b, d.Y(d.y + 19))
+        d.y += 26
+    y0 = d.y
+    d.heading("Tonight's routine", 16, lx, lw)
+    for step in ["Dinner", "Bath", "Pajamas and teeth", "Books", "Lights out", "If they wake up"]:
+        d.label(step, lx, d.y + 6, size=7.5); d.row("", lx + 92, lw - 92, 0, h=21)
+    left_end = d.y
+    d.y = y0
+    d.heading("Where things are", 16, rx, rw)
+    for thing in ["Snacks and water", "Diapers and wipes", "First-aid kit", "Thermometer", "Flashlight", "Spare clothes"]:
+        d.label(thing, rx, d.y + 6, size=7.5); d.row("", rx + 96, rw - 96, 0, h=21)
+    d.y = max(left_end, d.y)
+    d.heading("House rules", 16)
+    for rule_text in ["Screens:", "Treats:", "Doors, yard, pets:"]:
+        d.text(rule_text, M, d.y + 11, SANS_SEMI, 10, INK)
+        w0 = pdfmetrics.stringWidth(rule_text, SANS_SEMI, 10) + 8
+        d.c.setStrokeColor(SAND_DEEP); d.c.setLineWidth(0.7); d.c.line(M + w0, d.Y(d.y + 14), M + d.cw, d.Y(d.y + 14)); d.y += 20
+    d.y += 8
+    d.box(M, d.y, d.cw, 58, CREAM_DEEP)
+    d.label("If something's wrong", M + 14, d.y + 8)
+    d.text("Pediatrician: ____________________    Hospital: ____________________", M + 14, d.y + 32, SANS, 10, INK)
+    d.text("Poison Control (US): 1-800-222-1222   ·   Emergency: 911   ·   Then call us.", M + 14, d.y + 48, SANS, 10, INK)
+    d.y += 58 + 8
+    d.text("Never", M, d.y + 9, SANS_SEMI, 9, DANGER)
+    d.text("write alarm or gate codes here. Tell the sitter in person.", M + pdfmetrics.stringWidth("Never ", SANS_SEMI, 9), d.y + 9, SANS, 9, SAND_DEEP)
+    d.text("The app fills this in from your Family Vault and texts it to the sitter in one tap. petitehome.co", M, d.y + 24, SANS_IT, 9.5, BLUE_DK)
     return d.save()
 
 
-BUILDERS = [family_file, sealed_envelope, sitter_sheet, recipe_card, who_to_call_first, expiration_tracker,
-            household_cadence, if_something_happens, week_on_one_page, meal_week, what_to_keep, date_night_found]
+# ---------- 5. Baby sleep tracker and bedtime routine ----------
+WAKE_WINDOWS = [("0 to 1 month", "45 to 60 min", "4 to 6 naps"), ("1 to 2 months", "45 to 75 min", "4 to 5 naps"), ("3 months", "60 to 90 min", "3 to 4 naps"),
+                ("4 to 5 months", "90 min to 2 h", "3 to 4 naps"), ("6 to 7 months", "2 to 3 h", "2 to 3 naps"), ("8 to 10 months", "2.5 to 3.5 h", "2 naps"), ("11 to 12 months", "3 to 4 h", "1 to 2 naps")]
+
+
+def baby_sleep_tracker():
+    d = Doc("baby-sleep-tracker", "Baby sleep tracker", "A seven-day sleep log, wake windows by age, and a bedtime routine that sticks.")
+    # Page 1: the log
+    d.page(landscape=True)
+    d.text("Seven nights", M, d.y + 26, SERIF, 30, INK)
+    d.text("Week of ______________", d.w - M, d.y + 20, SANS, 11, SAND_DEEP, right=True)
+    d.y += 40
+    d.para("Shade the hours baby slept. Tick a wake. A pattern shows up by night four.", size=10.5, color=SAND_DEEP); d.y += 8
+    label_w = 70; hours = 24
+    gx = M + label_w; gw = d.cw - label_w - 110; cw = gw / hours; rh = 46
+    # hour labels, starting at 7 pm
+    start = 19
+    for h in range(hours + 1):
+        hr = (start + h) % 24
+        if h % 2 == 0:
+            lab = "12a" if hr == 0 else ("12p" if hr == 12 else f"{hr % 12}{'a' if hr < 12 else 'p'}")
+            d.text(lab, gx + h * cw, d.y + 8, SANS, 7, SAND_DEEP, center=True)
+    d.y += 12
+    gy = d.y
+    d.label("Wakes", gx + gw + 12, gy - 12, size=7); d.label("Total", gx + gw + 62, gy - 12, size=7)
+    days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+    for r, day in enumerate(days):
+        y = gy + r * rh
+        d.text(day, M, y + 27, SANS_SEMI, 10.5, INK)
+        for h in range(hours):
+            hr = (start + h) % 24
+            night = hr >= 19 or hr < 7
+            d.c.setFillColor(BLUE_MIST if night else WHITE); d.c.setStrokeColor(RULE); d.c.setLineWidth(0.5)
+            d.c.rect(gx + h * cw, d.Y(y + rh - 4), cw, rh - 4, stroke=1, fill=1)
+        d.c.setStrokeColor(SAND_DEEP); d.c.setLineWidth(0.7)
+        d.c.line(gx + gw + 12, d.Y(y + rh - 10), gx + gw + 48, d.Y(y + rh - 10))
+        d.c.line(gx + gw + 62, d.Y(y + rh - 10), gx + gw + 108, d.Y(y + rh - 10))
+    d.y = gy + 7 * rh + 6
+    d.c.setFillColor(BLUE_MIST); d.c.rect(M, d.Y(d.y + 10), 10, 10, stroke=0, fill=1)
+    d.text("night hours, 7 pm to 7 am", M + 16, d.y + 9, SANS, 8.5, SAND_DEEP)
+    d.y += 20
+    d.para("Notes on the week (teething, a cold, travel, a new routine):", size=10, color=SAND_DEEP); d.lines(3, h=22)
+    # Page 2: wake windows and the routine
+    d.page(); d.title("Wake windows and bedtime", 30)
+    d.intro("Typical ranges, not rules. Your baby's own pattern on the log beats any chart.")
+    d.label("Age", M, d.y); d.label("Awake between sleeps", M + 150, d.y); d.label("Naps a day", M + 340, d.y); d.y += 16; d.hr(); d.y += 2
+    for age, win, naps in WAKE_WINDOWS:
+        d.text(age, M, d.y + 16, SANS_SEMI, 10.5, INK); d.text(win, M + 150, d.y + 16, SANS, 10.5, INK); d.text(naps, M + 340, d.y + 16, SANS, 10.5, INK)
+        d.c.setStrokeColor(RULE); d.c.setLineWidth(0.5); d.c.line(M, d.Y(d.y + 24), M + d.cw, d.Y(d.y + 24)); d.y += 24
+    d.y += 8
+    d.heading("The bedtime routine")
+    d.caption("Same order, same words, every night. Twenty to thirty minutes is plenty. Tick what's in yours and write the time.")
+    (lx, lw), (rx, rw) = d.two_col()
+    y0 = d.y
+    for step in ["Last feed", "Bath", "Pajamas and a clean diaper", "Dim the lights", "A book or a song", "The same goodnight words", "Into the crib awake"]:
+        d.checkbox(lx, d.y, step); d.row("", lx + lw - 70, 70, 0, h=22); d.y += 2
+    left_end = d.y; d.y = y0
+    d.text("Our routine, in order", rx, d.y + 12, SANS_SEMI, 10.5, INK); d.y += 18
+    d.lines(7, rx, rw, h=24)
+    d.y = max(left_end, d.y) + 8
+    d.note_box("Safe sleep, every sleep: on their back, on a flat firm surface of their own, nothing else in the crib. Room-sharing without bed-sharing for the first six months. (American Academy of Pediatrics)")
+    d.app_line("The app keeps the kids' doctor, meds and allergies in one place, and shares them with whoever has baby tonight. petitehome.co")
+    return d.save(multi=True)
+
+
+# ---------- 6. Milestone tracker, 0 to 12 months ----------
+MILESTONES = [
+    ("2 months", ["Calms down when spoken to or picked up", "Looks at your face", "Smiles when you talk or smile at them", "Makes sounds other than crying",
+                  "Reacts to loud sounds", "Watches you as you move", "Holds head up when on tummy", "Moves both arms and both legs", "Opens hands briefly"]),
+    ("4 months", ["Smiles on their own to get your attention", "Chuckles when you try to make them laugh", "Makes cooing sounds", "Makes sounds back when you talk",
+                  "Turns head toward your voice", "Opens mouth when they see the breast or bottle", "Looks at their hands with interest", "Holds head steady when you hold them",
+                  "Holds a toy when you put it in their hand", "Brings hands to mouth", "Pushes up on forearms when on tummy"]),
+    ("6 months", ["Knows familiar people", "Likes to look in a mirror", "Laughs", "Takes turns making sounds with you", "Blows raspberries", "Makes squealing noises",
+                  "Puts things in their mouth to explore", "Reaches to grab a toy they want", "Closes lips to show they don't want more food", "Rolls from tummy to back",
+                  "Pushes up with straight arms on tummy", "Leans on hands for support when sitting"]),
+    ("9 months", ["Is shy, clingy or fearful around strangers", "Shows several facial expressions", "Looks when you call their name", "Reacts when you leave",
+                  "Smiles or laughs at peekaboo", "Makes sounds like mamamama and babababa", "Lifts arms to be picked up", "Looks for things when they drop out of sight",
+                  "Bangs two things together", "Gets to a sitting position by themselves", "Moves things from one hand to the other", "Sits without support"]),
+    ("12 months", ["Plays games with you, like pat-a-cake", "Waves bye-bye", "Calls a parent mama, dada or another special name", "Understands no, and pauses",
+                   "Puts something in a container", "Looks for things they see you hide", "Pulls up to stand", "Walks holding on to furniture",
+                   "Drinks from a cup without a lid as you hold it", "Picks things up between thumb and pointer finger"]),
+]
+
+
+def milestone_tracker():
+    d = Doc("milestone-tracker", "Milestones, 0 to 12 months", "Month-by-month milestones with photo prompts and notes for the pediatrician.")
+    d.page(); d.title("The first year", 34)
+    d.intro("These are the CDC's milestone checklists, the ones your pediatrician uses. Most babies reach them on their own schedule. Tick what you see, and bring the page to each well-child visit.")
+    (lx, lw), (rx, rw) = d.two_col()
+    cols = [lx, rx]
+    col_y = [d.y, d.y]
+    ci = 0
+    for i, (age, items) in enumerate(MILESTONES):
+        if i == 2: ci = 1
+        if i == 3:
+            d.page(); d.title("The first year", 34); col_y = [d.y, d.y]; ci = 0
+        if i == 4: ci = 1
+        x = cols[ci]; d.y = col_y[ci]
+        d.text(age, x, d.y + 16, SERIF, 18, INK); d.y += 26
+        for it in items:
+            used = d.checkbox(x, d.y, it, size=9.5, w=lw - 20); d.y += used + 3
+        d.y += 4
+        d.label("Photo this month", x, d.y + 4, size=7); d.row("", x + 86, lw - 86, 0, h=18)
+        d.label("Ask the doctor", x, d.y + 4, size=7); d.row("", x + 86, lw - 86, 0, h=18)
+        d.y += 14
+        col_y[ci] = d.y
+    d.y = max(col_y) + 6
+    d.heading("Firsts", 20)
+    firsts = ["First smile", "First laugh", "Rolled over", "Sat up", "First tooth", "First word", "Crawled", "Stood up", "First steps"]
+    y0 = d.y
+    for i, f in enumerate(firsts):
+        x = lx if i % 2 == 0 else rx; w = lw
+        if i % 2 == 0: d.y = y0 + (i // 2) * 24
+        d.label(f, x, d.y + 7, size=7.5); d.row("", x + 70, w - 70, 0, h=24)
+    d.y = y0 + 5 * 24 + 6
+    d.caption("If your baby is missing milestones, or loses skills they had, talk to the pediatrician. Acting early matters. Source: CDC 'Learn the Signs. Act Early.'")
+    d.app_line("The app keeps each child's doctor, sizes and well-child visits, and reminds you around the birthday. petitehome.co")
+    return d.save(multi=True)
+
+
+# ---------- 7. Morning and bedtime routine chart ----------
+MORNING = ["Wake up and open the curtains", "Potty", "Get dressed", "Breakfast", "Brush teeth", "Shoes and bag", "Out the door"]
+BEDTIME = ["Dinner", "Bath", "Pajamas", "Brush teeth", "Two books", "Hugs and goodnight", "Lights out"]
+
+
+def routine_chart():
+    d = Doc("routine-chart", "Morning and bedtime", "A routine chart kids can follow themselves, with a box to tick each day.")
+    days = ["M", "T", "W", "T", "F", "S", "S"]
+
+    def chart(title, steps, blank=False):
+        d.text(title, M, d.y + 18, SERIF, 22, INK); d.y += 30
+        step_w = d.cw - 7 * 24 - 70
+        d.label("Draw it", M, d.y, size=7); d.label("Step", M + 60, d.y, size=7)
+        for i, day in enumerate(days): d.text(day, M + 60 + step_w + i * 24 + 12, d.y + 8, SANS_SEMI, 8, SAND_DEEP, center=True)
+        d.y += 14
+        for i, step in enumerate(steps):
+            y = d.y; rh = 50
+            d.box(M, y, d.cw, rh - 4, CREAM_DEEP if i % 2 == 0 else CREAM_TINT, 8)
+            d.c.setStrokeColor(SAND); d.c.setLineWidth(0.8); d.c.roundRect(M + 8, d.Y(y + rh - 8), 50, rh - 12, 6, stroke=1, fill=0)
+            if blank:
+                d.c.setStrokeColor(SAND_DEEP); d.c.setLineWidth(0.7); d.c.line(M + 68, d.Y(y + 30), M + 56 + step_w, d.Y(y + 30))
+            else:
+                d.text(step, M + 68, y + 29, SANS_SEMI, 12, INK)
+            for k in range(7):
+                d.c.setStrokeColor(SAND); d.c.setLineWidth(1); d.c.setFillColor(WHITE)
+                d.c.roundRect(M + 60 + step_w + k * 24 + 5, d.Y(y + rh - 16), 14, 14, 3, stroke=1, fill=1)
+            d.y += rh
+        d.y += 4
+        d.text("When a row is full: ______________________________________", M, d.y + 12, SANS, 10.5, SAND_DEEP); d.y += 28
+
+    d.page(); d.title("Our routines", 34)
+    d.intro("Kids follow a chart they can see better than a voice they tune out. Let them draw each step in the first box, then tick the day when it's done.")
+    chart("Morning", MORNING)
+    d.page(); d.title("Our routines", 34)
+    d.intro("Bedtime goes the same way every night: same order, same words.")
+    chart("Bedtime", BEDTIME)
+    d.page(); d.title("Make your own", 34)
+    d.intro("A blank chart for the afternoon, the weekend, or a different kid. Seven steps is the most a chart should carry.")
+    chart("______________________", ["" for _ in range(7)], blank=True)
+    d.app_line("The app keeps the family's week, the chores and dinner on one screen both parents can see. petitehome.co")
+    return d.save(multi=True)
+
+
+# ---------- 8. Screen-time family agreement ----------
+def screen_time_agreement():
+    d = Doc("screen-time-agreement", "Our screen-time agreement", "Family screen rules, a device log, a weekend plan and conversation prompts.")
+    d.page(); d.title("Our screen-time agreement", 32)
+    d.intro("Written together, signed by everyone, stuck on the fridge. Rules you agreed on hold up better than rules you announced.")
+    d.heading("When", 18)
+    d.para("On school days, screens are OK from ________ to ________, for about ________ minutes.", size=11); d.y += 4
+    d.para("On weekends, from ________ to ________, for about ________ minutes.", size=11); d.y += 4
+    d.para("No screens: at the table, in bedrooms, in the hour before bed, and ______________________.", size=11); d.y += 10
+    d.heading("What", 18)
+    d.caption("Apps, shows and games we've agreed on. New ones get asked about first.")
+    (lx, lw), (rx, rw) = d.two_col()
+    y0 = d.y
+    d.lines(4, lx, lw, h=22); end = d.y; d.y = y0; d.lines(4, rx, rw, h=22); d.y = max(end, d.y) + 8
+    d.heading("Grown-ups too", 18)
+    d.para("We'll put our phones down at ________ and keep them out of ______________________.", size=11); d.y += 10
+    d.heading("When it's hard", 18)
+    d.para("If a screen is hard to put down, we'll ____________________________ instead of fighting about it. If the rules get broken, what happens is ____________________________.", size=11); d.y += 12
+    d.heading("Signed", 18)
+    y0 = d.y
+    for i in range(4):
+        x = lx if i % 2 == 0 else rx
+        if i % 2 == 0: d.y = y0 + (i // 2) * 30
+        d.row("", x, lw, 0, h=30)
+    d.y = y0 + 60 + 4
+    d.caption("Everyone who uses a screen in this house, kids and grown-ups.")
+    # page 2: log, weekend plan, prompts
+    d.page(); d.title("This week's screens", 32)
+    d.intro("One line per sitting. Not to catch anyone out: a week of honest lines is what makes the next conversation easy.")
+    cols = [("Day", 0), ("Who", 60), ("What", 140), ("Minutes", 330), ("Felt like", 400)]
+    for name, off in cols: d.label(name, M + off, d.y, size=7.5)
+    d.y += 14
+    for i in range(9):
+        d.c.setStrokeColor(SAND_DEEP); d.c.setLineWidth(0.7)
+        for a, b in [(0, 52), (60, 132), (140, 322), (330, 392), (400, 500)]: d.c.line(M + a, d.Y(d.y + 17), M + b, d.Y(d.y + 17))
+        d.y += 24
+    d.y += 10
+    d.heading("Instead, this weekend", 18)
+    d.caption("Three things we'll do that aren't a screen. Pick them together on Friday.")
+    for _ in range(3): d.checkbox(M, d.y); d.row("", M + 20, d.cw - 20, 0, h=22)
+    d.y += 4
+    d.heading("Five questions worth asking", 18)
+    for q in ["What's the best thing you watched or played this week?", "Was there anything that made you feel bad, or that you didn't want us to see?",
+              "What would you do with an extra hour if screens were off?", "Which rule feels unfair, and what would you change?", "When do you notice us on our phones too much?"]:
+        d.checkbox(M, d.y, q, size=10.5); d.y += 20
+    d.app_line("The app keeps the family's chores, plans and dinner on one week both parents see, so the weekend plan sticks. petitehome.co")
+    return d.save(multi=True)
+BUILDERS = [family_file, who_to_call_first, if_something_happens, sitter_cheat_sheet,
+            baby_sleep_tracker, milestone_tracker, routine_chart, screen_time_agreement]
 
 
 def previews():
