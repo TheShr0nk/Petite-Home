@@ -269,7 +269,7 @@ blank PDF uses the same layout as the app's export so the two match.
 - **Purpose.** A checklist of the documents worth photographing and where
   the originals live. Maps to the Vault. Week-5 email.
 - **Pages.** 1.
-- **App source.** `VaultCategory` in `PetiteHome/Features/Vault/VaultStore.swift`
+- **App source.** `VaultCategory` in `PetiteHome/Models/ValueTypes.swift`
   and the Vault's empty state copy ("A photo of a birth certificate is a good
   start.").
 - **Layout.** Title "What to keep". Intro: "A photo of a birth certificate is
