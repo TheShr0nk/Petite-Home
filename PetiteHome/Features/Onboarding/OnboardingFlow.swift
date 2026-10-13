@@ -87,14 +87,15 @@ struct OnboardingFlow: View {
                 Image(systemName: "chevron.left")
                     .font(.system(size: 17, weight: .medium))
                     .foregroundStyle(Theme.Colors.sandDeep)
-                    .frame(width: 40, height: 40)
+                    .frame(width: 44, height: 44)
             }
+            .accessibilityLabel("Back")
             .opacity(step == .hook || step.rawValue > OnboardingStep.reveal.rawValue ? 0 : 1)
             .disabled(step == .hook || step.rawValue > OnboardingStep.reveal.rawValue)
             // The intro doesn't count: the hook is 1 of 10.
             ProgressBar(progress: Double(step.rawValue) / Double(OnboardingStep.allCases.count - 1),
                         current: step.rawValue, total: OnboardingStep.allCases.count - 1)
-            Color.clear.frame(width: 40, height: 40)
+            Color.clear.frame(width: 44, height: 44)
             }
         }
         .padding(.horizontal, Theme.Spacing.md)
@@ -224,6 +225,7 @@ struct SavedMomentScreen: View {
                         .buttonStyle(.moment)
                         Button { onDone() } label: {
                             Text("Not now").font(Typography.body).foregroundStyle(Theme.Colors.cream.opacity(0.7))
+                                .frame(maxWidth: .infinity, minHeight: 44)
                         }
                         .buttonStyle(.plain)
                     } else {

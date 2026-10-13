@@ -197,6 +197,20 @@ moment screen after onboarding. Everything honours Reduce Motion.
   encryption; `ITSAppUsesNonExemptEncryption` is false. Confirm the annual
   self-classification with your counsel if selling outside the US.
 
+## iOS design conventions
+
+Checked against Apple's Human Interface Guidelines and the learnui.design iOS
+guide. Body, labels and captions are the system text styles (Body 17, Subhead
+15, Footnote 13) and scale with Dynamic Type; the serif headline sizes scale
+through `UIFontMetrics`. Every tappable thing is at least 44pt tall: primary
+buttons 52, secondary 44, text fields 48, chips and selectable rows 44, icon
+buttons 44x44 with accessibility labels. Screen gutter is 20pt (the site's
+grid; Apple's default is 16). Navigation, tab bar, sheets, lists and alerts
+are the system components, so they pick up iOS 26's Liquid Glass on their own.
+Chips and selectable rows give selection haptics. Known gap: the app is
+light-only by design (`preferredColorScheme(.light)`), so dark mode is a v2
+item.
+
 ## Copy rules
 
 Sentence case. No exclamation points. Never "in case of death". Empty states

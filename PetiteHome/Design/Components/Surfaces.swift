@@ -80,10 +80,14 @@ struct Chip: View {
                 Capsule().fill(isSelected ? Theme.Colors.powderBlue : Theme.Colors.creamDeep)
             )
             .scaleEffect(isSelected ? 1 : 0.98)
+            // The capsule stays 36pt; the tappable area is 44pt (HIG minimum).
+            .frame(minHeight: 44)
+            .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
         .disabled(action == nil)
         .animation(Motion.select, value: isSelected)
+        .sensoryFeedback(.selection, trigger: isSelected)
     }
 }
 
@@ -126,6 +130,7 @@ struct SelectableRow: View {
         }
         .buttonStyle(.plain)
         .animation(Motion.select, value: isSelected)
+        .sensoryFeedback(.selection, trigger: isSelected)
     }
 }
 

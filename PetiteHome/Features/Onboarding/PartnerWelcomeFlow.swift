@@ -57,13 +57,14 @@ struct PartnerWelcomeFlow: View {
                 Image(systemName: "chevron.left")
                     .font(.system(size: 17, weight: .medium))
                     .foregroundStyle(Theme.Colors.sandDeep)
-                    .frame(width: 40, height: 40)
+                    .frame(width: 44, height: 44)
             }
+            .accessibilityLabel("Back")
             .opacity(step == .who ? 0 : 1)
             .disabled(step == .who)
             ProgressBar(progress: Double(step.rawValue + 1) / Double(Step.allCases.count),
                         current: step.rawValue + 1, total: Step.allCases.count)
-            Color.clear.frame(width: 40, height: 40)
+            Color.clear.frame(width: 44, height: 44)
         }
         .padding(.horizontal, Theme.Spacing.md)
         .padding(.top, Theme.Spacing.sm)

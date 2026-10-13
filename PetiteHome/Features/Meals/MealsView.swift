@@ -122,7 +122,7 @@ struct MealsView: View {
         VStack(alignment: .leading, spacing: Theme.Spacing.md) {
             HStack {
                 SectionHeader(title: "Recipe box", detail: recipes.isEmpty ? nil : "\(recipes.count)")
-                Button { showNewRecipe = true } label: { Image(systemName: "plus").font(.system(size: 17, weight: .medium)).foregroundStyle(Theme.Colors.powderBlueDk).frame(width: 36, height: 36) }
+                Button { showNewRecipe = true } label: { Image(systemName: "plus").font(.system(size: 17, weight: .medium)).foregroundStyle(Theme.Colors.powderBlueDk).frame(width: 44, height: 44) }
                     .accessibilityLabel("Add a recipe")
             }
             if (household.recipes ?? []).count > 5 {

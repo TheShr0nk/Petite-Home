@@ -22,7 +22,7 @@ struct PaywallSheet: View {
             HStack {
                 Spacer()
                 Button { dismiss() } label: {
-                    Image(systemName: "xmark").font(.system(size: 15, weight: .medium)).foregroundStyle(Theme.Colors.sandDeep).frame(width: 40, height: 40)
+                    Image(systemName: "xmark").font(.system(size: 15, weight: .medium)).foregroundStyle(Theme.Colors.sandDeep).frame(width: 44, height: 44)
                 }
                 .accessibilityLabel("Close")
             }
