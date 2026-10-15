@@ -146,19 +146,22 @@ struct PaywallSheet: View {
         return "Renews automatically. Cancel anytime in Settings."
     }
 
-    /// The three bullets, cream on ink, with the wordmark ghosted in the corner.
+    /// The three bullets, cream on ink, with the wordmark ghosted in the bottom corner.
+    /// The bullets stop short of the mark's row so no line of text ever runs through it.
     private var featuresCard: some View {
-        ZStack(alignment: .topTrailing) {
+        ZStack(alignment: .bottomTrailing) {
             VStack(alignment: .leading, spacing: Theme.Spacing.lg) {
                 bullet("bell", "Reminds you when passports, car seats, and insurance expire")
                 bullet("lock.doc", "Keeps birth certificates and SSN cards in an encrypted vault")
                 bullet("calendar", "The \(AppCopy.planner): both calendars, tasks, meals and date nights on one week, shared with your partner")
             }
             .padding(Theme.Spacing.xl)
+            .padding(.bottom, Theme.Spacing.xl)
             Text("PH")
-                .font(Typography.serif(44))
-                .foregroundStyle(Theme.Colors.Fixed.powderBlue.opacity(0.12))
-                .padding(Theme.Spacing.md)
+                .font(Typography.serif(36))
+                .foregroundStyle(Theme.Colors.Fixed.powderBlue.opacity(0.14))
+                .padding(.horizontal, Theme.Spacing.lg)
+                .padding(.bottom, Theme.Spacing.sm)
                 .accessibilityHidden(true)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
