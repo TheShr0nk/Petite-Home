@@ -4,6 +4,7 @@ import SwiftData
 struct HomeView: View {
     @Environment(AppState.self) private var appState
     @Environment(EntitlementStore.self) private var entitlements
+    @Environment(\.modelContext) private var context
     @Bindable var household: Household
     @State private var showExport = false
     @State private var sharePayload: SharePayload?
@@ -22,7 +23,9 @@ struct HomeView: View {
                     guardianNudge
                 }
                 BrandDivider()
-                upcoming.reveal(2, baseDelay: 0.05)
+                familyChores.reveal(2, baseDelay: 0.05)
+                BrandDivider()
+                upcoming.reveal(3, baseDelay: 0.05)
                 if let me = appState.currentAdult(in: household), !me.calendarSyncEnabled, household.adults.count > 1 {
                     lifeSyncNudge(partnerName: household.adults.first { $0.uuid != me.uuid }?.displayName ?? "your partner")
                 }
@@ -150,6 +153,53 @@ struct HomeView: View {
         (household.meals ?? []).first { Calendar.current.isDateInToday($0.date) && $0.slot == .dinner }
     }
 
+    /// The household's open chores, overdue first, checkable right here. Header and rows open the Tasks segment.
+    private var familyChores: some View {
+        let open = (household.tasks ?? []).filter { !$0.isDone }
+            .sorted { ($0.isOverdue ? 0 : 1, $0.nextDue) < ($1.isOverdue ? 0 : 1, $1.nextDue) }
+        let shown = Array(open.prefix(4))
+        return VStack(alignment: .leading, spacing: Theme.Spacing.md) {
+            Button { appState.openTasks() } label: {
+                HStack {
+                    SectionHeader(title: "Family chores", detail: open.isEmpty ? nil : "\(open.count)")
+                    Spacer()
+                    Text("See all").font(Typography.bodyEmphasis).foregroundStyle(Theme.Colors.accentText)
+                    Image(systemName: "chevron.right").font(.system(size: 13, weight: .medium)).foregroundStyle(Theme.Colors.sandDeep)
+                }
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel("Family chores, see all")
+            Card(padding: 0) {
+                VStack(spacing: 0) {
+                    if shown.isEmpty {
+                        EmptyStateRow(instruction: "Add the first chore, or pick from the usual ones", systemImage: "checklist") { appState.openTasks() }
+                            .padding(.horizontal, Theme.Spacing.lg)
+                    }
+                    ForEach(shown, id: \.uuid) { task in
+                        TaskRow(task: task, onComplete: { completeChore(task) }, onTap: { appState.openTasks() })
+                        if task.uuid != shown.last?.uuid { SandDivider().padding(.leading, Theme.Spacing.lg + 36) }
+                    }
+                    if open.count > shown.count {
+                        SandDivider().padding(.leading, Theme.Spacing.lg)
+                        Button { appState.openTasks() } label: {
+                            HStack { Text("\(open.count - shown.count) more").font(Typography.caption).foregroundStyle(Theme.Colors.accentText); Spacer() }
+                                .padding(.horizontal, Theme.Spacing.lg).padding(.vertical, Theme.Spacing.md).contentShape(Rectangle())
+                        }
+                        .buttonStyle(.plain)
+                    }
+                }
+            }
+        }
+    }
+
+    private func completeChore(_ task: HouseholdTask) {
+        withAnimation { task.complete() }
+        try? context.save()
+        ExpirationScheduler.sync(household: household, isPremium: entitlements.isPremium)
+        PhoneSyncService.shared.syncIfEnabled(household: household, context: context, isPremium: entitlements.isPremium)
+    }
+
     private var upcoming: some View {
         VStack(alignment: .leading, spacing: Theme.Spacing.md) {
             SectionHeader(title: "Upcoming")
@@ -183,18 +233,12 @@ struct HomeView: View {
                     }
                     if entitlements.isPremium {
                         let exps = ExpirationScheduler.upcoming(for: household)
-                        let tasks = (household.tasks ?? []).filter { !$0.isDone }.sorted { $0.nextDue < $1.nextDue }.prefix(3)
-                        if exps.isEmpty && tasks.isEmpty {
-                            EmptyStateRow(instruction: "Add a date that expires, or turn on the task templates", systemImage: "calendar") { appState.openTasks() }
+                        if exps.isEmpty && todayEvents.isEmpty && nextPlan == nil && tonight == nil {
+                            EmptyStateRow(instruction: "Add a date that expires, like the car registration or a passport", systemImage: "calendar") { appState.open(.vehicles) }
                                 .padding(.horizontal, Theme.Spacing.lg)
                         }
                         ForEach(exps) { exp in
                             UpcomingRow(title: exp.title, date: exp.date, tone: exp.isOverdue ? .danger : (exp.isSoon ? .warn : .normal), icon: "calendar.badge.exclamationmark")
-                                .padding(.horizontal, Theme.Spacing.lg)
-                            SandDivider().padding(.leading, Theme.Spacing.lg)
-                        }
-                        ForEach(Array(tasks), id: \.uuid) { task in
-                            UpcomingRow(title: task.title, date: task.nextDue, tone: task.isOverdue ? .danger : .normal, icon: task.category.systemImage)
                                 .padding(.horizontal, Theme.Spacing.lg)
                             SandDivider().padding(.leading, Theme.Spacing.lg)
                         }
