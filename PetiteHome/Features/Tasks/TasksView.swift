@@ -13,6 +13,7 @@ struct TasksView: View {
     @State private var editingTask: HouseholdTask?
     @State private var showNew = false
     @State private var quickTitle = ""
+    @State private var quickRecurrence: Recurrence = .none
     @State private var remindersOn = PhoneSyncService.shared.tasksToReminders
     @State private var syncing = false
     @State private var syncMessage: String?
@@ -77,7 +78,12 @@ struct TasksView: View {
                 .disabled(quickTitle.trimmingCharacters(in: .whitespaces).isEmpty)
                 .accessibilityLabel("Add task")
             }
-            Text("Due today, for either of you. Tap a task to set a repeat, a time or who.").font(Typography.caption).foregroundStyle(Theme.Colors.sandDeep)
+            HStack(spacing: Theme.Spacing.sm) {
+                ForEach([Recurrence.none, .daily, .weekly, .monthly], id: \.storageKey) { r in
+                    Chip(label: r.label, isSelected: r.storageKey == quickRecurrence.storageKey) { quickRecurrence = r }
+                }
+            }
+            Text("Due today, for either of you. Tap it after for a time or who. Your partner's phone hears about it.").font(Typography.caption).foregroundStyle(Theme.Colors.sandDeep)
         }
     }
 
@@ -107,9 +113,10 @@ struct TasksView: View {
     private func addQuick() {
         let title = quickTitle.trimmingCharacters(in: .whitespaces)
         guard !title.isEmpty else { return }
-        let task = HouseholdTask(title: title, recurrence: .none, nextDue: Date(), category: .home)
+        let task = HouseholdTask(title: title, recurrence: quickRecurrence, nextDue: Date(), category: .home)
+        task.createdByAdultID = appState.currentAdult(in: household)?.uuid
         household.tasks?.append(task)
-        quickTitle = ""
+        quickTitle = ""; quickRecurrence = .none
         SensoryFeedbackBridge.selection()
         save()
     }
@@ -218,6 +225,7 @@ struct TasksView: View {
         }
         ExpirationScheduler.sync(household: household, isPremium: entitlements.isPremium)
         PhoneSyncService.shared.syncIfEnabled(household: household, context: context, isPremium: entitlements.isPremium)
+        ChoreWidgetBridge.publish(household: household)
     }
 }
 
@@ -270,6 +278,7 @@ struct TaskRow: View {
 }
 
 struct TaskEditorSheet: View {
+    @Environment(AppState.self) private var appState
     @Environment(\.modelContext) private var context
     @Environment(\.dismiss) private var dismiss
     let task: HouseholdTask?
@@ -361,7 +370,10 @@ struct TaskEditorSheet: View {
         target.title = title; target.notes = notes; target.recurrence = recurrence
         target.nextDue = nextDue; target.category = category; target.reminderHour = hour
         target.assignedTo = household.adults.first { $0.uuid == assigneeID }
-        if task == nil { household.tasks?.append(target) }
+        if task == nil {
+            target.createdByAdultID = appState.currentAdult(in: household)?.uuid
+            household.tasks?.append(target)
+        }
         try? context.save()
         dismiss()
     }

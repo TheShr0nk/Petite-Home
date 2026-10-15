@@ -33,9 +33,21 @@ final class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCent
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil) -> Bool {
         UNUserNotificationCenter.current().delegate = self
-        // Force light appearance everywhere, including UIKit-hosted sheets.
-        UIWindow.appearance().overrideUserInterfaceStyle = .light
+        // Silent CloudKit pushes wake the app when the partner changes something.
+        application.registerForRemoteNotifications()
+        CloudChangeSubscriptions.ensure()
         return true
+    }
+
+    func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {}
+    func application(_ application: UIApplication, didFailToRegisterForRemoteNotificationsWithError error: Error) {}
+
+    /// A silent push from CloudKit. Give SwiftData a moment to import, then let the tabs react.
+    func application(_ application: UIApplication, didReceiveRemoteNotification userInfo: [AnyHashable: Any]) async -> UIBackgroundFetchResult {
+        guard CKNotification(fromRemoteNotificationDictionary: userInfo) != nil else { return .noData }
+        try? await Task.sleep(for: .seconds(4))
+        await MainActor.run { NotificationCenter.default.post(name: .cloudChangesArrived, object: nil) }
+        return .newData
     }
 
     func application(_ application: UIApplication, configurationForConnecting connectingSceneSession: UISceneSession, options: UIScene.ConnectionOptions) -> UISceneConfiguration {
@@ -73,5 +85,7 @@ final class SceneDelegate: NSObject, UIWindowSceneDelegate {
 }
 
 extension Notification.Name {
+    /// Posted after a silent CloudKit push, once the import has had a moment to land.
+    static let cloudChangesArrived = Notification.Name("co.petitehome.cloudChangesArrived")
     static let didReceiveSharedFile = Notification.Name("co.petitehome.didReceiveSharedFile")
 }

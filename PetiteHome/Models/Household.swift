@@ -199,6 +199,8 @@ final class HouseholdTask {
     var isFromTemplate: Bool = false
     var templateKey: String? = nil
     var createdAt: Date = Date()
+    /// Who added it, so the other adult's phone can say "Casey added a chore".
+    var createdByAdultID: UUID? = nil
     /// Hour of the day the reminder fires (local time). "Plan dinner" wants mid-afternoon, most things 9am.
     var reminderHour: Int = 9
 

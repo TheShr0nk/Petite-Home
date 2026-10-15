@@ -198,6 +198,7 @@ struct HomeView: View {
         try? context.save()
         ExpirationScheduler.sync(household: household, isPremium: entitlements.isPremium)
         PhoneSyncService.shared.syncIfEnabled(household: household, context: context, isPremium: entitlements.isPremium)
+        ChoreWidgetBridge.publish(household: household)
     }
 
     private var upcoming: some View {

@@ -82,6 +82,16 @@ final class NotificationService {
 
     // MARK: Tasks (premium)
 
+    /// A notification right now, used when something arrived from the partner's phone.
+    func postNow(id: String, title: String, body: String, deepLink: String) {
+        let content = UNMutableNotificationContent()
+        content.title = title
+        content.body = body
+        content.sound = .default
+        content.userInfo = ["deepLink": deepLink]
+        center.add(UNNotificationRequest(identifier: id, content: content, trigger: nil))
+    }
+
     func scheduleTaskDue(id: UUID, title: String, due: Date, hour: Int = 9) {
         cancelTaskDue(id: id)
         guard due > Date() else { return }

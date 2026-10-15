@@ -91,6 +91,8 @@ final class AppState {
         guard url.scheme == FamilyFileField.deepLinkScheme else { return }
         if url.host == "familyfile", let field = FamilyFileField(rawValue: url.lastPathComponent) {
             open(field)
+        } else if url.host == "tasks" {
+            openTasks()
         }
     }
 

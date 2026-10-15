@@ -121,6 +121,28 @@ ordered through the website; see `docs/print-binder.md` for the routes the
 site needs and why checkout is on the web (Apple bars in-app purchase for
 physical goods).
 
+**Chores: partner notifications, the widget, Reminders.** A chore carries
+`createdByAdultID`. When one created on the other adult's phone arrives through
+iCloud, `ChoreAnnouncer` posts one local notification ("Casey added a chore")
+on this phone, once per chore. It runs on launch, on foreground, and when a
+silent CloudKit push wakes the app: `CloudChangeSubscriptions` saves database
+subscriptions on the shared and private databases, the app has the
+`remote-notification` background mode and the `aps-environment` entitlement,
+and the app delegate posts `.cloudChangesArrived` four seconds after a push so
+SwiftData has imported the change. The home-screen widget (`PetiteHomeWidget`
+target, kind `FamilyChores`, small and medium) reads a JSON snapshot the app
+writes to the App Group `group.co.petitehome.app` after every change; ticking
+a chore on the widget queues a completion the app applies next time it runs.
+Chores already flow to Apple Reminders through `PhoneSyncService`, and that
+sync now runs from the same `syncEverything()` on every launch, foreground and
+push. Kids are not app users, so "notify the kids" means the printed routine
+chart or the Reminders list on a shared iPad for now.
+
+Two capabilities to add on the App ID in the developer portal before this
+builds with automatic signing: **App Groups** (`group.co.petitehome.app`, on
+both `co.petitehome.app` and `co.petitehome.app.widget`) and **Push
+Notifications** (no server is needed; CloudKit sends the pushes).
+
 **Family Sharing.** Premium is per Apple ID. Both products are marked
 family-shareable, so the partner is covered only when the buyer has Apple
 Family Sharing on; the paywall, Settings and the partner welcome say so. A

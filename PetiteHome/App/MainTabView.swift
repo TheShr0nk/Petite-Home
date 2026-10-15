@@ -34,11 +34,9 @@ struct MainTabView: View {
         }
         .onAppear(perform: onLaunch)
         .onChange(of: scenePhase) { _, phase in
-            if phase == .active {
-                PhoneSyncService.shared.syncIfEnabled(household: household, context: context, isPremium: entitlements.isPremium)
-                Task { await StandingLinkRefresher.refreshIfNeeded(household: household, context: context) }
-            }
+            if phase == .active { syncEverything() }
         }
+        .onReceive(NotificationCenter.default.publisher(for: .cloudChangesArrived)) { _ in syncEverything() }
         .onReceive(NotificationCenter.default.publisher(for: .didReceiveSharedFile)) { note in
             if let title = note.userInfo?["title"] as? String, let pdf = note.userInfo?["pdf"] as? Data {
                 appState.pendingSharedFile = (title, pdf)
@@ -61,9 +59,19 @@ struct MainTabView: View {
             }
         }
         expireTrustedShares()
-        Task { await StandingLinkRefresher.refreshIfNeeded(household: household, context: context) }
-        PhoneSyncService.shared.syncIfEnabled(household: household, context: context, isPremium: entitlements.isPremium)
+        syncEverything()
         UITabBar.appearance().unselectedItemTintColor = UIColor(hex: 0x6E6259)
+    }
+
+    /// Everything that keeps the phone, the partner's phone, Reminders and the widget in step.
+    private func syncEverything() {
+        ChoreWidgetBridge.applyPendingCompletions(household: household, context: context)
+        PhoneSyncService.shared.syncIfEnabled(household: household, context: context, isPremium: entitlements.isPremium)
+        ChoreWidgetBridge.publish(household: household)
+        Task {
+            await ChoreAnnouncer.announce(household: household, me: appState.currentAdult(in: household))
+            await StandingLinkRefresher.refreshIfNeeded(household: household, context: context)
+        }
     }
 
     /// Time-limited links: revoke anything past its date.
