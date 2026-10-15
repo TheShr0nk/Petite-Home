@@ -103,13 +103,36 @@ enum ShoppingList {
         for meal in meals.sorted(by: { $0.date < $1.date }) {
             guard let recipe = meal.recipe else { continue }
             for ingredient in recipe.ingredients {
-                let key = normalize(ingredient)
+                let key = mergeKey(for: ingredient)
                 guard !key.isEmpty else { continue }
                 if texts[key] == nil { order.append(key); texts[key] = ingredient.trimmingCharacters(in: .whitespaces) }
                 if !(sources[key] ?? []).contains(recipe.title) { sources[key, default: []].append(recipe.title) }
             }
         }
         return order.map { Line(key: $0, text: texts[$0] ?? $0, recipes: sources[$0] ?? []) }
+    }
+
+    /// The merge key for a shopping-list line: `normalize`, then the last word
+    /// singularised, so "1 onion" and "2 onions, diced" land on the same line.
+    static func mergeKey(for ingredient: String) -> String {
+        let name = normalize(ingredient)
+        guard !name.isEmpty else { return name }
+        var words = name.split(separator: " ").map(String.init)
+        if let last = words.last { words[words.count - 1] = singularized(last) }
+        return words.joined(separator: " ")
+    }
+
+    /// Conservative English singular of one word, for key matching only (the
+    /// result is never shown). Trailing "s"/"es"/"ies" are handled; words ending
+    /// in "ss" or "us" (cress, hummus, asparagus) and anything three letters or
+    /// shorter are left alone.
+    static func singularized(_ word: String) -> String {
+        guard word.count > 3, word.hasSuffix("s"), !word.hasSuffix("ss"), !word.hasSuffix("us") else { return word }
+        if word.hasSuffix("ies"), word.count > 4 { return String(word.dropLast(3)) + "y" }
+        for suffix in ["ches", "shes", "xes", "zes", "oes"] where word.hasSuffix(suffix) {
+            return String(word.dropLast(2))
+        }
+        return String(word.dropLast())
     }
 
     /// Lowercased, quantity and unit stripped from the front, so "2 cups flour" and "flour" collapse together.
