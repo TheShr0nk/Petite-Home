@@ -69,11 +69,21 @@ final class CloudSharingService: NSObject {
         return container
     }
 
+    /// The Core Data attribute behind `Household.uuid`. Must match the SwiftData
+    /// property name: Core Data raises an Objective-C exception, which `try?`
+    /// cannot catch, for a predicate on a key path the entity doesn't have.
+    private static let householdIDKey = "uuid"
+
+    /// True when the derived model carries the attribute the fetches below rely on.
+    private var householdIDKeyExists: Bool {
+        container?.managedObjectModel.entitiesByName["Household"]?.attributesByName[Self.householdIDKey] != nil
+    }
+
     /// Finds the Core Data object behind a SwiftData household by its UUID.
     private func managedHousehold(id: UUID) throws -> NSManagedObject {
-        guard let container else { throw SharingError.modelUnavailable }
+        guard let container, householdIDKeyExists else { throw SharingError.modelUnavailable }
         let request = NSFetchRequest<NSManagedObject>(entityName: "Household")
-        request.predicate = NSPredicate(format: "id == %@", id as CVarArg)
+        request.predicate = NSPredicate(format: "%K == %@", Self.householdIDKey, id as CVarArg)
         request.fetchLimit = 1
         guard let object = try container.viewContext.fetch(request).first else { throw SharingError.householdNotFound }
         return object
@@ -169,7 +179,7 @@ enum PartnerHouseholdBridge {
         return objects.compactMap { obj in
             guard let store = obj.objectID.persistentStore,
                   store.url?.lastPathComponent == "PetiteHome-shared.store" else { return nil }
-            return obj.value(forKey: "id") as? UUID
+            return obj.value(forKey: "uuid") as? UUID
         }
     }
 }
