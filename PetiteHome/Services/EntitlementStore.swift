@@ -44,13 +44,13 @@ enum PremiumGate: String {
 /// RevenueCat identifiers. The products are three App Store subscriptions in
 /// one group; RevenueCat wraps them in an offering with weekly, monthly and
 /// annual packages ($rc_weekly, $rc_monthly, $rc_annual), and grants the
-/// "premium" entitlement.
+/// "Premium" entitlement (the identifier is case-sensitive).
 enum ProductID {
     static let weekly = "co.petitehome.premium.weekly"
     static let monthly = "co.petitehome.premium.monthly"
     static let annual = "co.petitehome.premium.annual"
     static let all = [weekly, monthly, annual]
-    static let entitlement = "premium"
+    static let entitlement = "Premium"
 }
 
 /// The three plans on the paywall, in row order. The app is subscription-only: no free tier.

@@ -196,7 +196,7 @@ the button and fine print from it (pay-as-you-go and pay-up-front both read
 "Start for $0.99"), so the shape can change in App Store Connect without a
 code change. The monthly and annual rows show their per-week price and saving
 against weekly ("$3.46/wk, save 42%", "$2.40/wk, save 60%"), computed from
-store prices. Create an entitlement called `premium` and a current offering
+store prices. Create an entitlement with the identifier `Premium` (case-sensitive; it matches `ProductID.entitlement`) and a current offering
 with `$rc_weekly`, `$rc_monthly` and `$rc_annual` packages. Paste the app's
 public API key into Info.plist. With the Test Store key the SDK takes its
 products from the RevenueCat dashboard's Test Store, not from
