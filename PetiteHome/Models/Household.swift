@@ -75,6 +75,11 @@ final class Adult {
     var expiringItems: [ExpiringItem] = []
 
     var household: Household? = nil
+    /// Chores assigned to this adult. CloudKit requires every relationship to have an inverse;
+    /// deleting the adult leaves the chores in place, unassigned.
+    @Relationship(deleteRule: .nullify, inverse: \HouseholdTask.assignedTo) var assignedTasks: [HouseholdTask]? = []
+    /// Vault documents filed under this adult. Deleting the adult unlinks them; the documents stay.
+    @Relationship(deleteRule: .nullify, inverse: \VaultDocument.linkedAdult) var linkedDocuments: [VaultDocument]? = []
 
     init(firstName: String, lastName: String = "", role: AdultRole = .parent, isAccountOwner: Bool = false) {
         self.firstName = firstName
@@ -113,6 +118,8 @@ final class Child {
     var expiringItems: [ExpiringItem] = []
 
     var household: Household? = nil
+    /// Vault documents filed under this child. Deleting the child unlinks them; the documents stay.
+    @Relationship(deleteRule: .nullify, inverse: \VaultDocument.linkedChild) var linkedDocuments: [VaultDocument]? = []
 
     init(firstName: String, dateOfBirth: Date) {
         self.firstName = firstName
@@ -204,6 +211,7 @@ final class HouseholdTask {
     /// Hour of the day the reminder fires (local time). "Plan dinner" wants mid-afternoon, most things 9am.
     var reminderHour: Int = 9
 
+    /// Inverse of `Adult.assignedTasks`.
     var assignedTo: Adult? = nil
     var household: Household? = nil
 
@@ -259,6 +267,7 @@ final class VaultDocument {
     /// Which key wrapped the asset, so a rotated key can still open old documents.
     var keyIdentifier: String = ""
 
+    /// Inverses of `Child.linkedDocuments` and `Adult.linkedDocuments`.
     var linkedChild: Child? = nil
     var linkedAdult: Adult? = nil
     var household: Household? = nil
