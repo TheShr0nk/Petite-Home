@@ -16,10 +16,12 @@ struct PaywallSheet: View {
     @State private var foundingCode = ""
     @State private var foundingResult: String?
 
-    /// "Everything, for a dollar." while the store offers the weekly plan; the gate's own
-    /// headline when it doesn't, so the sheet never sells a week it cannot start.
+    /// "Everything, for a dollar." while the store offers the weekly plan with its intro;
+    /// "Everything, for a week." when weekly is offered at list price (the Test Store has no
+    /// intro offers); the gate's own headline when there is no weekly plan at all.
     private var headline: String {
-        entitlements.weeklyOffered ? "Everything, for a dollar." : gate.headline
+        guard entitlements.weeklyOffered else { return gate.headline }
+        return entitlements.introPriceText(for: .weekly) != nil ? "Everything, for a dollar." : "Everything, for a week."
     }
 
     /// "One week of premium for $0.99. Keep it or cancel." The price is the weekly intro
