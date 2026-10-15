@@ -16,16 +16,38 @@
         {
           "adHocOffers": [],
           "codeOffers": [],
-          "displayPrice": "14.00",
+          "displayPrice": "5.99",
+          "familyShareable": true,
+          "groupNumber": 1,
+          "internalID": "PH_PREMIUM_WEEKLY",
+          "introductoryOffer": {
+            "internalID": "PH_INTRO_W",
+            "paymentMode": "payAsYouGo",
+            "subscriptionPeriod": "P1W",
+            "numberOfPeriods": 1,
+            "displayPrice": "0.99"
+          },
+          "localizations": [
+            {
+              "description": "Reminders, vault, tasks and sharing",
+              "displayName": "Premium weekly",
+              "locale": "en_US"
+            }
+          ],
+          "productID": "co.petitehome.premium.weekly",
+          "recurringSubscriptionPeriod": "P1W",
+          "referenceName": "Premium weekly",
+          "subscriptionGroupID": "PH_PREMIUM",
+          "type": "RecurringSubscription"
+        },
+        {
+          "adHocOffers": [],
+          "codeOffers": [],
+          "displayPrice": "14.99",
           "familyShareable": true,
           "groupNumber": 1,
           "internalID": "PH_PREMIUM_MONTHLY",
-          "introductoryOffer": {
-            "internalID": "PH_INTRO_M",
-            "paymentMode": "payUpFront",
-            "subscriptionPeriod": "P1W",
-            "displayPrice": "0.99"
-          },
+          "introductoryOffer": null,
           "localizations": [
             {
               "description": "Reminders, vault, tasks and sharing",
@@ -42,16 +64,11 @@
         {
           "adHocOffers": [],
           "codeOffers": [],
-          "displayPrice": "125.00",
+          "displayPrice": "124.99",
           "familyShareable": true,
           "groupNumber": 1,
           "internalID": "PH_PREMIUM_ANNUAL",
-          "introductoryOffer": {
-            "internalID": "PH_INTRO_A",
-            "paymentMode": "payUpFront",
-            "subscriptionPeriod": "P1W",
-            "displayPrice": "0.99"
-          },
+          "introductoryOffer": null,
           "localizations": [
             {
               "description": "Reminders, vault, tasks and sharing",

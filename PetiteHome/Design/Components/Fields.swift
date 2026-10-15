@@ -146,6 +146,15 @@ struct PremiumGateBanner: View {
     let gate: PremiumGate
     let onTap: () -> Void
 
+    /// "$0.99 for your first week, then $5.99 a week. Cancel anytime." Only weekly carries the intro.
+    private var lockedPriceLine: String {
+        let weekly = entitlements.priceText(for: .weekly)
+        if let intro = entitlements.introPriceText(for: .weekly) {
+            return "\(intro) for your first week, then \(weekly) a week. Cancel anytime."
+        }
+        return "From \(weekly) a week. Cancel anytime."
+    }
+
     var body: some View {
         VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
             HStack(spacing: Theme.Spacing.xs) {
@@ -159,7 +168,7 @@ struct PremiumGateBanner: View {
                 .padding(.top, Theme.Spacing.xs)
             Text(entitlements.usesLocalTrial
                  ? "Free for \(EntitlementStore.localTrialDays) days while we're in testing."
-                 : "$0.99 for your first week, then monthly or yearly. Cancel anytime.")
+                 : lockedPriceLine)
                 .font(Typography.caption).foregroundStyle(Theme.Colors.sandDeep)
         }
         .padding(Theme.Spacing.lg)

@@ -375,7 +375,7 @@ struct PremiumOfferScreen: View {
     var body: some View {
         OnboardingScreen(eyebrow: "Petite Home premium", hook: "Now let us do the remembering.") {
             PremiumBullets()
-            Text("Monthly or yearly. Your first week is $0.99 either way, then the regular price. Cancel whenever you like.")
+            Text(premiumLine)
                 .font(Typography.callout)
                 .foregroundStyle(Theme.Colors.sandDeep)
         } actions: {
@@ -395,6 +395,16 @@ struct PremiumOfferScreen: View {
             PaywallSheet(gate: .onboarding)
         }
         .onChange(of: entitlements.isPremium) { _, on in if on { finish() } }
+    }
+
+    /// "Your first week is $0.99, then $5.99 a week. Or pay monthly or yearly and save. Cancel whenever you like."
+    /// Prices come from the store; only the weekly plan carries the intro offer.
+    private var premiumLine: String {
+        let weekly = entitlements.priceText(for: .weekly)
+        if let intro = entitlements.introPriceText(for: .weekly) {
+            return "Your first week is \(intro), then \(weekly) a week. Or pay monthly or yearly and save. Cancel whenever you like."
+        }
+        return "\(weekly) a week, or pay monthly or yearly and save. Cancel whenever you like."
     }
 
     /// Stashes the Planner choices, applies them if premium is on, and moves to Home.

@@ -1,25 +1,29 @@
 import SwiftUI
 
-/// The paywall, reused at every gate. Headline changes by gate; the three
-/// bullets sit in an ink card; plans are rows with a radio mark and a savings
-/// badge; the trial CTA is pinned to the bottom with the fine print; restore
-/// and close are always present.
+/// The paywall, reused at every gate. The headline sells the $0.99 first
+/// week; the three bullets sit in an ink card; plans are rows with a radio
+/// mark, weekly first and selected, monthly and annual with their per-week
+/// price and saving; the CTA is pinned to the bottom with the fine print;
+/// restore and close are always present.
 struct PaywallSheet: View {
     @Environment(EntitlementStore.self) private var entitlements
     @Environment(\.dismiss) private var dismiss
     let gate: PremiumGate
     /// False when this is the wall after onboarding: no close button, a code field instead.
     var dismissible: Bool = true
-    @State private var selected: Plan = .annual
+    @State private var selected: Plan = .weekly
     @State private var lastLocalError: String?
     @State private var foundingCode = ""
     @State private var foundingResult: String?
 
-    static func priceLine(_ store: EntitlementStore) -> String {
-        "$0.99 for the first week · then \(store.monthlyPriceText) a month or \(store.annualPriceText) a year · cancel anytime"
+    /// "One week of premium for $0.99. Keep it or cancel." The price is the weekly intro
+    /// offer from the store; if App Store Connect ever drops it, the line sells the week at list.
+    private var subheadline: String {
+        if let intro = entitlements.introPriceText(for: .weekly) {
+            return "One week of premium for \(intro). Keep it or cancel."
+        }
+        return "A week of premium for \(entitlements.priceText(for: .weekly)). Keep it or cancel."
     }
-
-    private var savings: String? { entitlements.savingsText }
 
     var body: some View {
         VStack(spacing: 0) {
@@ -38,13 +42,15 @@ struct PaywallSheet: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: Theme.Spacing.lg) {
                     Eyebrow(text: "Petite Home premium").reveal(0)
-                    Text(gate.headline).font(Typography.hook).lineSpacing(6).foregroundStyle(Theme.Colors.ink).fixedSize(horizontal: false, vertical: true).reveal(1)
+                    VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
+                        Text("Everything, for a dollar.").font(Typography.hook).lineSpacing(6).foregroundStyle(Theme.Colors.ink).fixedSize(horizontal: false, vertical: true)
+                        Text(subheadline).font(Typography.callout).foregroundStyle(Theme.Colors.sandDeep).fixedSize(horizontal: false, vertical: true)
+                    }
+                    .reveal(1)
                     featuresCard.reveal(2)
                     VStack(spacing: Theme.Spacing.sm) {
                         ForEach(Plan.allCases) { plan in
-                            planRow(plan: plan,
-                                    badge: plan == .annual ? savings : nil,
-                                    selected: selected == plan) { selected = plan }
+                            planRow(plan: plan, selected: selected == plan) { selected = plan }
                         }
                     }
                     .reveal(3)
@@ -108,16 +114,17 @@ struct PaywallSheet: View {
         .screenBackground()
         .presentationBackground(Theme.Colors.cream)
         .presentationDragIndicator(.visible)
-        .task { if entitlements.annual == nil { await entitlements.loadProducts() } }
+        .task { if entitlements.weekly == nil { await entitlements.loadProducts() } }
     }
 
     /// Apple wants the intro, the renewal price and the auto-renewal stated together.
+    /// "First week $0.99, then $5.99 a week. Cancel anytime in Settings." on weekly;
+    /// "Renews automatically. Cancel anytime in Settings." on the plans without an intro.
     private var finePrint: String {
-        let price = "\(entitlements.priceText(for: selected)) a \(selected.per)"
-        if let intro = entitlements.introText(for: selected) {
-            return "\(intro), then \(price). Renews automatically until you cancel in Settings."
+        if let intro = entitlements.introFinePrint(for: selected) {
+            return "\(intro), then \(entitlements.priceText(for: selected)) a \(selected.per). Cancel anytime in Settings."
         }
-        return "\(price), renewing automatically until you cancel in Settings."
+        return "Renews automatically. Cancel anytime in Settings."
     }
 
     /// The three bullets, cream on ink, with the wordmark ghosted in the corner.
@@ -146,22 +153,18 @@ struct PaywallSheet: View {
         }
     }
 
-    private func planRow(plan: Plan, badge: String?, selected: Bool, action: @escaping () -> Void) -> some View {
+    /// Title, "$5.99 / week", then one accent line: the intro offer on weekly
+    /// ("$0.99 for the first week"), the per-week price and saving on the others ("$3.46/wk, save 42%").
+    private func planRow(plan: Plan, selected: Bool, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             HStack {
                 VStack(alignment: .leading, spacing: 2) {
-                    HStack(spacing: 6) {
-                        Text(plan.title).font(Typography.serif(18)).foregroundStyle(Theme.Colors.ink)
-                        if let badge {
-                            Text(badge).font(.system(size: 11, weight: .semibold))
-                                .padding(.horizontal, 6).padding(.vertical, 2)
-                                .background(Capsule().fill((plan == .annual ? Theme.Colors.success : Theme.Colors.powderBlue).opacity(0.3)))
-                                .foregroundStyle(Theme.Colors.ink)
-                        }
-                    }
+                    Text(plan.title).font(Typography.serif(18)).foregroundStyle(Theme.Colors.ink)
                     Text("\(entitlements.priceText(for: plan)) / \(plan.per)").font(Typography.caption).foregroundStyle(Theme.Colors.sandDeep)
                     if let intro = entitlements.introText(for: plan) {
                         Text(intro).font(Typography.caption).foregroundStyle(Theme.Colors.accentText)
+                    } else if let comparison = entitlements.comparisonText(for: plan) {
+                        Text(comparison).font(Typography.caption).foregroundStyle(Theme.Colors.accentText)
                     }
                 }
                 Spacer()
