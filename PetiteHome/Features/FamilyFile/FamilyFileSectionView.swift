@@ -94,7 +94,7 @@ struct FamilyFileSectionView: View {
         case .healthInsurance: return file.healthInsurance.summary
         case .pediatrician:
             let kids = household.kids
-            if kids.isEmpty { return "Add a child first" }
+            if kids.isEmpty { return "Add a child and their doctor" }
             let named = kids.compactMap { k -> String? in
                 guard let p = k.pediatrician, p.isFilled else { return nil }
                 return "\(k.displayName): \(p.name)"

@@ -184,14 +184,24 @@ struct IndexBox: Identifiable { let value: Int; var id: Int { value } }
 
 struct PediatriciansEditor: View {
     @Bindable var household: Household
+    @State private var addingChild = false
     var body: some View {
         EditorScroll(title: "Pediatrician") {
             if household.kids.isEmpty {
-                Text("Add a child first, then their doctor.").font(Typography.body).foregroundStyle(Theme.Colors.sandDeep)
+                Text("Add a child, then their doctor goes right here.").font(Typography.body).foregroundStyle(Theme.Colors.sandDeep)
             }
             ForEach(household.kids, id: \.uuid) { child in
                 ChildDoctorRow(child: child, siblings: household.kids)
             }
+            Button { addingChild = true } label: {
+                Label(household.kids.isEmpty ? "Add a child" : "Add another child", systemImage: "plus")
+            }
+            .buttonStyle(.outline)
+        }
+        .sheet(isPresented: $addingChild) {
+            NavigationStack { AddChildView(household: household).toolbar { DoneToolbarItem() } }
+                .presentationDetents([.large])
+                .presentationBackground(Theme.Colors.cream)
         }
     }
 }
