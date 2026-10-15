@@ -212,6 +212,7 @@ struct GuardianScreen: View {
 
 struct RevealScreen: View {
     @Environment(\.modelContext) private var context
+    @Environment(AppState.self) private var appState
     @Bindable var draft: OnboardingDraft
     let onSaved: (Household) -> Void
     @State private var saving = false
@@ -261,6 +262,10 @@ struct RevealScreen: View {
                     let userID = await CloudIdentity.userID()
                     let household = draft.commit(into: context)
                     household.ownerUserID = userID
+                    // Mark it current before the save lands: RootView repairs the selection when
+                    // the household list changes, and a household with no selection would end
+                    // onboarding here, skipping the partner, Planner and premium screens.
+                    appState.currentHouseholdID = household.uuid
                     try? context.save()
                     if !draft.email.isEmpty {
                         Task { await KlaviyoHandoff.subscribe(email: draft.email, youngestChildAge: draft.segment) }
@@ -375,7 +380,7 @@ struct PremiumOfferScreen: View {
     var body: some View {
         OnboardingScreen(eyebrow: "Petite Home premium", hook: "Now let us do the remembering.") {
             PremiumBullets()
-            Text("Monthly or yearly. Your first week is $0.99 either way, then the regular price. Cancel whenever you like.")
+            Text(premiumLine)
                 .font(Typography.callout)
                 .foregroundStyle(Theme.Colors.sandDeep)
         } actions: {
@@ -395,6 +400,17 @@ struct PremiumOfferScreen: View {
             PaywallSheet(gate: .onboarding)
         }
         .onChange(of: entitlements.isPremium) { _, on in if on { finish() } }
+    }
+
+    /// "Your first week is $0.99, then $5.99 a week. Or pay monthly or yearly and save. Cancel whenever you like."
+    /// Prices come from the store; only the weekly plan carries the intro offer.
+    private var premiumLine: String {
+        let weekly = entitlements.priceText(for: .weekly)
+        guard entitlements.weeklyOffered else { return "Pay monthly or yearly. Cancel whenever you like." }
+        if let intro = entitlements.introPriceText(for: .weekly) {
+            return "Your first week is \(intro), then \(weekly) a week. Or pay monthly or yearly and save. Cancel whenever you like."
+        }
+        return "\(weekly) a week, or pay monthly or yearly and save. Cancel whenever you like."
     }
 
     /// Stashes the Planner choices, applies them if premium is on, and moves to Home.

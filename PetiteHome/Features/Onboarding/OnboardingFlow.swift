@@ -158,9 +158,9 @@ struct OnboardingScreen<Content: View, Actions: View>: View {
                 .padding(.bottom, Theme.Spacing.xl)
             }
             .scrollDismissesKeyboard(.interactively)
-            .glassScrollEdge(.bottom)
-            // The action bar floats over the content: glass buttons on iOS 26,
-            // a cream bar before that.
+            // The action bar sits on a solid cream ground on every OS, with a short
+            // fade above it, so form fields and chips never read through the buttons.
+            // The buttons themselves are glass on iOS 26.
             .safeAreaInset(edge: .bottom) {
                 GlassGroup {
                     VStack(spacing: Theme.Spacing.sm) {
@@ -171,8 +171,19 @@ struct OnboardingScreen<Content: View, Actions: View>: View {
                 .padding(.horizontal, Theme.Spacing.gutter)
                 .padding(.top, Theme.Spacing.sm)
                 .padding(.bottom, Theme.Spacing.lg)
-                .background(Glass26.available ? Color.clear : Theme.Colors.cream)
+                .background(alignment: .top) { actionBarGround }
             }
+    }
+
+    private var actionBarGround: some View {
+        Theme.Colors.cream
+            .overlay(alignment: .top) {
+                LinearGradient(colors: [Theme.Colors.cream.opacity(0), Theme.Colors.cream],
+                               startPoint: .top, endPoint: .bottom)
+                    .frame(height: Theme.Spacing.xxl)
+                    .offset(y: -Theme.Spacing.xxl)
+            }
+            .ignoresSafeArea(edges: .bottom)
     }
 }
 

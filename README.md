@@ -186,17 +186,24 @@ RevenueCat's simulated store in debug builds, with no App Store Connect
 products. The SDK crashes a Release build that uses a test key, so
 `EntitlementStore.configure()` skips it outside DEBUG: TestFlight builds run
 without a store and use the local testing unlock. Swap in the `appl_…`
-production key for real purchases on TestFlight and release. In the RevenueCat dashboard create the two App Store
+production key for real purchases on TestFlight and release. In the RevenueCat dashboard create the three App Store
 products (`co.petitehome.premium.weekly`, `.monthly`, `.annual`) in one
-subscription group. Intro offer on both: $0.99 pay-up-front for the first week, then the
-plan's price. There are no free trials. Apple allows one intro offer per
-product. The paywall reads each product's intro offer from the
-store and words the button and fine print from it, so the shape can change in
-App Store Connect without a code change. Create an entitlement called
-`premium` and a current offering with `$rc_annual`, `$rc_monthly` and
-packages. Paste the app's public API key into
-Info.plist. For simulator testing, keep `Products.storekit` attached to the
-scheme; RevenueCat reads from it in sandbox mode. The app calls `logIn` with the iCloud user record name so purchases follow
+subscription group, all family-shareable. Weekly is $5.99 a week with a
+pay-as-you-go intro offer of one period at $0.99 (the first week), monthly is
+$14.99 with no intro, annual is $124.99 with no intro. There are no free
+trials. The paywall reads each product's intro offer from the store and words
+the button and fine print from it (pay-as-you-go and pay-up-front both read
+"Start for $0.99"), so the shape can change in App Store Connect without a
+code change. The monthly and annual rows show their per-week price and saving
+against weekly ("$3.46/wk, save 42%", "$2.40/wk, save 60%"), computed from
+store prices. Create an entitlement called `premium` and a current offering
+with `$rc_weekly`, `$rc_monthly` and `$rc_annual` packages. Paste the app's
+public API key into Info.plist. With the Test Store key the SDK takes its
+products from the RevenueCat dashboard's Test Store, not from
+`Products.storekit`, so mirror the three products and their prices there as
+well (a missing `$rc_weekly` package shows the weekly row at its list price).
+`Products.storekit` stays attached to the scheme for runs with the production
+key from Xcode, where StoreKit serves the local products. The app calls `logIn` with the iCloud user record name so purchases follow
 the person across their devices.
 
 **Founding 500 codes.** Format `PH-XXXX-XXXX`; the last group is a checksum of
@@ -219,9 +226,10 @@ moment screen after onboarding. Everything honours Reduce Motion.
 
 - App Store Connect: app record, bundle ID `co.petitehome.app` with iCloud
   (CloudKit) and In-App Purchase capabilities (no Sign in with Apple); Paid
-  Apps agreement signed; the two subscriptions in one group, monthly at
-  $14.00 and annual at $125.00, each with a $0.99 pay-up-front intro offer for
-  the first week and no free trial. The app is subscription-only: after
+  Apps agreement signed; the three subscriptions in one group, weekly at
+  $5.99 with a one-period pay-as-you-go intro offer at $0.99, monthly at
+  $14.99 and annual at $124.99 with no intro offer, no free trials, all
+  family-shareable. The app is subscription-only: after
   onboarding, `RootView` shows the paywall (no close button, with restore and
   the Founding 500 code field) until an entitlement is active.
 - CloudKit Dashboard: run the app in Development, then **Deploy Schema
