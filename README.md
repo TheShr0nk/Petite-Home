@@ -180,13 +180,14 @@ the paywall button reads "Unlock while we're testing" and grants premium on
 that phone for 30 days, stored in the Keychain, with no purchase. Adding the key switches every trial button to real
 RevenueCat purchases; existing local trials run out on their own.
 
-**RevenueCat setup.** Info.plist carries a RevenueCat *Test Store* key
-(`test_…`), which lets the paywall run real purchase flows against
-RevenueCat's simulated store in debug builds, with no App Store Connect
-products. The SDK crashes a Release build that uses a test key, so
-`EntitlementStore.configure()` skips it outside DEBUG: TestFlight builds run
-without a store and use the local testing unlock. Swap in the `appl_…`
-production key for real purchases on TestFlight and release. In the RevenueCat dashboard create the three App Store
+**RevenueCat setup.** Info.plist carries the App Store app's public
+`appl_…` key, so debug, TestFlight and release builds all talk to the real
+store: the StoreKit configuration file in the simulator when run from Xcode,
+Apple's sandbox on a device. A RevenueCat *Test Store* key (`test_…`) can be
+swapped in for a quick simulated purchase flow with no App Store Connect
+products, but the SDK crashes a Release build that uses one, so
+`EntitlementStore.configure()` skips it outside DEBUG, and the Test Store
+never returns introductory offers. In the RevenueCat dashboard create the three App Store
 products (`co.petitehome.premium.weekly`, `.monthly`, `.annual`) in one
 subscription group, all family-shareable. Weekly is $5.99 a week with a
 pay-as-you-go intro offer of one period at $0.99 (the first week), monthly is
@@ -198,12 +199,12 @@ code change. The monthly and annual rows show their per-week price and saving
 against weekly ("$3.46/wk, save 42%", "$2.40/wk, save 60%"), computed from
 store prices. Create an entitlement with the identifier `Premium` (case-sensitive; it matches `ProductID.entitlement`) and a current offering
 with `$rc_weekly`, `$rc_monthly` and `$rc_annual` packages. Paste the app's
-public API key into Info.plist. With the Test Store key the SDK takes its
-products from the RevenueCat dashboard's Test Store, not from
-`Products.storekit`, so mirror the three products and their prices there as
-well (a missing `$rc_weekly` package shows the weekly row at its list price).
-`Products.storekit` stays attached to the scheme for runs with the production
-key from Xcode, where StoreKit serves the local products. The app calls `logIn` with the iCloud user record name so purchases follow
+public API key into Info.plist. `Products.storekit` stays attached to the
+scheme so simulator runs from Xcode get the three products, with the weekly
+intro offer, without a sandbox account. With a Test Store key instead, the SDK
+takes its products from the RevenueCat dashboard's Test Store, so the three
+products must be mirrored there (a missing `$rc_weekly` package shows the
+weekly row at its list price). The app calls `logIn` with the iCloud user record name so purchases follow
 the person across their devices.
 
 **Founding 500 codes.** Format `PH-XXXX-XXXX`; the last group is a checksum of
