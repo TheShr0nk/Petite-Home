@@ -16,9 +16,16 @@ struct PaywallSheet: View {
     @State private var foundingCode = ""
     @State private var foundingResult: String?
 
+    /// "Everything, for a dollar." while the store offers the weekly plan; the gate's own
+    /// headline when it doesn't, so the sheet never sells a week it cannot start.
+    private var headline: String {
+        entitlements.weeklyOffered ? "Everything, for a dollar." : gate.headline
+    }
+
     /// "One week of premium for $0.99. Keep it or cancel." The price is the weekly intro
     /// offer from the store; if App Store Connect ever drops it, the line sells the week at list.
     private var subheadline: String {
+        guard entitlements.weeklyOffered else { return gate.valueLine }
         if let intro = entitlements.introPriceText(for: .weekly) {
             return "One week of premium for \(intro). Keep it or cancel."
         }
@@ -43,13 +50,13 @@ struct PaywallSheet: View {
                 VStack(alignment: .leading, spacing: Theme.Spacing.lg) {
                     Eyebrow(text: "Petite Home premium").reveal(0)
                     VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
-                        Text("Everything, for a dollar.").font(Typography.hook).lineSpacing(6).foregroundStyle(Theme.Colors.ink).fixedSize(horizontal: false, vertical: true)
+                        Text(headline).font(Typography.hook).lineSpacing(6).foregroundStyle(Theme.Colors.ink).fixedSize(horizontal: false, vertical: true)
                         Text(subheadline).font(Typography.callout).foregroundStyle(Theme.Colors.sandDeep).fixedSize(horizontal: false, vertical: true)
                     }
                     .reveal(1)
                     featuresCard.reveal(2)
                     VStack(spacing: Theme.Spacing.sm) {
-                        ForEach(Plan.allCases) { plan in
+                        ForEach(entitlements.availablePlans) { plan in
                             planRow(plan: plan, selected: selected == plan) { selected = plan }
                         }
                     }
@@ -114,7 +121,17 @@ struct PaywallSheet: View {
         .screenBackground()
         .presentationBackground(Theme.Colors.cream)
         .presentationDragIndicator(.visible)
-        .task { if entitlements.weekly == nil { await entitlements.loadProducts() } }
+        .task {
+            if entitlements.weekly == nil { await entitlements.loadProducts() }
+            selectAvailablePlan()
+        }
+        .onChange(of: entitlements.availablePlans) { _, _ in selectAvailablePlan() }
+    }
+
+    /// Weekly is the default, but never a plan the store didn't return: the button would do nothing.
+    private func selectAvailablePlan() {
+        let plans = entitlements.availablePlans
+        if !plans.contains(selected), let first = plans.first { selected = first }
     }
 
     /// Apple wants the intro, the renewal price and the auto-renewal stated together.

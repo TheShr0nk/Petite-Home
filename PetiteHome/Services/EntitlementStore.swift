@@ -128,6 +128,17 @@ final class EntitlementStore {
     /// True while the app runs without a RevenueCat key: trials are granted locally.
     var usesLocalTrial: Bool { !Purchases.isConfigured }
 
+    /// The plans to show: every plan before the store answers, then only the ones it returned,
+    /// so a package missing from the offering never shows a row that cannot be bought.
+    var availablePlans: [Plan] {
+        let loaded = Plan.allCases.filter { package(for: $0) != nil }
+        return loaded.isEmpty ? Plan.allCases : loaded
+    }
+
+    /// True until the store answers without a weekly package. The headline, the onboarding
+    /// line and the per-week comparisons all rest on the weekly plan, so they step aside without it.
+    var weeklyOffered: Bool { availablePlans.contains(.weekly) }
+
     func package(for plan: Plan) -> Package? {
         switch plan {
         case .weekly: return weekly
@@ -156,13 +167,13 @@ final class EntitlementStore {
 
     /// "$3.46/wk": what a month or a year costs per week. Nil for the weekly plan itself.
     func perWeekText(for plan: Plan) -> String? {
-        guard plan != .weekly else { return nil }
+        guard plan != .weekly, weeklyOffered else { return nil }
         return "\(formatted(amount(for: plan) / plan.weeksPerPeriod, like: plan))/wk"
     }
 
     /// "Save 42%" against paying week by week. Nil for the weekly plan, or when it saves nothing.
     func savingsText(for plan: Plan) -> String? {
-        guard plan != .weekly else { return nil }
+        guard plan != .weekly, weeklyOffered else { return nil }
         let weekly = amount(for: .weekly)
         let perWeek = amount(for: plan) / plan.weeksPerPeriod
         guard weekly > 0, perWeek < weekly else { return nil }
@@ -287,7 +298,11 @@ final class EntitlementStore {
         #if !DEBUG
         if apiKey.hasPrefix("test_") { return }
         #endif
+        #if DEBUG
+        Purchases.logLevel = .debug
+        #else
         Purchases.logLevel = .warn
+        #endif
         Purchases.configure(with: Configuration.Builder(withAPIKey: apiKey).build())
         Task { @MainActor in
             shared.storeAvailable = true

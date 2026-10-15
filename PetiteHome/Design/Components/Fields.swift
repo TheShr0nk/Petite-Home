@@ -149,6 +149,7 @@ struct PremiumGateBanner: View {
     /// "$0.99 for your first week, then $5.99 a week. Cancel anytime." Only weekly carries the intro.
     private var lockedPriceLine: String {
         let weekly = entitlements.priceText(for: .weekly)
+        guard entitlements.weeklyOffered else { return "Monthly or yearly. Cancel anytime." }
         if let intro = entitlements.introPriceText(for: .weekly) {
             return "\(intro) for your first week, then \(weekly) a week. Cancel anytime."
         }
