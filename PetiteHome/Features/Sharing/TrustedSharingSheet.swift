@@ -108,8 +108,8 @@ struct TrustedSharingSheet: View {
             Card {
                 VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
                     Text("Paper doesn't need a phone").font(Typography.sectionTitle).foregroundStyle(Theme.Colors.ink)
-                    Text("Print the sealed copy for the guardian's drawer, or have a bound binder printed and mailed.").font(Typography.caption).foregroundStyle(Theme.Colors.sandDeep)
-                    Button { showPaper = true } label: { Label("Print or order a binder", systemImage: "printer") }.buttonStyle(.outline)
+                    Text(PrintOrderService.isAvailable ? "Print the sealed copy for the guardian's drawer, or have a bound binder printed and mailed." : "Print the sealed copy for the guardian's drawer.").font(Typography.caption).foregroundStyle(Theme.Colors.sandDeep)
+                    Button { showPaper = true } label: { Label(PrintOrderService.isAvailable ? "Print or order a binder" : "Print a copy", systemImage: "printer") }.buttonStyle(.outline)
                 }
             }
         }

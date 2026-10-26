@@ -10,6 +10,11 @@ import Foundation
 ///   POST /api/print-orders  (multipart)  -> { "checkoutUrl": "https://checkout.stripe.com/...", "orderId": "po_..." }
 ///        fields: file (application/pdf), title, pages, includeVault ("true"/"false"), source ("ios_app")
 enum PrintOrderService {
+    /// Off until the website ships the two routes above. While off, the export
+    /// sheet hides the binder card and the entry points stop mentioning one;
+    /// flip to true when `GET /api/print-orders/quote` returns 200 in production.
+    static let isAvailable = false
+
     static let base = URL(string: "https://petitehome.co/api/print-orders")!
 
     struct Quote: Decodable { var price: String; var shipping: String; var days: String }

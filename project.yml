@@ -84,3 +84,4 @@ targets:
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: co.petitehome.app.tests
+        GENERATE_INFOPLIST_FILE: YES

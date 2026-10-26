@@ -18,6 +18,7 @@ struct ExportOptionsSheet: View {
             VStack(alignment: .leading, spacing: Theme.Spacing.lg) {
                 Text("Paper for the drawer, the guardian, or whoever's holding the fort. It never expires and never needs a phone.")
                     .font(Typography.body).foregroundStyle(Theme.Colors.sandDeep)
+                if PrintOrderService.isAvailable {
                 Card(background: Theme.Colors.powderBlueMist) {
                     VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
                         Text("A printed binder, mailed").font(Typography.sectionTitle).foregroundStyle(Theme.Colors.ink)
@@ -25,6 +26,7 @@ struct ExportOptionsSheet: View {
                             .font(Typography.caption).foregroundStyle(Theme.Colors.sandDeep)
                         Button { showBinder = true } label: { Label("Order a binder", systemImage: "shippingbox") }.buttonStyle(.primary)
                     }
+                }
                 }
                 Card {
                     VStack(alignment: .leading, spacing: Theme.Spacing.sm) {

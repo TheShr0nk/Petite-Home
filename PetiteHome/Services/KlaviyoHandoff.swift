@@ -5,9 +5,9 @@ import Foundation
 /// The endpoint is `POST https://petitehome.co/api/subscribe`, the route every
 /// form on the site posts to. If the email was hidden, this is never called.
 ///
-/// Website change needed: add `ios_app` to the `PLACEMENTS` set in
-/// `02-web/src/app/api/subscribe/route.ts`, or the placement records as
-/// `unknown`. The `source` key is sent as well for the profile property.
+/// The site accepts a fixed set of placements; `app` is the one it has for
+/// this app (`02-web/src/app/api/subscribe/route.ts`). Anything else records
+/// as `unknown`. The `source` key is sent as well for the profile property.
 enum KlaviyoHandoff {
     static let endpoint = URL(string: "https://petitehome.co/api/subscribe")!
 
@@ -20,7 +20,7 @@ enum KlaviyoHandoff {
         var body: [String: Any] = [
             "email": trimmed,
             "kind": "family-file",
-            "placement": "ios_app",
+            "placement": "app",
             "source": "ios_app",
         ]
         body["youngestChildAge"] = (youngestChildAge ?? .oneToFour).rawValue

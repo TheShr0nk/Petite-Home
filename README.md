@@ -81,9 +81,9 @@ the link. The owner's app revokes the share after the expiry date on next
 launch.
 
 **Klaviyo.** If the user types an email on the reveal screen, the app posts to the site's existing `/api/subscribe` with
-`kind: family-file`, `youngestChildAge` and `placement: ios_app`. The website's
-route only accepts a fixed set of placements, so add `ios_app` to `PLACEMENTS`
-in `02-web/src/app/api/subscribe/route.ts` or it records as `unknown`.
+`kind: family-file`, `youngestChildAge`, `placement: app` (the value the site's
+`PLACEMENTS` set already accepts; anything else records as `unknown`) and
+`source: ios_app` for the profile property.
 
 **Life Sync (premium).** Each phone mirrors its owner's chosen calendars
 through EventKit into `CalendarEvent` rows on the household, so the partner
@@ -119,7 +119,9 @@ and a minute after an edit). The sharing sheet starts on the guardian and
 defaults to standing. The paper sheet offers AirPrint and a printed binder
 ordered through the website; see `docs/print-binder.md` for the routes the
 site needs and why checkout is on the web (Apple bars in-app purchase for
-physical goods).
+physical goods). The binder order is behind
+`PrintOrderService.isAvailable`, off until the site's print-order routes exist;
+while off, the export sheet hides the card and the entry points say paper or PDF.
 
 **Chores: partner notifications, the widget, Reminders.** A chore carries
 `createdByAdultID`. When one created on the other adult's phone arrives through
@@ -210,9 +212,10 @@ the person across their devices.
 **Founding 500 codes.** Format `PH-XXXX-XXXX`; the last group is a checksum of
 the first (see `FoundingCode`). Issue codes with `FoundingCode.make(body:)`.
 
-**Not verified by a compiler yet.** This codebase was written in an environment
-without Xcode. Expect a round of compile fixes on first build; the logic under
-test (`PetiteHomeTests`) is pure and should pass as is.
+**Verified.** Builds clean on Xcode 26.3 and the 32 unit tests pass from
+`xcodebuild test` on a simulator (October 26, 2026). The simulator logs
+CloudKit mirroring errors during tests because it has no iCloud account;
+that is expected.
 
 ## Motion
 
