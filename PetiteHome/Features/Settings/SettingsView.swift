@@ -134,7 +134,6 @@ struct SettingsView: View {
             .listRowBackground(Theme.Colors.creamDeep)
 
             Section {
-                NavigationLink { PicksView() } label: { Label("Petite Picks", systemImage: "sparkles") }
                 Link("Privacy", destination: URL(string: "https://petitehome.co/privacy")!)
                 Link("Terms", destination: URL(string: "https://petitehome.co/terms")!)
                 Link("Email us", destination: URL(string: "mailto:ryan@petitehome.co")!)

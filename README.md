@@ -37,7 +37,7 @@ PetiteHome/
   Models/      SwiftData models, value types, Completeness scoring
   Services/    persistence, CloudKit sharing, keychain, vault crypto, StoreKit, notifications,
                contacts, Vision card scan, PDF export, analytics, Klaviyo, task templates
-  Features/    Onboarding, Home, FamilyFile, Children, LifeSync, Tasks, Vault, Picks, Settings,
+  Features/    Onboarding, Home, FamilyFile, Children, LifeSync, Tasks, Vault, Settings,
                Paywall, Export, Sharing
   Resources/   Info.plist, entitlements, StoreKit config, bundled font, asset catalog
 PetiteHomeTests/  completeness, age segments, recurrence, crypto, founding codes, card parsing

@@ -44,21 +44,6 @@ struct HomeView: View {
                 if let shareError {
                     Text(shareError).font(Typography.caption).foregroundStyle(Theme.Colors.danger)
                 }
-                BrandDivider()
-                NavigationLink { PicksView() } label: {
-                    Card(background: Theme.Colors.powderBlueMist) {
-                        HStack(spacing: Theme.Spacing.md) {
-                            BrandIcon(systemName: "sparkles", isActive: true)
-                            VStack(alignment: .leading, spacing: 2) {
-                                Text("Petite Picks").font(Typography.body).foregroundStyle(Theme.Colors.ink)
-                                Text("What we use, what we skipped, and why.").font(Typography.caption).foregroundStyle(Theme.Colors.sandDeep)
-                            }
-                            Spacer()
-                            Image(systemName: "chevron.right").font(.system(size: 13, weight: .medium)).foregroundStyle(Theme.Colors.sandDeep)
-                        }
-                    }
-                }
-                .buttonStyle(.plain)
             }
             .padding(.horizontal, Theme.Spacing.gutter)
             .padding(.vertical, Theme.Spacing.lg)
