@@ -43,11 +43,15 @@ final class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCent
     func application(_ application: UIApplication, didFailToRegisterForRemoteNotificationsWithError error: Error) {}
 
     /// A silent push from CloudKit. Give SwiftData a moment to import, then let the tabs react.
-    func application(_ application: UIApplication, didReceiveRemoteNotification userInfo: [AnyHashable: Any]) async -> UIBackgroundFetchResult {
-        guard CKNotification(fromRemoteNotificationDictionary: userInfo) != nil else { return .noData }
-        try? await Task.sleep(for: .seconds(4))
-        await MainActor.run { NotificationCenter.default.post(name: .cloudChangesArrived, object: nil) }
-        return .newData
+    /// The completion-handler form, not the async one: UIKit calls it on the main thread, so the
+    /// non-Sendable `userInfo` never crosses an isolation boundary.
+    func application(_ application: UIApplication, didReceiveRemoteNotification userInfo: [AnyHashable: Any], fetchCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void) {
+        guard CKNotification(fromRemoteNotificationDictionary: userInfo) != nil else { completionHandler(.noData); return }
+        Task { @MainActor in
+            try? await Task.sleep(for: .seconds(4))
+            NotificationCenter.default.post(name: .cloudChangesArrived, object: nil)
+            completionHandler(.newData)
+        }
     }
 
     func application(_ application: UIApplication, configurationForConnecting connectingSceneSession: UISceneSession, options: UIScene.ConnectionOptions) -> UISceneConfiguration {

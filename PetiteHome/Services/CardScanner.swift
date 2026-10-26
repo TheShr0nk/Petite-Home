@@ -1,6 +1,6 @@
 import SwiftUI
 import UIKit
-import Vision
+@preconcurrency import Vision
 
 /// Camera capture for the insurance card. In the free tier the image is used
 /// once for on-device text recognition and then discarded; nothing is written
@@ -43,16 +43,19 @@ enum CardScanner {
 
     static func recognize(_ image: UIImage) async -> Result {
         guard let cgImage = image.cgImage else { return Result() }
+        let orientation = cgOrientation(image.imageOrientation)
         return await withCheckedContinuation { continuation in
-            let request = VNRecognizeTextRequest { request, _ in
-                let lines = (request.results as? [VNRecognizedTextObservation])?
-                    .compactMap { $0.topCandidates(1).first?.string } ?? []
-                continuation.resume(returning: parse(lines: lines))
-            }
-            request.recognitionLevel = .accurate
-            request.usesLanguageCorrection = false
-            let handler = VNImageRequestHandler(cgImage: cgImage, orientation: cgOrientation(image.imageOrientation))
+            // The request and handler are created on the worker queue so neither is
+            // captured across the Sendable boundary; only the image and continuation cross.
             DispatchQueue.global(qos: .userInitiated).async {
+                let request = VNRecognizeTextRequest { request, _ in
+                    let lines = (request.results as? [VNRecognizedTextObservation])?
+                        .compactMap { $0.topCandidates(1).first?.string } ?? []
+                    continuation.resume(returning: parse(lines: lines))
+                }
+                request.recognitionLevel = .accurate
+                request.usesLanguageCorrection = false
+                let handler = VNImageRequestHandler(cgImage: cgImage, orientation: orientation)
                 do { try handler.perform([request]) } catch { continuation.resume(returning: Result()) }
             }
         }

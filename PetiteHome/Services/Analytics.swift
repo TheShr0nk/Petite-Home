@@ -29,7 +29,7 @@ enum Analytics {
 
     static func start() {
         guard !apiKey.isEmpty else { return }
-        let config = PostHogConfig(apiKey: apiKey, host: host)
+        let config = PostHogConfig(projectToken: apiKey, host: host)
         config.captureApplicationLifecycleEvents = false
         config.captureScreenViews = false
         PostHogSDK.shared.setup(config)
