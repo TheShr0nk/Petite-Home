@@ -110,6 +110,56 @@ what (apps and shows agreed on), grown-ups too, when it's hard, four signature
 lines. Page 2: a week's device log (day, who, what, minutes, felt like),
 "Instead, this weekend" with three lines, and five conversation prompts.
 
+## The binder (the-petite-home-binder, 27 pages)
+
+The one paid item the research allowed for: the eight sheets above, extended
+to the whole Family File and the Planner's paper equivalents, as a single
+fillable PDF with a contents page and index tabs. Built by
+`lead-magnets/binder.py`. It is the lead magnet (download free, fill it in on
+screen or by hand), the thing a print partner binds for a fee, and the
+handoff to the app, whose Family File is the same file kept current.
+
+Thirteen tabbed sections, in this order: Start here (how to use it, who's in
+the house, the completeness checklist with the app's own weights), In an
+emergency (the fridge card, then the full section), The kids (a page per
+child, three pages), Medical (insurance; doctors, pharmacy, the grown-ups,
+specialists), If something happens to us (guardian and backup, what we'd want
+for the kids, papers and people), Accounts and money (banks, retirement, the
+mortgage; utilities, bills, the password manager), Home and vehicles,
+Documents (where the originals are; what's coming due), The sitter sheet,
+Routines (morning, bedtime, blank), The week (the Planner on one page), The
+household rhythm (the task templates with an owner and a next date), Keep it
+current (who has a copy, the review log). A closing page sells the app. Field
+labels mirror `FamilyFileField` and `PDFExporter` so a filled binder reads
+like the app's own export.
+
+**Fillable.** Every write-on line is an AcroForm text field and every tick
+box a real checkbox: 798 fields, named by section and label
+(`call_first_phone`, `child_2_allergies`, `routine_morning_3_day_5`) so the
+website could prefill one from the app's export later. Fields are borderless
+and transparent, use Helvetica (the only fonts a form field can carry are the
+standard fourteen), and print whatever was typed; left empty, the file prints
+blank. The contents page links to each section and the PDF outline carries
+the same thirteen entries. `binder.py` builds twice so the contents page can
+carry real page numbers, and asserts that nothing moved between passes.
+
+**Print spec, for the print partner.** US Letter, portrait, 27 pages
+including the cover, single-sided. Binding margin 72 pt (1 in) on the left
+for three-hole punching, 56 pt elsewhere. Index tabs are printed, not
+physical: an 18 pt powder-blue strip on the right edge, 14 pt in from the
+trim, stepped down the page one slot per section, so the fore-edge of a
+closed binder reads like a tabbed one. Fonts are embedded. Page 1 is the
+cover (cream with the powder-blue band); if the vendor wants a separate cover
+file, split it off with `qpdf --pages . 1`. Flattening is the vendor's call:
+a filled PDF prints its field values as is in Acrobat and Preview, and
+`qpdf --flatten-annotations=all` bakes them in if their RIP cannot. The
+contents page numbers are the binder's own, so they survive printing.
+
+**Naming and Klaviyo.** Slug `the-petite-home-binder`, placement
+`download_the-petite-home-binder`, same `Downloaded PDF` event as the others.
+It replaces `the-family-file` as the day-0 promise once the sign-up form is
+updated; the five-page `the-family-file` stays for the existing emails.
+
 ## Not built, on purpose
 
 Date night, the expiration tracker, the household cadence, the meal week, the

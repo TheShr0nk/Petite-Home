@@ -15,3 +15,4 @@ Packages/
 *.xcuserstate
 .DS_Store
 lead-magnets/preview/
+lead-magnets/__pycache__/
